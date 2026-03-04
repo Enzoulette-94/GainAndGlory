@@ -1,16 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, PersonStanding, Scale, Flame, Trophy, Plus, ChevronRight } from 'lucide-react';
+import { Dumbbell, PersonStanding, Scale, Flame, Trophy, ChevronRight, CalendarDays, Swords, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
 import { weightService } from '../services/weight.service';
+import { goalsService } from '../services/goals.service';
+import { supabase } from '../lib/supabase-client';
 import { XPBar } from '../components/xp-system/XPBar';
-import { Card } from '../components/common/Card';
-import { Button } from '../components/common/Button';
-import { getLevelTitle, formatWeight, formatDistance, formatDuration, formatRelativeTime } from '../utils/calculations';
-import type { WorkoutSession, RunningSession, WeightEntry } from '../types/models';
+import { getLevelTitle, formatWeight, formatDistance, formatDuration, formatRelativeTime, formatDate } from '../utils/calculations';
+import type { WorkoutSession, RunningSession, WeightEntry, PersonalGoal } from '../types/models';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
+interface UpcomingEvent {
+  id: string;
+  title: string;
+  event_date: string;
+  type: string | null;
+}
+
+interface ActiveChallenge {
+  id: string;
+  title: string;
+  type: 'distance' | 'tonnage' | 'sessions';
+  target_value: number;
+  unit: string;
+  end_date: string;
+  total_contribution: number;
+}
 
 export function DashboardPage() {
   const { profile } = useAuth();
@@ -18,6 +38,9 @@ export function DashboardPage() {
   const [lastRun, setLastRun] = useState<RunningSession | null>(null);
   const [lastWeight, setLastWeight] = useState<WeightEntry | null>(null);
   const [weekStats, setWeekStats] = useState({ workouts: 0, runs: 0, distance: 0, tonnage: 0 });
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [activeChallenges, setActiveChallenges] = useState<ActiveChallenge[]>([]);
+  const [personalGoals, setPersonalGoals] = useState<PersonalGoal[]>([]);
 
   useEffect(() => {
     if (!profile) return;
@@ -31,6 +54,35 @@ export function DashboardPage() {
       setLastWorkout(workouts[0] ?? null);
       setLastRun(runs[0] ?? null);
       setLastWeight(weight);
+    });
+
+    // Événements à venir
+    const today = new Date().toISOString().split('T')[0];
+    db.from('events')
+      .select('id, title, event_date, type')
+      .eq('user_id', userId)
+      .gte('event_date', today)
+      .order('event_date', { ascending: true })
+      .limit(3)
+      .then(({ data }: { data: UpcomingEvent[] | null }) => setUpcomingEvents(data ?? []));
+
+    // Objectifs communs actifs
+    db.from('community_challenges')
+      .select('id, title, type, target_value, unit, end_date, participations:challenge_participations(contribution)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(({ data }: { data: any[] | null }) => {
+        const challenges = (data ?? []).map((c: any) => ({
+          ...c,
+          total_contribution: (c.participations ?? []).reduce((sum: number, p: any) => sum + (p.contribution ?? 0), 0),
+        }));
+        setActiveChallenges(challenges);
+      });
+
+    // Objectifs personnels actifs
+    goalsService.getGoals(userId).then(goals => {
+      setPersonalGoals(goals.filter(g => g.status === 'active').slice(0, 3));
     });
 
     // Stats semaine
@@ -138,11 +190,136 @@ export function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Dernières activités */}
+      {/* Événements à venir */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">Événements à venir</h2>
+          <Link to="/events" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] flex items-center gap-1 transition-colors">
+            Voir tout <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
+        {upcomingEvents.length === 0 ? (
+          <p className="text-xs text-[#6b6b6b] py-3">Aucun événement à venir</p>
+        ) : (
+          <div className="space-y-2">
+            {upcomingEvents.map(event => {
+              const daysLeft = Math.max(0, Math.ceil((new Date(event.event_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+              return (
+                <Link
+                  key={event.id}
+                  to="/events"
+                  className="flex items-center gap-3 p-3 bg-[#111111] border-l-2 border-yellow-500/30 hover:border-yellow-500/70 hover:bg-[#1c1c1c] transition-all"
+                >
+                  <CalendarDays className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#d4d4d4] truncate">{event.title}</p>
+                    <p className="text-xs text-[#a3a3a3]">{formatDate(event.event_date)}</p>
+                  </div>
+                  <span className="text-xs font-rajdhani font-semibold text-yellow-500 flex-shrink-0">
+                    {daysLeft === 0 ? "Aujourd'hui" : `J-${daysLeft}`}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Objectifs communs */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">Objectifs communs</h2>
+          <Link to="/team-goals" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] flex items-center gap-1 transition-colors">
+            Voir tout <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
+        {activeChallenges.length === 0 ? (
+          <p className="text-xs text-[#6b6b6b] py-3">Aucun défi en cours</p>
+        ) : (
+          <div className="space-y-2">
+            {activeChallenges.map(c => {
+              const pct = Math.min(100, Math.round((c.total_contribution / c.target_value) * 100));
+              return (
+                <Link
+                  key={c.id}
+                  to="/team-goals"
+                  className="block p-3 bg-[#111111] border-l-2 border-[#c9a870]/30 hover:border-[#c9a870]/70 hover:bg-[#1c1c1c] transition-all"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Swords className="w-4 h-4 text-[#c9a870] flex-shrink-0" />
+                    <p className="text-sm font-medium text-[#d4d4d4] truncate flex-1">{c.title}</p>
+                    <span className="text-xs font-rajdhani font-bold text-[#c9a870]">{pct}%</span>
+                  </div>
+                  <div className="w-full h-1 bg-white/5">
+                    <div className="h-1 bg-[#8b6f47] transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="text-xs text-[#6b6b6b] mt-1">{c.total_contribution} / {c.target_value} {c.unit}</p>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Objectifs personnels */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">Objectifs personnels</h2>
+          <Link to="/goals" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] flex items-center gap-1 transition-colors">
+            Voir tout <ChevronRight className="w-3 h-3" />
+          </Link>
+        </div>
+        {personalGoals.length === 0 ? (
+          <p className="text-xs text-[#6b6b6b] py-3">Aucun objectif actif</p>
+        ) : (
+          <div className="space-y-2">
+            {personalGoals.map(goal => {
+              const pct = goal.target_value && goal.target_value > 0
+                ? Math.min(100, Math.round(((goal.current_value ?? 0) / goal.target_value) * 100))
+                : 0;
+              const typeColor = goal.type === 'musculation' ? 'border-red-800/50' : goal.type === 'running' ? 'border-blue-800/50' : 'border-orange-800/50';
+              const barColor = goal.type === 'musculation' ? 'bg-red-800' : goal.type === 'running' ? 'bg-blue-800' : 'bg-orange-800';
+              return (
+                <Link
+                  key={goal.id}
+                  to="/goals"
+                  className={`block p-3 bg-[#111111] border-l-2 ${typeColor} hover:bg-[#1c1c1c] transition-all`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-4 h-4 text-[#a3a3a3] flex-shrink-0" />
+                    <p className="text-sm font-medium text-[#d4d4d4] truncate flex-1">{goal.title}</p>
+                    <span className="text-xs font-rajdhani font-bold text-[#a3a3a3]">{pct}%</span>
+                  </div>
+                  <div className="w-full h-1 bg-white/5">
+                    <div className={`h-1 ${barColor} transition-all`} style={{ width: `${pct}%` }} />
+                  </div>
+                  {goal.target_value && (
+                    <p className="text-xs text-[#6b6b6b] mt-1">{goal.current_value ?? 0} / {goal.target_value} {goal.unit ?? ''}</p>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Dernières activités */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
       >
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">Dernières activités</h2>

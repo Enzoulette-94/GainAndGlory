@@ -20,7 +20,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-[#c9a870]/15">
-      <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between px-4 h-[52px] max-w-7xl mx-auto">
         {/* Logo mobile */}
         <Link to="/dashboard" className="lg:hidden flex items-center gap-2 group">
           <Shield className="w-5 h-5 text-[#c9a870] transition-colors group-hover:text-[#dfc99e]" />
