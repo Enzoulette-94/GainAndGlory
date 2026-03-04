@@ -206,7 +206,7 @@ export function ProfilePage() {
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-red-400 font-bold text-2xl">{getInitials(profile.username)}</span>
+                <span className="text-[#c9a870] font-bold text-2xl">{getInitials(profile.username)}</span>
               )}
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                 <Camera className="w-5 h-5 text-white" />
@@ -217,7 +217,7 @@ export function ProfilePage() {
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-black text-white truncate">{profile.username}</h1>
 
-              <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-transparent text-red-300 border border-red-500/30">
+              <span className="inline-block mt-1 px-2.5 py-0.5 text-xs font-semibold bg-transparent text-[#c9a870] border border-[#c9a870]/30">
                 {levelTitle}
               </span>
 
@@ -393,7 +393,7 @@ export function ProfilePage() {
                 {profile.avatar_url ? (
                   <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-red-400 font-bold text-lg">{getInitials(profile.username)}</span>
+                  <span className="text-[#c9a870] font-bold text-lg">{getInitials(profile.username)}</span>
                 )}
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                   <Camera className="w-4 h-4 text-white" />

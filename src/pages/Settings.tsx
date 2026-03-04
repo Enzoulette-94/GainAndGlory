@@ -38,8 +38,8 @@ function ToggleSwitch({ value, onChange, disabled = false, id }: ToggleSwitchPro
       aria-checked={value}
       disabled={disabled}
       onClick={() => onChange(!value)}
-      className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed ${
-        value ? 'bg-red-600' : 'bg-slate-600'
+      className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#c9a870]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] disabled:opacity-50 disabled:cursor-not-allowed ${
+        value ? 'bg-[#8b6f47]' : 'bg-[#3a3a3a]'
       }`}
     >
       <span
@@ -367,9 +367,9 @@ export function SettingsPage() {
                       setPrefsError('');
                       setPrefsSaved(false);
                     }}
-                    className={`flex-1 py-2 px-3 rounded text-sm font-medium border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+                    className={`flex-1 py-2 px-3 rounded text-sm font-medium border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#c9a870]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] ${
                       paceUnit === unit
-                        ? 'bg-red-700 border-red-600 text-white'
+                        ? 'bg-[#8b6f47] border-[#c9a870]/50 text-white'
                         : 'bg-[#1c1c1c] border-white/10 text-[#a3a3a3] hover:border-slate-500 hover:text-[#d4d4d4]'
                     }`}
                   >

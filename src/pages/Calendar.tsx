@@ -157,7 +157,7 @@ export function CalendarPage() {
       >
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded bg-transparent border border-red-800/50">
-            <CalendarDays className="w-6 h-6 text-red-400" />
+            <CalendarDays className="w-6 h-6 text-[#c9a870]" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Calendrier</h1>
@@ -179,7 +179,7 @@ export function CalendarPage() {
                 {MONTHS_FR[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h2>
               <button onClick={goToday}
-                className="text-xs text-red-400 hover:text-red-300 transition-colors mt-0.5">
+                className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors mt-0.5">
                 Aujourd'hui
               </button>
             </div>
@@ -224,7 +224,7 @@ export function CalendarPage() {
                       ${isToday ? 'bg-red-900/40' : hasActivity ? 'bg-[#1c1c1c] hover:bg-slate-700/60' : ''}
                     `}
                   >
-                    <span className={`text-xs sm:text-sm ${isToday ? 'text-red-300 font-bold' : 'text-[#d4d4d4]'}`}>
+                    <span className={`text-xs sm:text-sm ${isToday ? 'text-[#c9a870] font-bold' : 'text-[#d4d4d4]'}`}>
                       {day.getDate()}
                     </span>
                     {activity && (

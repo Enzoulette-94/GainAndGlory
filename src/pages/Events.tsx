@@ -442,7 +442,7 @@ export function EventsPage() {
       >
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded bg-transparent border border-cyan-800/40">
-            <Flag className="w-6 h-6 text-cyan-600" />
+            <Flag className="w-6 h-6 text-[#c9a870]" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Événements</h1>
@@ -499,10 +499,10 @@ export function EventsPage() {
             transition={{ delay: 0.05 }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold text-cyan-600 uppercase tracking-widest">
+              <span className="text-xs font-bold text-[#c9a870] uppercase tracking-widest">
                 A venir
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-transparent text-cyan-500 text-xs font-bold border border-cyan-800/40">
+              <span className="px-2 py-0.5 bg-transparent text-[#c9a870] text-xs font-bold border border-[#c9a870]/30">
                 {upcomingEvents.length}
               </span>
             </div>

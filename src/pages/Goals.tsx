@@ -428,7 +428,7 @@ export function GoalsPage() {
       >
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded bg-transparent border border-orange-900/40">
-            <Target className="w-6 h-6 text-orange-600" />
+            <Target className="w-6 h-6 text-[#c9a870]" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Objectifs</h1>
@@ -454,7 +454,7 @@ export function GoalsPage() {
         className="grid grid-cols-3 gap-3"
       >
         <Card className="p-4 text-center">
-          <p className="text-2xl font-black text-red-400">{activeGoals.length}</p>
+          <p className="text-2xl font-black text-[#c9a870]">{activeGoals.length}</p>
           <p className="text-xs text-[#a3a3a3] mt-1">Actifs</p>
         </Card>
         <Card className="p-4 text-center">

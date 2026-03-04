@@ -153,10 +153,10 @@ function RankRow({ rank, username, level, value, extra, isCurrentUser, delay }: 
 
       {/* Nom + niveau */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold truncate ${isCurrentUser ? 'text-red-300' : 'text-[#e5e5e5]'}`}>
+        <p className={`text-sm font-semibold truncate ${isCurrentUser ? 'text-[#c9a870]' : 'text-[#e5e5e5]'}`}>
           {username}
           {isCurrentUser && (
-            <span className="ml-2 text-[10px] font-bold bg-transparent text-red-300 px-1.5 py-0.5 rounded-md">
+            <span className="ml-2 text-[10px] font-bold bg-transparent text-[#c9a870] px-1.5 py-0.5 rounded-md">
               Vous
             </span>
           )}
