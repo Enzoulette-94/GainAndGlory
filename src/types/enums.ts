@@ -1,0 +1,63 @@
+// ============================================================
+// ENUMS ET TYPES LITTÉRAUX
+// ============================================================
+
+export type MuscleGroup =
+  | 'pectoraux'
+  | 'dos'
+  | 'jambes'
+  | 'epaules'
+  | 'biceps'
+  | 'triceps'
+  | 'abdos';
+
+export type Feedback = 'facile' | 'difficile' | 'mort';
+
+export type RunType = 'fractionne' | 'endurance' | 'tempo';
+
+export type WeatherCondition = 'ensoleille' | 'nuageux' | 'pluie' | 'vent' | 'neige';
+
+export type GoalType = 'weight' | 'musculation' | 'running';
+
+export type GoalStatus = 'active' | 'completed' | 'failed' | 'cancelled';
+
+export type ChallengeType = 'musculation' | 'running' | 'mixed';
+
+export type ChallengeStatus = 'pending' | 'active' | 'completed' | 'expired';
+
+export type EventType = 'course' | 'competition' | 'objectif_poids';
+
+export type BadgeCategory =
+  | 'progression'
+  | 'objectifs'
+  | 'performance'
+  | 'participation'
+  | 'secret';
+
+export type BadgeRarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+export type ActivityType =
+  | 'workout'
+  | 'run'
+  | 'record'
+  | 'badge'
+  | 'level_up'
+  | 'challenge_completed';
+
+export type NotificationType =
+  | 'flash_challenge'
+  | 'record_beaten'
+  | 'badge_unlocked'
+  | 'level_up'
+  | 'event_created'
+  | 'like'
+  | 'comment';
+
+export type HeartRateZone = 'Z1' | 'Z2' | 'Z3' | 'Z4' | 'Z5';
+
+export type LevelTitle =
+  | 'Débutant'
+  | 'Intermédiaire'
+  | 'Avancé'
+  | 'Expert'
+  | 'Élite';
