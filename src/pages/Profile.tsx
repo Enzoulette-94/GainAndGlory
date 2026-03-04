@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Edit2, Dumbbell, Timer, Route, Flame } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Edit2, Dumbbell, Timer, Route, Flame, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
@@ -77,6 +77,26 @@ export function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [editError, setEditError] = useState('');
   const [saving, setSaving] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    if (!file.type.startsWith('image/')) { setAvatarError('Fichier image requis.'); return; }
+    if (file.size > 2 * 1024 * 1024) { setAvatarError('Taille max 2 Mo.'); return; }
+    setAvatarError('');
+    setUploadingAvatar(true);
+    try {
+      await profileService.uploadAvatar(profile.id, file);
+      await refreshProfile();
+    } catch {
+      setAvatarError("Erreur upload. Vérifie le bucket Supabase.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   // ─── data fetch ─────────────────────────────────────────────────────────
 
@@ -179,13 +199,19 @@ export function ProfilePage() {
           <div className="flex items-start gap-5">
 
             {/* Avatar */}
-            <div
-              className="flex-shrink-0 flex items-center justify-center rounded-full bg-transparent border-2 border-red-500/40 text-red-400 font-bold text-2xl select-none"
-              style={{ width: 72, height: 72 }}
-              aria-hidden="true"
+            <button
+              onClick={() => { setEditOpen(true); setEditUsername(profile.username); setEditError(''); setAvatarError(''); }}
+              className="flex-shrink-0 relative w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-[#c9a870]/40 hover:border-[#c9a870]/80 bg-[#1c1c1c] flex items-center justify-center group transition-colors"
             >
-              {getInitials(profile.username)}
-            </div>
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-red-400 font-bold text-2xl">{getInitials(profile.username)}</span>
+              )}
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                <Camera className="w-5 h-5 text-white" />
+              </div>
+            </button>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
@@ -354,9 +380,49 @@ export function ProfilePage() {
 
       {/* ── EDIT MODAL ──────────────────────────────────────────────────── */}
       <Modal isOpen={editOpen} onClose={closeEdit} title="Modifier le profil" size="sm">
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-5">
+          {/* Photo de profil */}
+          <div>
+            <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-3">Photo de profil</p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="relative w-16 h-16 rounded-full overflow-hidden border border-[#c9a870]/30 hover:border-[#c9a870]/70 bg-[#1c1c1c] flex items-center justify-center group transition-colors flex-shrink-0"
+              >
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-red-400 font-bold text-lg">{getInitials(profile.username)}</span>
+                )}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                  <Camera className="w-4 h-4 text-white" />
+                </div>
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-full">
+                    <div className="w-4 h-4 border-2 border-[#c9a870] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </button>
+              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              <div>
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="text-sm text-[#c9a870] hover:text-[#dfc99e] transition-colors"
+                >
+                  Changer la photo
+                </button>
+                <p className="text-xs text-[#6b6b6b] mt-0.5">JPG, PNG — max 2 Mo</p>
+                {avatarError && <p className="text-xs text-red-400 mt-1">{avatarError}</p>}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/5" />
+
+          {/* Pseudo */}
           <Input
-            label="Nom d'utilisateur"
+            label="Pseudo"
             value={editUsername}
             onChange={e => {
               setEditUsername(e.target.value);
@@ -364,7 +430,7 @@ export function ProfilePage() {
             }}
             placeholder="ex: john_doe42"
             error={editError}
-            hint="3 a 20 caracteres, lettres, chiffres ou underscore."
+            hint="3 à 20 caractères, lettres, chiffres ou underscore."
             maxLength={20}
             autoFocus
             onKeyDown={e => {
@@ -373,19 +439,10 @@ export function ProfilePage() {
           />
 
           <div className="flex gap-3 pt-1">
-            <Button
-              variant="secondary"
-              className="flex-1"
-              onClick={closeEdit}
-              disabled={saving}
-            >
+            <Button variant="secondary" className="flex-1" onClick={closeEdit} disabled={saving}>
               Annuler
             </Button>
-            <Button
-              className="flex-1"
-              loading={saving}
-              onClick={handleSave}
-            >
+            <Button className="flex-1" loading={saving} onClick={handleSave}>
               Enregistrer
             </Button>
           </div>
