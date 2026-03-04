@@ -113,39 +113,24 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero bandeau spartiate */}
+      {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden -mx-4 -mt-6 px-6 py-8 mb-2"
+        className="flex items-center justify-between"
       >
-        {/* Image de fond subtile */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/spartan.avif"
-            alt=""
-            className="w-full h-full object-cover object-[center_20%]"
-          />
-          <div className="absolute inset-0 bg-black/82" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+        <div>
+          <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
+            {greeting}, {profile.username}
+          </h1>
+          <p className="text-[#a3a3a3] text-sm mt-1 font-inter">
+            {getLevelTitle(profile.global_level)} · Niveau {profile.global_level}
+          </p>
         </div>
-
-        {/* Contenu */}
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
-              {greeting}, {profile.username}
-            </h1>
-            <p className="text-[#a3a3a3] text-sm mt-1 font-inter">
-              {getLevelTitle(profile.global_level)} · Niveau {profile.global_level}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 bg-black/50 border border-orange-900/50 px-3 py-2 backdrop-blur-sm">
-            <Flame className="w-5 h-5 text-orange-600" />
-            <span className="font-bold text-orange-500 font-rajdhani text-lg">{profile.current_streak}</span>
-            <span className="text-xs text-orange-500">jours</span>
-          </div>
+        <div className="flex items-center gap-2 bg-black/50 border border-orange-900/50 px-3 py-2 backdrop-blur-sm">
+          <Flame className="w-5 h-5 text-orange-600" />
+          <span className="font-bold text-orange-500 font-rajdhani text-lg">{profile.current_streak}</span>
+          <span className="text-xs text-orange-500">jours</span>
         </div>
       </motion.div>
 
