@@ -51,13 +51,13 @@ function XPRow({ label, xp, color, delay = 0 }: XPRowProps) {
       className="space-y-1.5"
     >
       <div className="flex items-center justify-between text-xs">
-        <span className="text-slate-300 font-medium">Niveau {level}</span>
-        <span className="text-slate-500">
+        <span className="text-[#d4d4d4] font-medium">Niveau {level}</span>
+        <span className="text-[#6b6b6b]">
           {current.toLocaleString('fr-FR')} / {needed.toLocaleString('fr-FR')} XP
         </span>
       </div>
       <ProgressBar value={progress} color={color} height="sm" />
-      <p className="text-[10px] text-slate-500">{label}</p>
+      <p className="text-[10px] text-[#6b6b6b]">{label}</p>
     </motion.div>
   );
 }
@@ -180,7 +180,7 @@ export function ProfilePage() {
 
             {/* Avatar */}
             <div
-              className="flex-shrink-0 flex items-center justify-center rounded-full bg-red-500/20 border-2 border-red-500/40 text-red-400 font-bold text-2xl select-none"
+              className="flex-shrink-0 flex items-center justify-center rounded-full bg-transparent border-2 border-red-500/40 text-red-400 font-bold text-2xl select-none"
               style={{ width: 72, height: 72 }}
               aria-hidden="true"
             >
@@ -191,11 +191,11 @@ export function ProfilePage() {
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-black text-white truncate">{profile.username}</h1>
 
-              <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
+              <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-transparent text-red-300 border border-red-500/30">
                 {levelTitle}
               </span>
 
-              <p className="text-xs text-slate-500 mt-2">Membre depuis {memberSince}</p>
+              <p className="text-xs text-[#6b6b6b] mt-2">Membre depuis {memberSince}</p>
             </div>
 
             {/* Edit button */}
@@ -219,7 +219,7 @@ export function ProfilePage() {
         transition={{ delay: 0.1 }}
       >
         <Card className="p-5 space-y-5">
-          <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Progression</h2>
+          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Progression</h2>
 
           <XPRow
             label={`Global · ${profile.total_xp.toLocaleString('fr-FR')} XP total`}
@@ -248,7 +248,7 @@ export function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Statistiques</h2>
+        <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider mb-3">Statistiques</h2>
 
         {dataLoading ? (
           <Loader size="sm" />
@@ -257,41 +257,41 @@ export function ProfilePage() {
 
             {/* Séances muscu */}
             <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded-xl bg-red-900/20 w-fit">
+              <div className="p-2 rounded bg-transparent w-fit">
                 <Dumbbell className="w-4 h-4 text-red-400" />
               </div>
               <p className="text-2xl font-black text-white">{stats?.muscuCount ?? 0}</p>
-              <p className="text-xs text-slate-400">Séances muscu</p>
+              <p className="text-xs text-[#a3a3a3]">Séances muscu</p>
             </Card>
 
             {/* Séances course */}
             <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded-xl bg-blue-900/20 w-fit">
-                <Timer className="w-4 h-4 text-blue-400" />
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Timer className="w-4 h-4 text-blue-500" />
               </div>
               <p className="text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
-              <p className="text-xs text-slate-400">Séances course</p>
+              <p className="text-xs text-[#a3a3a3]">Séances course</p>
             </Card>
 
             {/* Distance totale */}
             <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded-xl bg-blue-900/20 w-fit">
-                <Route className="w-4 h-4 text-blue-400" />
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Route className="w-4 h-4 text-blue-500" />
               </div>
               <p className="text-2xl font-black text-white">
                 {stats ? formatDistance(stats.totalDistance) : '0 km'}
               </p>
-              <p className="text-xs text-slate-400">Distance totale</p>
+              <p className="text-xs text-[#a3a3a3]">Distance totale</p>
             </Card>
 
             {/* Série */}
             <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded-xl bg-orange-500/10 w-fit">
-                <Flame className="w-4 h-4 text-orange-400" />
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Flame className="w-4 h-4 text-orange-600" />
               </div>
               <p className="text-2xl font-black text-white">{profile.current_streak}</p>
-              <p className="text-xs text-slate-400">Jours consécutifs</p>
-              <p className="text-[10px] text-slate-600">
+              <p className="text-xs text-[#a3a3a3]">Jours consécutifs</p>
+              <p className="text-[10px] text-[#4a4a4a]">
                 Record : {profile.longest_streak} jours
               </p>
             </Card>
@@ -306,7 +306,7 @@ export function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">
+        <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider mb-3">
           Badges debloqués ({badges.length})
         </h2>
 
@@ -314,8 +314,8 @@ export function ProfilePage() {
           <Loader size="sm" />
         ) : badges.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-slate-500 text-sm">Aucun badge encore...</p>
-            <p className="text-slate-600 text-xs mt-1">Continue a t'entrainer pour en debloquer !</p>
+            <p className="text-[#6b6b6b] text-sm">Aucun badge encore...</p>
+            <p className="text-[#4a4a4a] text-xs mt-1">Continue a t'entrainer pour en debloquer !</p>
           </Card>
         ) : (
           <div className="grid grid-cols-3 gap-2">
@@ -333,7 +333,7 @@ export function ProfilePage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.32 + i * 0.04 }}
                   title={badge.description ?? badge.name}
-                  className="rounded-xl border px-3 py-2 text-center cursor-default select-none"
+                  className="rounded border px-3 py-2 text-center cursor-default select-none"
                   style={{
                     backgroundColor: config.bg,
                     borderColor: config.color + '40',

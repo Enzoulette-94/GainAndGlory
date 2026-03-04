@@ -59,15 +59,15 @@ const GOAL_TYPE_ICONS: Record<GoalType, React.ReactNode> = {
 };
 
 const GOAL_TYPE_COLORS: Record<GoalType, string> = {
-  musculation: 'text-red-400 bg-red-500/20 border-red-500/30',
-  running: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30',
-  weight: 'text-orange-400 bg-orange-500/20 border-orange-500/30',
+  musculation: 'text-red-400 bg-transparent border-red-800/50',
+  running: 'text-emerald-600 bg-transparent border-emerald-800/40',
+  weight: 'text-orange-600 bg-transparent border-orange-800/40',
 };
 
 const GOAL_TYPE_BAR_COLORS: Record<GoalType, string> = {
   musculation: 'bg-red-500',
-  running: 'bg-emerald-500',
-  weight: 'bg-orange-500',
+  running: 'bg-emerald-800',
+  weight: 'bg-orange-800',
 };
 
 const STATUS_TAB_LABELS: Record<TabType, string> = {
@@ -109,16 +109,16 @@ function Toast({ message, type, onDismiss }: ToastProps) {
       exit={{ opacity: 0, y: 40 }}
       className={`
         fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]
-        flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl
+        flex items-center gap-2.5 px-5 py-3 rounded shadow-2xl
         border text-sm font-medium
         ${type === 'success'
-          ? 'bg-emerald-900/90 border-emerald-700/60 text-emerald-200'
+          ? 'bg-emerald-900/60 border-emerald-800/60 text-emerald-600'
           : 'bg-red-900/90 border-red-700/60 text-red-200'
         }
       `}
     >
       {type === 'success'
-        ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
         : <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
       }
       {message}
@@ -155,7 +155,7 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
       <Card className="p-4">
         <div className="flex items-start gap-3">
           {/* Icône type */}
-          <div className={`p-2 rounded-xl border shrink-0 ${iconClass}`}>
+          <div className={`p-2 rounded border shrink-0 ${iconClass}`}>
             {GOAL_TYPE_ICONS[goal.type]}
           </div>
 
@@ -163,9 +163,9 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="font-semibold text-slate-100 truncate">{goal.title}</h3>
+                <h3 className="font-semibold text-[#f5f5f5] truncate">{goal.title}</h3>
                 {goal.description && (
-                  <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{goal.description}</p>
+                  <p className="text-xs text-[#a3a3a3] mt-0.5 line-clamp-2">{goal.description}</p>
                 )}
               </div>
 
@@ -173,7 +173,7 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
               {goal.status === 'active' && (
                 <button
                   onClick={() => onCancel(goal.id)}
-                  className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors shrink-0"
+                  className="p-1.5 rounded-lg hover:bg-transparent text-[#6b6b6b] hover:text-red-400 transition-colors shrink-0"
                   aria-label="Annuler l'objectif"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -185,10 +185,10 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
             {hasTarget && (
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-[#a3a3a3]">
                     {goal.current_value} / {goal.target_value}{goal.unit ? ` ${goal.unit}` : ''}
                   </span>
-                  <span className="text-xs font-semibold text-slate-300">{progress}%</span>
+                  <span className="text-xs font-semibold text-[#d4d4d4]">{progress}%</span>
                 </div>
                 <ProgressBar
                   value={progress}
@@ -201,14 +201,14 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
 
             {/* Date limite */}
             {goal.deadline && (
-              <div className={`flex items-center gap-1.5 mt-2.5 text-xs font-medium ${overdue ? 'text-red-400' : 'text-slate-400'}`}>
+              <div className={`flex items-center gap-1.5 mt-2.5 text-xs font-medium ${overdue ? 'text-red-400' : 'text-[#a3a3a3]'}`}>
                 <CalendarClock className="w-3.5 h-3.5 shrink-0" />
                 {overdue
                   ? <span>Échéance dépassée · {formatDate(goal.deadline)}</span>
                   : <span>Échéance : {formatDate(goal.deadline)}</span>
                 }
                 {overdue && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-md bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] uppercase tracking-wide font-bold">
+                  <span className="ml-1 px-1.5 py-0.5 rounded-md bg-transparent border border-red-800/50 text-red-400 text-[10px] uppercase tracking-wide font-bold">
                     En retard
                   </span>
                 )}
@@ -427,12 +427,12 @@ export function GoalsPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-orange-500/20 border border-orange-500/30">
-            <Target className="w-6 h-6 text-orange-400" />
+          <div className="p-2.5 rounded bg-transparent border border-orange-900/40">
+            <Target className="w-6 h-6 text-orange-600" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Objectifs</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Tes objectifs personnels</p>
+            <p className="text-[#a3a3a3] text-sm mt-0.5">Tes objectifs personnels</p>
           </div>
         </div>
 
@@ -455,18 +455,18 @@ export function GoalsPage() {
       >
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-red-400">{activeGoals.length}</p>
-          <p className="text-xs text-slate-400 mt-1">Actifs</p>
+          <p className="text-xs text-[#a3a3a3] mt-1">Actifs</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-black text-emerald-400">{completedGoals.length}</p>
-          <p className="text-xs text-slate-400 mt-1">Complétés</p>
+          <p className="text-2xl font-black text-emerald-600">{completedGoals.length}</p>
+          <p className="text-xs text-[#a3a3a3] mt-1">Complétés</p>
         </Card>
         <Card className="p-4 text-center">
           <div className="flex items-center justify-center gap-1">
-            <Flame className="w-5 h-5 text-orange-400" />
-            <p className="text-2xl font-black text-orange-400">{profile?.current_streak ?? 0}</p>
+            <Flame className="w-5 h-5 text-orange-600" />
+            <p className="text-2xl font-black text-orange-600">{profile?.current_streak ?? 0}</p>
           </div>
-          <p className="text-xs text-slate-400 mt-1">Streak actuel</p>
+          <p className="text-xs text-[#a3a3a3] mt-1">Streak actuel</p>
         </Card>
       </motion.div>
 
@@ -475,7 +475,7 @@ export function GoalsPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex gap-1 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50"
+        className="flex gap-1 bg-[#1c1c1c] rounded p-1 border border-white/5"
         role="tablist"
         aria-label="Filtrer les objectifs"
       >
@@ -490,14 +490,14 @@ export function GoalsPage() {
               transition-all duration-200
               ${activeTab === tab
                 ? 'bg-red-700 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-white/5'
               }
             `}
           >
             {STATUS_TAB_LABELS[tab]}
             <span className={`
               text-xs px-1.5 py-0.5 rounded-full font-bold
-              ${activeTab === tab ? 'bg-white/20 text-white' : 'bg-slate-700 text-slate-400'}
+              ${activeTab === tab ? 'bg-white/20 text-white' : 'bg-slate-700 text-[#a3a3a3]'}
             `}>
               {tabGoals[tab].length}
             </span>
@@ -511,9 +511,9 @@ export function GoalsPage() {
           // Squelette de chargement
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl border border-slate-700/50 bg-slate-900/80 p-4 animate-pulse">
+              <div key={i} className="rounded border border-white/5 bg-[#111111] p-4 animate-pulse">
                 <div className="flex gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-slate-700/50" />
+                  <div className="w-9 h-9 rounded bg-slate-700/50" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-slate-700/50 rounded w-1/2" />
                     <div className="h-3 bg-slate-700/50 rounded w-3/4" />
@@ -529,8 +529,8 @@ export function GoalsPage() {
             animate={{ opacity: 1 }}
           >
             <Card className="p-12 text-center">
-              <Target className="w-14 h-14 mx-auto mb-4 text-slate-600" />
-              <p className="text-slate-400 font-medium">
+              <Target className="w-14 h-14 mx-auto mb-4 text-[#4a4a4a]" />
+              <p className="text-[#a3a3a3] font-medium">
                 {activeTab === 'active' && 'Aucun objectif actif. Crée-en un !'}
                 {activeTab === 'completed' && 'Aucun objectif complété pour l\'instant.'}
                 {activeTab === 'cancelled' && 'Aucun objectif annulé.'}
@@ -668,12 +668,12 @@ export function GoalsPage() {
         {selectedGoal && (
           <div className="p-5 space-y-4">
             {/* Récapitulatif objectif */}
-            <div className={`flex items-center gap-3 p-3 rounded-xl border ${GOAL_TYPE_COLORS[selectedGoal.type]}`}>
+            <div className={`flex items-center gap-3 p-3 rounded border ${GOAL_TYPE_COLORS[selectedGoal.type]}`}>
               {GOAL_TYPE_ICONS[selectedGoal.type]}
               <div>
-                <p className="font-semibold text-slate-100 text-sm">{selectedGoal.title}</p>
+                <p className="font-semibold text-[#f5f5f5] text-sm">{selectedGoal.title}</p>
                 {selectedGoal.target_value !== null && (
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-[#a3a3a3] mt-0.5">
                     Objectif : {selectedGoal.target_value}{selectedGoal.unit ? ` ${selectedGoal.unit}` : ''}
                   </p>
                 )}

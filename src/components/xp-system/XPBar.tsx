@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { getLevelProgress, getLevelTitle, formatNumber } from '../../utils/calculations';
 import type { Profile } from '../../types/models';
 
@@ -11,9 +11,9 @@ interface XPBarProps {
 }
 
 const disciplineConfig = {
-  global: { label: 'Global', xpKey: 'total_xp', levelKey: 'global_level', color: 'from-red-800 to-red-900' },
-  musculation: { label: 'Musculation', xpKey: 'musculation_xp', levelKey: 'musculation_level', color: 'from-red-800 to-red-900' },
-  running: { label: 'Course', xpKey: 'running_xp', levelKey: 'running_level', color: 'from-blue-700 to-blue-900' },
+  global: { label: 'Global', xpKey: 'total_xp', levelKey: 'global_level', color: 'from-[#8b6f47] to-[#c9a870]', textColor: 'text-[#c9a870]' },
+  musculation: { label: 'Musculation', xpKey: 'musculation_xp', levelKey: 'musculation_level', color: 'from-red-900 to-red-700', textColor: 'text-red-400' },
+  running: { label: 'Course', xpKey: 'running_xp', levelKey: 'running_level', color: 'from-blue-900 to-blue-700', textColor: 'text-blue-500' },
 };
 
 export function XPBar({ profile, discipline = 'global', compact = false }: XPBarProps) {
@@ -26,54 +26,47 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
     return (
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
-          <Star className="w-3.5 h-3.5 text-red-400" />
-          <span className="text-xs font-bold text-red-300">Niv.{level}</span>
+          <Star className={`w-3.5 h-3.5 ${config.textColor}`} />
+          <span className={`text-xs font-bold font-rajdhani ${config.textColor}`}>Niv.{level}</span>
         </div>
-        <div className="flex-1 h-1.5 bg-slate-700/50 rounded-full overflow-hidden min-w-[60px]">
+        <div className="flex-1 h-1.5 bg-white/10 overflow-hidden min-w-[60px]">
           <motion.div
-            className={`h-full rounded-full bg-gradient-to-r ${config.color}`}
+            className={`h-full bg-gradient-to-r ${config.color}`}
             initial={{ width: 0 }}
             animate={{ width: `${progress * 100}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
           />
         </div>
-        <span className="text-xs text-slate-400">{Math.round(progress * 100)}%</span>
+        <span className="text-xs text-[#6b6b6b]">{Math.round(progress * 100)}%</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/60 rounded-2xl p-4 border border-slate-700/50">
+    <div className="bg-[#111111] p-4 border border-white/5">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-xl bg-gradient-to-r ${config.color}`}>
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">{config.label}</p>
-            <p className="font-bold text-slate-100">Niveau {level} · {title}</p>
-          </div>
+        <div>
+          <p className="text-xs text-[#a3a3a3]">{config.label}</p>
+          <p className={`font-rajdhani font-bold ${config.textColor}`}>Niveau {level} · {title}</p>
         </div>
         <div className="text-right">
-          <p className="text-sm font-bold text-slate-100">{formatNumber(current)} XP</p>
-          <p className="text-xs text-slate-400">/ {formatNumber(needed)} XP</p>
+          <p className={`text-sm font-bold font-rajdhani ${config.textColor}`}>{formatNumber(current)} XP</p>
+          <p className="text-xs text-[#6b6b6b]">/ {formatNumber(needed)} XP</p>
         </div>
       </div>
 
-      <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+      <div className="h-2 bg-white/5 overflow-hidden">
         <motion.div
-          className={`h-full rounded-full bg-gradient-to-r ${config.color} relative`}
+          className={`h-full bg-gradient-to-r ${config.color}`}
           initial={{ width: 0 }}
           animate={{ width: `${progress * 100}%` }}
           transition={{ duration: 1, ease: 'easeOut' }}
-        >
-          <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse" style={{ animationDuration: '2s' }} />
-        </motion.div>
+        />
       </div>
 
       <div className="flex justify-between mt-1.5">
-        <span className="text-xs text-slate-500">Niveau {level}</span>
-        <span className="text-xs text-slate-500">Niveau {level + 1}</span>
+        <span className="text-xs text-[#6b6b6b]">Niveau {level}</span>
+        <span className="text-xs text-[#6b6b6b]">Niveau {level + 1}</span>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export function Loader({ size = 'md', text, fullScreen = false }: LoaderProps) {
   const content = (
     <div className="flex flex-col items-center gap-3">
       <Loader2 className={`${sizeClasses[size]} text-red-400 animate-spin`} />
-      {text && <p className="text-sm text-slate-400">{text}</p>}
+      {text && <p className="text-sm text-[#a3a3a3]">{text}</p>}
     </div>
   );
 

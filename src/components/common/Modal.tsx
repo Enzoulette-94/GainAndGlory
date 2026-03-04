@@ -53,16 +53,16 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className={`
               relative w-full ${sizeClasses[size]}
-              bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl
+              bg-[#0d0d0d] border border-white/8 rounded shadow-2xl
               max-h-[90vh] flex flex-col
             `}
           >
             {title && (
-              <div className="flex items-center justify-between p-5 border-b border-slate-700">
-                <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
+              <div className="flex items-center justify-between p-5 border-b border-white/8">
+                <h2 className="text-lg font-semibold text-[#f5f5f5]">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-slate-700 text-[#a3a3a3] hover:text-[#e5e5e5] transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -71,7 +71,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             {!title && (
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors z-10"
+                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-700 text-[#a3a3a3] hover:text-[#e5e5e5] transition-colors z-10"
               >
                 <X className="w-5 h-5" />
               </button>

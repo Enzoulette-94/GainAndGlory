@@ -67,11 +67,11 @@ export function LevelUpModal({ isOpen, onClose, level, discipline = 'global' }: 
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="relative z-10 bg-slate-900 border border-red-500/50 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl"
+            className="relative z-10 bg-[#0d0d0d] border border-red-500/50 rounded p-8 max-w-sm w-full text-center shadow-2xl"
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-700 text-[#a3a3a3] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -103,8 +103,8 @@ export function LevelUpModal({ isOpen, onClose, level, discipline = 'global' }: 
               <h2 className="text-4xl font-black text-white mb-2">
                 Niveau {level}
               </h2>
-              <p className="text-slate-300 text-lg font-medium mb-1">{title}</p>
-              <p className="text-slate-400 text-sm">{config.label}</p>
+              <p className="text-[#d4d4d4] text-lg font-medium mb-1">{title}</p>
+              <p className="text-[#a3a3a3] text-sm">{config.label}</p>
             </motion.div>
 
             <motion.div

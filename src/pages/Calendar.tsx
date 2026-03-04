@@ -156,12 +156,12 @@ export function CalendarPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-red-500/20 border border-red-500/30">
+          <div className="p-2.5 rounded bg-transparent border border-red-800/50">
             <CalendarDays className="w-6 h-6 text-red-400" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Calendrier</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Historique de tes activités</p>
+            <p className="text-[#a3a3a3] text-sm mt-0.5">Historique de tes activités</p>
           </div>
         </div>
       </motion.div>
@@ -171,11 +171,11 @@ export function CalendarPage() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <button onClick={prevMonth}
-              className="p-2 rounded-xl hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors">
+              className="p-2 rounded hover:bg-slate-700 text-[#a3a3a3] hover:text-[#e5e5e5] transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div className="text-center">
-              <h2 className="text-lg font-bold text-slate-100">
+              <h2 className="text-lg font-bold text-[#f5f5f5]">
                 {MONTHS_FR[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h2>
               <button onClick={goToday}
@@ -184,7 +184,7 @@ export function CalendarPage() {
               </button>
             </div>
             <button onClick={nextMonth}
-              className="p-2 rounded-xl hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors">
+              className="p-2 rounded hover:bg-slate-700 text-[#a3a3a3] hover:text-[#e5e5e5] transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -192,13 +192,13 @@ export function CalendarPage() {
           {/* En-têtes jours */}
           <div className="grid grid-cols-7 mb-1">
             {DAYS_FR.map(d => (
-              <div key={d} className="text-center text-xs font-semibold text-slate-500 py-1">{d}</div>
+              <div key={d} className="text-center text-xs font-semibold text-[#6b6b6b] py-1">{d}</div>
             ))}
           </div>
 
           {/* Grille */}
           {loading ? (
-            <div className="h-48 flex items-center justify-center text-slate-500 text-sm">Chargement...</div>
+            <div className="h-48 flex items-center justify-center text-[#6b6b6b] text-sm">Chargement...</div>
           ) : (
             <div className="grid grid-cols-7 gap-0.5">
               {calendarDays.map((day, i) => {
@@ -216,15 +216,15 @@ export function CalendarPage() {
                     key={dateStr}
                     onClick={() => activity && setSelectedDay(activity)}
                     className={`
-                      relative aspect-square flex flex-col items-center justify-center rounded-xl
+                      relative aspect-square flex flex-col items-center justify-center rounded
                       text-sm font-medium transition-all duration-150 p-1
                       ${isToday ? 'ring-2 ring-red-500' : ''}
                       ${hasActivity ? 'cursor-pointer hover:scale-105' : 'cursor-default'}
                       ${isFuture ? 'opacity-30' : ''}
-                      ${isToday ? 'bg-red-900/40' : hasActivity ? 'bg-slate-800/60 hover:bg-slate-700/60' : ''}
+                      ${isToday ? 'bg-red-900/40' : hasActivity ? 'bg-[#1c1c1c] hover:bg-slate-700/60' : ''}
                     `}
                   >
-                    <span className={`text-xs sm:text-sm ${isToday ? 'text-red-300 font-bold' : 'text-slate-300'}`}>
+                    <span className={`text-xs sm:text-sm ${isToday ? 'text-red-300 font-bold' : 'text-[#d4d4d4]'}`}>
                       {day.getDate()}
                     </span>
                     {activity && (
@@ -233,13 +233,13 @@ export function CalendarPage() {
                           <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
                         )}
                         {activity.hasRun && !isMixed && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-700" />
                         )}
                         {isMixed && (
                           <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
                         )}
                         {activity.hasWeight && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-700" />
                         )}
                       </div>
                     )}
@@ -250,16 +250,16 @@ export function CalendarPage() {
           )}
 
           {/* Légende */}
-          <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-slate-700/50">
+          <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-white/5">
             {[
               { color: 'bg-red-400', label: 'Musculation' },
-              { color: 'bg-blue-400', label: 'Course' },
-              { color: 'bg-green-400', label: 'Pesée' },
+              { color: 'bg-blue-700', label: 'Course' },
+              { color: 'bg-green-700', label: 'Pesée' },
               { color: 'bg-red-400', label: 'Mixte' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full ${color}`} />
-                <span className="text-xs text-slate-500">{label}</span>
+                <span className="text-xs text-[#6b6b6b]">{label}</span>
               </div>
             ))}
           </div>
@@ -272,12 +272,12 @@ export function CalendarPage() {
       >
         {[
           { value: monthStats.workoutDays, label: 'Séances muscu', color: 'text-red-400' },
-          { value: monthStats.runDays, label: 'Sorties course', color: 'text-blue-400' },
+          { value: monthStats.runDays, label: 'Sorties course', color: 'text-blue-500' },
           {
             value: monthStats.totalDist >= 100
               ? `${(monthStats.totalDist / 1000).toFixed(1)}k km`
               : `${monthStats.totalDist.toFixed(1)} km`,
-            label: 'Distance totale', color: 'text-blue-400'
+            label: 'Distance totale', color: 'text-blue-500'
           },
           {
             value: monthStats.totalTonnage >= 1000
@@ -288,7 +288,7 @@ export function CalendarPage() {
         ].map(({ value, label, color }) => (
           <Card key={label} className="p-3 text-center">
             <p className={`text-xl font-black ${color}`}>{value}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+            <p className="text-xs text-[#6b6b6b] mt-0.5">{label}</p>
           </Card>
         ))}
       </motion.div>
@@ -304,10 +304,10 @@ export function CalendarPage() {
             {selectedDay.workouts.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 rounded-lg bg-red-900/20">
+                  <div className="p-1.5 rounded-lg bg-transparent">
                     <Dumbbell className="w-4 h-4 text-red-400" />
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-200">
+                  <h3 className="text-sm font-semibold text-[#e5e5e5]">
                     Musculation ({selectedDay.workouts.length})
                   </h3>
                 </div>
@@ -316,19 +316,19 @@ export function CalendarPage() {
                     const exCount = w.sets ? new Set(w.sets.map(s => s.exercise_id)).size : 0;
                     const fb = w.feedback as Feedback | null;
                     return (
-                      <div key={w.id} className="p-3 bg-slate-800/60 border border-red-800/30 rounded-xl">
+                      <div key={w.id} className="p-3 bg-[#1c1c1c] border border-red-800/30 rounded">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {w.total_tonnage && w.total_tonnage > 0 && (
-                              <span className="font-semibold text-slate-200 text-sm">
+                              <span className="font-semibold text-[#e5e5e5] text-sm">
                                 {formatNumber(w.total_tonnage)} kg
                               </span>
                             )}
-                            {exCount > 0 && <span className="text-xs text-slate-400">{exCount} exercice{exCount > 1 ? 's' : ''}</span>}
+                            {exCount > 0 && <span className="text-xs text-[#a3a3a3]">{exCount} exercice{exCount > 1 ? 's' : ''}</span>}
                           </div>
                           {fb && <span className={`text-xs ${FEEDBACK_COLORS[fb]}`}>{FEEDBACK_LABELS[fb]}</span>}
                         </div>
-                        {w.notes && <p className="text-xs text-slate-500 mt-1">{w.notes}</p>}
+                        {w.notes && <p className="text-xs text-[#6b6b6b] mt-1">{w.notes}</p>}
                       </div>
                     );
                   })}
@@ -340,10 +340,10 @@ export function CalendarPage() {
             {selectedDay.runs.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 rounded-lg bg-blue-900/20">
-                    <PersonStanding className="w-4 h-4 text-blue-400" />
+                  <div className="p-1.5 rounded-lg bg-transparent">
+                    <PersonStanding className="w-4 h-4 text-blue-500" />
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-200">
+                  <h3 className="text-sm font-semibold text-[#e5e5e5]">
                     Course ({selectedDay.runs.length})
                   </h3>
                 </div>
@@ -352,21 +352,21 @@ export function CalendarPage() {
                     const rt = r.run_type as RunType | null;
                     const fb = r.feedback as Feedback | null;
                     return (
-                      <div key={r.id} className="p-3 bg-slate-800/60 border border-blue-700/30 rounded-xl">
+                      <div key={r.id} className="p-3 bg-[#1c1c1c] border border-blue-700/30 rounded">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="font-semibold text-slate-200 text-sm">{formatDistance(r.distance)}</span>
-                            <span className="text-xs text-slate-400">{formatDuration(r.duration)}</span>
+                            <span className="font-semibold text-[#e5e5e5] text-sm">{formatDistance(r.distance)}</span>
+                            <span className="text-xs text-[#a3a3a3]">{formatDuration(r.duration)}</span>
                             {r.pace_min_per_km && r.pace_min_per_km > 0 && (
-                              <span className="text-xs text-blue-400">{formatPace(r.pace_min_per_km)}</span>
+                              <span className="text-xs text-blue-500">{formatPace(r.pace_min_per_km)}</span>
                             )}
                           </div>
                           <div className="flex items-center gap-1">
-                            {rt && <span className="text-xs px-1.5 py-0.5 bg-blue-900/20 text-blue-300 rounded">{RUN_TYPE_LABELS[rt]}</span>}
+                            {rt && <span className="text-xs px-1.5 py-0.5 bg-transparent text-blue-500 rounded">{RUN_TYPE_LABELS[rt]}</span>}
                             {fb && <span className={`text-xs ${FEEDBACK_COLORS[fb]}`}>{FEEDBACK_LABELS[fb]}</span>}
                           </div>
                         </div>
-                        {r.notes && <p className="text-xs text-slate-500 mt-1">{r.notes}</p>}
+                        {r.notes && <p className="text-xs text-[#6b6b6b] mt-1">{r.notes}</p>}
                       </div>
                     );
                   })}
@@ -378,16 +378,16 @@ export function CalendarPage() {
             {selectedDay.weights.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 rounded-lg bg-green-900/20">
-                    <Scale className="w-4 h-4 text-green-400" />
+                  <div className="p-1.5 rounded-lg bg-transparent">
+                    <Scale className="w-4 h-4 text-green-600" />
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-200">Pesée</h3>
+                  <h3 className="text-sm font-semibold text-[#e5e5e5]">Pesée</h3>
                 </div>
                 <div className="space-y-2">
                   {selectedDay.weights.map(wt => (
-                    <div key={wt.id} className="p-3 bg-slate-800/60 border border-green-700/30 rounded-xl">
-                      <span className="font-bold text-green-400">{wt.weight.toFixed(1)} kg</span>
-                      {wt.notes && <p className="text-xs text-slate-500 mt-1">{wt.notes}</p>}
+                    <div key={wt.id} className="p-3 bg-[#1c1c1c] border border-green-700/30 rounded">
+                      <span className="font-bold text-green-600">{wt.weight.toFixed(1)} kg</span>
+                      {wt.notes && <p className="text-xs text-[#6b6b6b] mt-1">{wt.notes}</p>}
                     </div>
                   ))}
                 </div>

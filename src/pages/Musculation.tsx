@@ -31,21 +31,21 @@ type FeedbackFilter = 'all' | Feedback;
 
 const CHART_GRID_PROPS = {
   strokeDasharray: '3 3' as string,
-  stroke: '#1e293b',
+  stroke: '#1c1c1c',
 };
 
 const CHART_AXIS_PROPS = {
-  tick: { fill: '#64748b', fontSize: 11 },
+  tick: { fill: '#6b6b6b', fontSize: 11 },
   tickLine: false as const,
   axisLine: false as const,
 };
 
 const CHART_TOOLTIP_STYLE = {
-  backgroundColor: '#0f172a',
-  border: '1px solid #334155',
+  backgroundColor: '#0d0d0d',
+  border: '1px solid #2a2a2a',
   borderRadius: '12px',
   fontSize: '12px',
-  color: '#f1f5f9',
+  color: '#d4d4d4',
 };
 
 const SESSIONS_PER_PAGE = 10;
@@ -246,12 +246,12 @@ export function MusculationPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-red-900/20 border border-red-800/30">
+          <div className="p-2.5 rounded bg-transparent border border-red-900/40">
             <Dumbbell className="w-6 h-6 text-red-400" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Musculation</h1>
-            <p className="text-slate-400 text-sm mt-0.5">
+            <p className="text-[#a3a3a3] text-sm mt-0.5">
               Niveau {profile.musculation_level} &middot; {profile.musculation_xp} XP
             </p>
           </div>
@@ -272,18 +272,18 @@ export function MusculationPage() {
       >
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-red-900/20">
+            <div className="p-2 rounded bg-transparent">
               <BarChart2 className="w-5 h-5 text-red-400" />
             </div>
             <div>
               <p className="text-2xl font-black text-red-400">{totalSessions}</p>
-              <p className="text-xs text-slate-400">Séances totales</p>
+              <p className="text-xs text-[#a3a3a3]">Séances totales</p>
             </div>
           </div>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-red-500/15">
+            <div className="p-2 rounded bg-transparent">
               <Weight className="w-5 h-5 text-red-400" />
             </div>
             <div>
@@ -292,7 +292,7 @@ export function MusculationPage() {
                   ? `${formatNumber(totalTonnage / 1000, 1)}t`
                   : `${formatNumber(totalTonnage)}kg`}
               </p>
-              <p className="text-xs text-slate-400">Tonnage total</p>
+              <p className="text-xs text-[#a3a3a3]">Tonnage total</p>
             </div>
           </div>
         </Card>
@@ -304,7 +304,7 @@ export function MusculationPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
-        <div className="flex gap-1 p-1 bg-slate-800/60 rounded-2xl border border-slate-700/50">
+        <div className="flex gap-1 p-1 bg-[#0d0d0d] border border-white/5">
           {(
             [
               { key: 'sessions', label: 'Séances', icon: <Dumbbell className="w-3.5 h-3.5" /> },
@@ -315,10 +315,10 @@ export function MusculationPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold transition-all ${
                 activeTab === tab.key
-                  ? 'bg-red-800 text-white shadow-lg shadow-red-900/25'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#7f1d1d] text-white border-l-2 border-[#c9a870]/40'
+                  : 'text-[#6b6b6b] hover:text-[#d4d4d4]'
               }`}
             >
               {tab.icon}
@@ -366,10 +366,10 @@ export function MusculationPage() {
                         setFeedbackFilter(f.value);
                         setDisplayedCount(SESSIONS_PER_PAGE);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
                         feedbackFilter === f.value
-                          ? 'bg-red-900/20 border border-red-800/40 text-red-300'
-                          : 'bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                          ? 'bg-[#c9a870]/10 border border-[#c9a870]/30 text-[#c9a870]'
+                          : 'bg-[#1c1c1c] border border-white/5 text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/10'
                       }`}
                     >
                       {f.label}
@@ -385,7 +385,7 @@ export function MusculationPage() {
                       setMuscleGroupFilter(e.target.value);
                       setDisplayedCount(SESSIONS_PER_PAGE);
                     }}
-                    className="w-full bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-red-800/60 focus:ring-1 focus:ring-red-800/30 appearance-none cursor-pointer"
+                    className="w-full w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-xs px-3 py-2.5 focus:outline-none focus:border-[#c9a870]/40 appearance-none cursor-pointer"
                   >
                     <option value="all">Tous les groupes musculaires</option>
                     {availableMuscleGroups.map((mg) => (
@@ -400,8 +400,8 @@ export function MusculationPage() {
               {/* Liste des séances */}
               {filteredSessions.length === 0 ? (
                 <Card className="p-8 text-center">
-                  <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-400 text-sm mb-4">
+                  <Dumbbell className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                  <p className="text-[#a3a3a3] text-sm mb-4">
                     Aucune séance ne correspond aux filtres.
                   </p>
                 </Card>
@@ -422,7 +422,7 @@ export function MusculationPage() {
                   {displayedCount < filteredSessions.length && (
                     <button
                       onClick={() => setDisplayedCount((c) => c + SESSIONS_PER_PAGE)}
-                      className="w-full py-3 rounded-2xl bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-slate-200 hover:border-slate-600 text-sm font-medium transition-all"
+                      className="w-full py-3 rounded bg-[#1c1c1c] border border-white/5 text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/10 text-sm font-medium transition-all"
                     >
                       Charger plus ({filteredSessions.length - displayedCount} restantes)
                     </button>
@@ -433,8 +433,8 @@ export function MusculationPage() {
               {/* CTA si aucune séance du tout */}
               {chartSessions.length === 0 && (
                 <Card className="p-8 text-center">
-                  <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-400 text-sm mb-4">
+                  <Dumbbell className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                  <p className="text-[#a3a3a3] text-sm mb-4">
                     Aucune séance enregistrée pour l&apos;instant.
                   </p>
                   <Link to="/musculation/new">
@@ -458,14 +458,14 @@ export function MusculationPage() {
               {/* Tonnage par semaine */}
               <Card className="p-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 rounded-lg bg-red-900/20">
+                  <div className="p-1.5 rounded-lg bg-transparent">
                     <BarChart2 className="w-4 h-4 text-red-400" />
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-200">Tonnage par semaine</h3>
+                  <h3 className="text-sm font-semibold text-[#e5e5e5]">Tonnage par semaine</h3>
                 </div>
 
                 {weeklyTonnageData.every((d) => d.tonnage === 0) ? (
-                  <p className="text-xs text-slate-500 text-center py-6">
+                  <p className="text-xs text-[#6b6b6b] text-center py-6">
                     Pas assez de données pour afficher ce graphique.
                   </p>
                 ) : (
@@ -481,7 +481,7 @@ export function MusculationPage() {
                       />
                       <Tooltip
                         contentStyle={CHART_TOOLTIP_STYLE}
-                        cursor={{ fill: '#1e293b' }}
+                        cursor={{ fill: '#1a1a1a' }}
                         formatter={(value: number | undefined) => [`${formatNumber(value ?? 0)} kg`, 'Tonnage'] as [string, string]}
                       />
                       <Bar dataKey="tonnage" fill="#991b1b" radius={[6, 6, 0, 0]} />
@@ -493,17 +493,17 @@ export function MusculationPage() {
               {/* Évolution d'exercice */}
               <Card className="p-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 rounded-lg bg-red-500/15">
+                  <div className="p-1.5 rounded-lg bg-transparent">
                     <TrendingUp className="w-4 h-4 text-red-400" />
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-200">Évolution d&apos;exercice</h3>
+                  <h3 className="text-sm font-semibold text-[#e5e5e5]">Évolution d&apos;exercice</h3>
                 </div>
 
                 {/* Select exercice */}
                 <select
                   value={selectedExerciseId}
                   onChange={(e) => setSelectedExerciseId(e.target.value)}
-                  className="w-full bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs rounded-xl px-3 py-2 mb-4 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/30 appearance-none cursor-pointer"
+                  className="w-full bg-[#1c1c1c] border border-white/5 text-[#d4d4d4] text-xs rounded px-3 py-2 mb-4 focus:outline-none focus:border-[#c9a870]/40 focus:ring-1 focus:ring-[#c9a870]/20 appearance-none cursor-pointer"
                 >
                   <option value="">Choisir un exercice...</option>
                   {usedExercises.map((ex) => (
@@ -514,11 +514,11 @@ export function MusculationPage() {
                 </select>
 
                 {!selectedExerciseId ? (
-                  <p className="text-xs text-slate-500 text-center py-6">
+                  <p className="text-xs text-[#6b6b6b] text-center py-6">
                     Sélectionnez un exercice pour voir sa progression.
                   </p>
                 ) : exerciseEvolutionData.length < 2 ? (
-                  <p className="text-xs text-slate-500 text-center py-6">
+                  <p className="text-xs text-[#6b6b6b] text-center py-6">
                     Pas assez de données pour cet exercice (minimum 2 séances).
                   </p>
                 ) : (
@@ -559,8 +559,8 @@ export function MusculationPage() {
             >
               {Object.keys(recordsByMuscleGroup).length === 0 ? (
                 <Card className="p-8 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-400 text-sm">
+                  <Trophy className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                  <p className="text-[#a3a3a3] text-sm">
                     Aucun record personnel enregistré pour l&apos;instant.
                   </p>
                 </Card>
@@ -593,26 +593,26 @@ function SessionCard({ session }: { session: WorkoutSession }) {
 
   const feedback = session.feedback as Feedback | null;
   const feedbackLabel = feedback ? FEEDBACK_LABELS[feedback] : null;
-  const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-slate-500';
+  const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-[#6b6b6b]';
 
   return (
-    <div className="flex items-center gap-3 p-4 bg-slate-900/80 border border-slate-700/50 rounded-2xl hover:border-slate-600 hover:bg-slate-800/60 transition-all">
-      <div className="p-2.5 bg-red-900/20 border border-red-800/30 rounded-xl flex-shrink-0">
+    <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
+      <div className="p-2.5 bg-transparent border border-red-900/40 rounded flex-shrink-0">
         <Dumbbell className="w-5 h-5 text-red-400" />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-slate-200">
+          <p className="text-sm font-semibold text-[#e5e5e5]">
             {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
           </p>
           {feedbackLabel && (
             <span className={`text-xs ${feedbackColor}`}>{feedbackLabel}</span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400">
+        <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
           {session.total_tonnage != null && session.total_tonnage > 0 && (
-            <span className="font-medium text-slate-300">
+            <span className="font-medium text-[#d4d4d4]">
               {formatNumber(session.total_tonnage)} kg
             </span>
           )}
@@ -624,11 +624,11 @@ function SessionCard({ session }: { session: WorkoutSession }) {
           )}
         </div>
         {session.notes && (
-          <p className="text-xs text-slate-500 mt-1 truncate">{session.notes}</p>
+          <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
         )}
       </div>
 
-      <span className="text-xs text-slate-500 flex-shrink-0">
+      <span className="text-xs text-[#6b6b6b] flex-shrink-0">
         {formatRelativeTime(session.date)}
       </span>
     </div>
@@ -654,27 +654,27 @@ function MuscleGroupAccordion({
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="bg-slate-900/80 border border-slate-700/50 rounded-2xl overflow-hidden">
+    <div className="bg-[#111111] border border-white/5 rounded overflow-hidden">
       {/* Header accordion */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/40 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#181818] transition-colors"
       >
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-red-500/15">
+          <div className="p-1.5 rounded-lg bg-transparent">
             <Trophy className="w-3.5 h-3.5 text-red-400" />
           </div>
-          <span className="text-sm font-semibold text-slate-200">
+          <span className="text-sm font-semibold text-[#e5e5e5]">
             {MUSCLE_GROUP_LABELS[muscleGroup]}
           </span>
-          <span className="text-xs text-slate-500 bg-slate-800/60 px-2 py-0.5 rounded-full">
+          <span className="text-xs text-[#6b6b6b] bg-white/5 px-2 py-0.5">
             {records.length}
           </span>
         </div>
         {open ? (
-          <ChevronUp className="w-4 h-4 text-slate-500" />
+          <ChevronUp className="w-4 h-4 text-[#6b6b6b]" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-slate-500" />
+          <ChevronDown className="w-4 h-4 text-[#6b6b6b]" />
         )}
       </button>
 
@@ -685,13 +685,13 @@ function MuscleGroupAccordion({
           {records.map((record, i) => (
             <div
               key={i}
-              className="flex items-center justify-between py-2 px-3 bg-slate-800/40 rounded-xl"
+              className="flex items-center justify-between py-2 px-3 bg-[#181818] rounded"
             >
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-slate-200 truncate">
+                <p className="text-xs font-medium text-[#e5e5e5] truncate">
                   {record.exerciseName}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-[#6b6b6b] mt-0.5">
                   {formatDate(record.date, { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
@@ -699,7 +699,7 @@ function MuscleGroupAccordion({
                 <span className="text-sm font-black text-red-400">
                   {record.weight} kg
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[#6b6b6b]">
                   &times; {record.reps}
                 </span>
               </div>

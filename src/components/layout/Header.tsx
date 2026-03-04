@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, User, LogOut, Settings, ChevronDown, Dumbbell } from 'lucide-react';
+import { Bell, User, LogOut, Settings, ChevronDown, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -19,14 +19,12 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-[#080808]/90 backdrop-blur-sm border-b border-slate-700/50">
+    <header className="sticky top-0 z-30 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-[#c9a870]/15">
       <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
         {/* Logo mobile */}
-        <Link to="/dashboard" className="lg:hidden flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-gradient-to-r from-red-600 to-red-700">
-            <Dumbbell className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-black text-white text-base">G&G</span>
+        <Link to="/dashboard" className="lg:hidden flex items-center gap-2 group">
+          <Shield className="w-5 h-5 text-[#c9a870] transition-colors group-hover:text-[#dfc99e]" />
+          <span className="font-rajdhani font-bold text-[#c9a870] text-base tracking-wide uppercase">G&G</span>
         </Link>
 
         {/* XP Bar */}
@@ -42,7 +40,7 @@ export function Header() {
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+              className="relative p-2 hover:bg-white/5 text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors"
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
@@ -63,14 +61,14 @@ export function Header() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-2 p-1.5 hover:bg-white/5 transition-colors"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-red-600 to-red-700 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">
+              <div className="w-8 h-8 border border-[#c9a870]/50 bg-[#1c1c1c] flex items-center justify-center">
+                <span className="text-xs font-bold text-[#c9a870] font-rajdhani">
                   {profile?.username?.[0]?.toUpperCase() ?? 'U'}
                 </span>
               </div>
-              <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
+              <ChevronDown className="w-3 h-3 text-[#a3a3a3] hidden sm:block" />
             </button>
 
             <AnimatePresence>
@@ -78,19 +76,20 @@ export function Header() {
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
                   <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-slate-700 rounded-2xl shadow-xl z-20 overflow-hidden"
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-[#111111] border border-[#c9a870]/20 shadow-xl z-20 overflow-hidden"
                   >
-                    <div className="px-4 py-3 border-b border-slate-700">
-                      <p className="font-semibold text-slate-100 text-sm">{profile?.username}</p>
-                      <p className="text-xs text-slate-400">{user?.email}</p>
+                    <div className="px-4 py-3 border-b border-[#c9a870]/10">
+                      <p className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide">{profile?.username}</p>
+                      <p className="text-xs text-[#a3a3a3]">{user?.email}</p>
                     </div>
                     <div className="p-1">
                       <Link
                         to="/profile"
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-[#d4d4d4] hover:bg-white/5 hover:text-[#f5f5f5] transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <User className="w-4 h-4" />
@@ -98,7 +97,7 @@ export function Header() {
                       </Link>
                       <Link
                         to="/settings"
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-[#d4d4d4] hover:bg-white/5 hover:text-[#f5f5f5] transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Settings className="w-4 h-4" />
@@ -106,7 +105,7 @@ export function Header() {
                       </Link>
                       <button
                         onClick={handleSignOut}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-900/15 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         Se déconnecter

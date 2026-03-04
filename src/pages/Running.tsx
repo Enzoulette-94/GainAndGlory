@@ -68,11 +68,11 @@ function PaceTooltip({ active, payload }: PaceTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const raw = payload[0];
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs shadow-lg">
-      <p className="text-slate-400 mb-0.5">
+    <div className="bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-xs shadow-lg">
+      <p className="text-[#a3a3a3] mb-0.5">
         {formatDate(raw.payload.date, { day: 'numeric', month: 'short' })}
       </p>
-      <p className="text-blue-400 font-semibold">{formatPace(raw.value)}</p>
+      <p className="text-blue-500 font-semibold">{formatPace(raw.value)}</p>
     </div>
   );
 }
@@ -88,9 +88,9 @@ interface DistTooltipProps {
 function DistTooltip({ active, payload, label }: DistTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs shadow-lg">
-      <p className="text-slate-400 mb-0.5">{label}</p>
-      <p className="text-blue-400 font-semibold">{payload[0].value.toFixed(1)} km</p>
+    <div className="bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-xs shadow-lg">
+      <p className="text-[#a3a3a3] mb-0.5">{label}</p>
+      <p className="text-blue-500 font-semibold">{payload[0].value.toFixed(1)} km</p>
     </div>
   );
 }
@@ -106,8 +106,8 @@ function HrTooltip({ active, payload }: HrTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const raw = payload[0];
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs shadow-lg">
-      <p className="text-slate-400 mb-0.5">
+    <div className="bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-xs shadow-lg">
+      <p className="text-[#a3a3a3] mb-0.5">
         {formatDate(raw.payload.date, { day: 'numeric', month: 'short' })}
       </p>
       <p className="text-rose-400 font-semibold">{raw.value} bpm</p>
@@ -260,12 +260,12 @@ export function RunningPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-blue-900/20 border border-blue-700/30">
-            <PersonStanding className="w-6 h-6 text-blue-400" />
+          <div className="p-2.5 rounded bg-transparent border border-blue-900/40">
+            <PersonStanding className="w-6 h-6 text-blue-500" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Running</h1>
-            <p className="text-slate-400 text-sm mt-0.5">
+            <p className="text-[#a3a3a3] text-sm mt-0.5">
               Niveau {profile.running_level} &middot; {profile.running_xp} XP
             </p>
           </div>
@@ -274,7 +274,7 @@ export function RunningPage() {
           <Button
             icon={<Plus className="w-4 h-4" />}
             size="md"
-            className="bg-blue-700 hover:bg-blue-600 border-transparent text-white"
+            className="bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
           >
             Nouvelle course
           </Button>
@@ -290,28 +290,28 @@ export function RunningPage() {
       >
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-900/20">
-              <PersonStanding className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded bg-transparent">
+              <PersonStanding className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-black text-blue-400">{totalSessions}</p>
-              <p className="text-xs text-slate-400">Sorties totales</p>
+              <p className="text-2xl font-black text-blue-500">{totalSessions}</p>
+              <p className="text-xs text-[#a3a3a3]">Sorties totales</p>
             </div>
           </div>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-900/20">
-              <MapPin className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded bg-transparent">
+              <MapPin className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-black text-blue-400">
+              <p className="text-2xl font-black text-blue-500">
                 {totalDistance >= 1000
                   ? `${(totalDistance / 1000).toFixed(1)}k`
                   : `${Math.round(totalDistance)}`}
                 <span className="text-base ml-0.5">km</span>
               </p>
-              <p className="text-xs text-slate-400">Distance totale</p>
+              <p className="text-xs text-[#a3a3a3]">Distance totale</p>
             </div>
           </div>
         </Card>
@@ -323,15 +323,15 @@ export function RunningPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
-        <div className="flex gap-1 p-1 bg-slate-900/60 border border-slate-700/50 rounded-2xl">
+        <div className="flex gap-1 p-1 bg-[#111111] border border-white/5 rounded">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold transition-all ${
                 activeTab === tab.key
                   ? 'bg-blue-700 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-[#1c1c1c]'
               }`}
             >
               {tab.icon}
@@ -382,7 +382,7 @@ export function RunningPage() {
                       className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
                         typeFilter === f.key
                           ? 'bg-blue-700 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                          : 'bg-[#1c1c1c] text-[#a3a3a3] hover:text-[#e5e5e5] border border-white/5'
                       }`}
                     >
                       {f.label}
@@ -411,7 +411,7 @@ export function RunningPage() {
                       className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
                         periodFilter === f.key
                           ? 'bg-slate-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                          : 'bg-[#1c1c1c] text-[#a3a3a3] hover:text-[#e5e5e5] border border-white/5'
                       }`}
                     >
                       {f.label}
@@ -423,14 +423,14 @@ export function RunningPage() {
               {/* Résultats */}
               {filteredSessions.length === 0 ? (
                 <Card className="p-8 text-center">
-                  <PersonStanding className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-400 text-sm mb-4">
+                  <PersonStanding className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                  <p className="text-[#a3a3a3] text-sm mb-4">
                     Aucune course pour ces filtres.
                   </p>
                   <Link to="/running/new">
                     <Button
                       icon={<Plus className="w-4 h-4" />}
-                      className="bg-blue-700 hover:bg-blue-600 border-transparent text-white"
+                      className="bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
                     >
                       Première course
                     </Button>
@@ -453,7 +453,7 @@ export function RunningPage() {
                   {hasMore && (
                     <button
                       onClick={() => setVisibleCount((c) => c + 10)}
-                      className="w-full flex items-center justify-center gap-2 py-3 text-sm text-slate-400 hover:text-blue-400 bg-slate-900/40 border border-slate-700/40 rounded-2xl transition-all hover:border-blue-700/30"
+                      className="w-full flex items-center justify-center gap-2 py-3 text-sm text-[#a3a3a3] hover:text-blue-500 bg-[#0d0d0d]/40 border border-white/8/40 rounded transition-all hover:border-blue-700/30"
                     >
                       <ChevronDown className="w-4 h-4" />
                       Charger plus ({filteredSessions.length - visibleCount} restantes)
@@ -471,8 +471,8 @@ export function RunningPage() {
             <div className="space-y-5">
               {allSessions.length === 0 ? (
                 <Card className="p-8 text-center">
-                  <BarChart2 className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                  <p className="text-slate-400 text-sm">
+                  <BarChart2 className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                  <p className="text-[#a3a3a3] text-sm">
                     Pas encore assez de données pour afficher les graphiques.
                   </p>
                 </Card>
@@ -480,7 +480,7 @@ export function RunningPage() {
                 <>
                   {/* Distance par semaine */}
                   <Card className="p-4">
-                    <p className="text-sm font-semibold text-slate-300 mb-4">
+                    <p className="text-sm font-semibold text-[#d4d4d4] mb-4">
                       Distance par semaine (km)
                     </p>
                     <ResponsiveContainer width="100%" height={200}>
@@ -495,12 +495,12 @@ export function RunningPage() {
                         />
                         <XAxis
                           dataKey="label"
-                          tick={{ fill: '#64748b', fontSize: 10 }}
+                          tick={{ fill: '#6b6b6b', fontSize: 10 }}
                           axisLine={false}
                           tickLine={false}
                         />
                         <YAxis
-                          tick={{ fill: '#64748b', fontSize: 10 }}
+                          tick={{ fill: '#6b6b6b', fontSize: 10 }}
                           axisLine={false}
                           tickLine={false}
                           tickFormatter={(v: number) => `${v}`}
@@ -518,10 +518,10 @@ export function RunningPage() {
                   {/* Évolution de l'allure */}
                   {paceEvolutionData.length >= 2 && (
                     <Card className="p-4">
-                      <p className="text-sm font-semibold text-slate-300 mb-1">
+                      <p className="text-sm font-semibold text-[#d4d4d4] mb-1">
                         Évolution de l'allure moyenne
                       </p>
-                      <p className="text-xs text-slate-500 mb-4">
+                      <p className="text-xs text-[#6b6b6b] mb-4">
                         Plus l'allure est basse, meilleure elle est
                       </p>
                       <ResponsiveContainer width="100%" height={200}>
@@ -536,7 +536,7 @@ export function RunningPage() {
                           />
                           <XAxis
                             dataKey="date"
-                            tick={{ fill: '#64748b', fontSize: 10 }}
+                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
                             axisLine={false}
                             tickLine={false}
                             tickFormatter={(d: string) =>
@@ -548,7 +548,7 @@ export function RunningPage() {
                             interval="preserveStartEnd"
                           />
                           <YAxis
-                            tick={{ fill: '#64748b', fontSize: 10 }}
+                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
                             axisLine={false}
                             tickLine={false}
                             tickFormatter={formatPaceAxis}
@@ -573,7 +573,7 @@ export function RunningPage() {
                     <Card className="p-4">
                       <div className="flex items-center gap-2 mb-4">
                         <Activity className="w-4 h-4 text-rose-400" />
-                        <p className="text-sm font-semibold text-slate-300">
+                        <p className="text-sm font-semibold text-[#d4d4d4]">
                           Fréquence cardiaque moyenne (bpm)
                         </p>
                       </div>
@@ -589,7 +589,7 @@ export function RunningPage() {
                           />
                           <XAxis
                             dataKey="date"
-                            tick={{ fill: '#64748b', fontSize: 10 }}
+                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
                             axisLine={false}
                             tickLine={false}
                             tickFormatter={(d: string) =>
@@ -601,7 +601,7 @@ export function RunningPage() {
                             interval="preserveStartEnd"
                           />
                           <YAxis
-                            tick={{ fill: '#64748b', fontSize: 10 }}
+                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
                             axisLine={false}
                             tickLine={false}
                           />
@@ -629,8 +629,8 @@ export function RunningPage() {
           {activeTab === 'records' && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-1">
-                <Trophy className="w-4 h-4 text-blue-400" />
-                <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                <Trophy className="w-4 h-4 text-blue-500" />
+                <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider">
                   Records personnels
                 </h2>
               </div>
@@ -661,21 +661,21 @@ export function RunningPage() {
 function RunSessionCard({ session }: { session: RunningSession }) {
   const feedback = session.feedback as Feedback | null;
   const runType = session.run_type as RunType | null;
-  const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-slate-500';
+  const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-[#6b6b6b]';
 
   return (
-    <div className="flex items-center gap-3 p-4 bg-slate-900/80 border border-slate-700/50 rounded-2xl hover:border-slate-600 hover:bg-slate-800/60 transition-all">
-      <div className="p-2.5 bg-blue-900/20 border border-blue-700/30 rounded-xl flex-shrink-0">
-        <PersonStanding className="w-5 h-5 text-blue-400" />
+    <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
+      <div className="p-2.5 bg-transparent border border-blue-900/40 rounded flex-shrink-0">
+        <PersonStanding className="w-5 h-5 text-blue-500" />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-slate-200">
+          <p className="text-sm font-semibold text-[#e5e5e5]">
             {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
           </p>
           {runType && (
-            <span className="text-xs px-2 py-0.5 bg-blue-900/20 border border-blue-700/30 text-blue-300 rounded-md">
+            <span className="text-xs px-2 py-0.5 bg-transparent border border-blue-900/40 text-blue-500 rounded-md">
               {RUN_TYPE_LABELS[runType]}
             </span>
           )}
@@ -685,8 +685,8 @@ function RunSessionCard({ session }: { session: RunningSession }) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400">
-          <span className="font-medium text-slate-300">
+        <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
+          <span className="font-medium text-[#d4d4d4]">
             {formatDistance(session.distance)}
           </span>
           <span className="flex items-center gap-1">
@@ -698,11 +698,11 @@ function RunSessionCard({ session }: { session: RunningSession }) {
           )}
         </div>
         {session.notes && (
-          <p className="text-xs text-slate-500 mt-1 truncate">{session.notes}</p>
+          <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
         )}
       </div>
 
-      <span className="text-xs text-slate-500 flex-shrink-0">
+      <span className="text-xs text-[#6b6b6b] flex-shrink-0">
         {formatRelativeTime(session.date)}
       </span>
     </div>
@@ -723,19 +723,19 @@ function RecordCard({ label, km, record }: RecordCardProps) {
       <div className="flex items-start justify-between gap-3">
         {/* Infos gauche */}
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-blue-900/20 border border-blue-700/30 flex-shrink-0">
-            <Trophy className="w-4 h-4 text-blue-400" />
+          <div className="p-2.5 rounded bg-transparent border border-blue-900/40 flex-shrink-0">
+            <Trophy className="w-4 h-4 text-blue-500" />
           </div>
           <div>
             <p className="text-sm font-bold text-white">{label}</p>
             {record ? (
               <div className="mt-1 space-y-0.5">
-                <p className="text-lg font-black text-blue-400">
+                <p className="text-lg font-black text-blue-500">
                   {formatDuration(record.duration, true)}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-slate-400">
+                <div className="flex items-center gap-2 text-xs text-[#a3a3a3]">
                   <span>{formatPace(record.pace)}</span>
-                  <span className="text-slate-600">&middot;</span>
+                  <span className="text-[#4a4a4a]">&middot;</span>
                   <span>
                     {formatDate(record.date, {
                       day: 'numeric',
@@ -746,7 +746,7 @@ function RecordCard({ label, km, record }: RecordCardProps) {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-slate-500 italic mt-1">Record non établi</p>
+              <p className="text-sm text-[#6b6b6b] italic mt-1">Record non établi</p>
             )}
           </div>
         </div>
@@ -754,7 +754,7 @@ function RecordCard({ label, km, record }: RecordCardProps) {
         {/* Bouton historique */}
         <Link
           to={`/running?distance=${km}`}
-          className="flex-shrink-0 text-xs text-blue-400 hover:text-blue-300 bg-blue-900/20 hover:bg-blue-900/30 border border-blue-700/30 px-3 py-1.5 rounded-lg transition-all font-medium"
+          className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-500 bg-transparent hover:bg-blue-900/10 border border-blue-700/30 px-3 py-1.5 rounded-lg transition-all font-medium"
         >
           Historique
         </Link>

@@ -210,12 +210,12 @@ export function MuscuSessionPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-2.5 rounded-2xl bg-red-900/20 border border-red-800/30">
+        <div className="p-2.5 rounded bg-transparent border border-red-900/40">
           <Dumbbell className="w-6 h-6 text-red-400" />
         </div>
         <div>
           <h1 className="text-2xl font-black text-white">Nouvelle séance</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Musculation</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Musculation</p>
         </div>
       </motion.div>
 
@@ -245,11 +245,11 @@ export function MuscuSessionPage() {
           className="space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider">
               Exercices
             </h2>
             {loadingExercises && (
-              <span className="text-xs text-slate-500">Chargement...</span>
+              <span className="text-xs text-[#6b6b6b]">Chargement...</span>
             )}
           </div>
 
@@ -266,11 +266,11 @@ export function MuscuSessionPage() {
                   {/* Sélecteur exercice */}
                   <div className="flex items-start gap-2">
                     <div className="flex-1 relative">
-                      <label className="text-sm font-medium text-slate-300 mb-1 block">
+                      <label className="text-sm font-medium text-[#d4d4d4] mb-1 block">
                         Exercice {exIdx + 1}
                       </label>
                       <div className="relative">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a3a3a3]">
                           <Search className="w-4 h-4" />
                         </div>
                         <input
@@ -287,7 +287,7 @@ export function MuscuSessionPage() {
                           onFocus={() =>
                             updateExercise(ex.id, { showDropdown: true })
                           }
-                          className="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded pl-10 pr-4 py-2.5 text-sm text-[#f5f5f5] placeholder-slate-500 outline-none transition-all focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         />
                         {ex.exercise && (
                           <button
@@ -299,7 +299,7 @@ export function MuscuSessionPage() {
                                 showDropdown: true,
                               })
                             }
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a3a3a3] hover:text-[#e5e5e5]"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -308,9 +308,9 @@ export function MuscuSessionPage() {
 
                       {/* Dropdown */}
                       {ex.showDropdown && !ex.exercise && (
-                        <div className="absolute z-20 w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden">
+                        <div className="absolute z-20 w-full mt-1 bg-[#1c1c1c] border border-white/8 rounded shadow-xl overflow-hidden">
                           {getFilteredExercises(ex.searchQuery).length === 0 ? (
-                            <p className="px-4 py-3 text-sm text-slate-400">
+                            <p className="px-4 py-3 text-sm text-[#a3a3a3]">
                               Aucun résultat
                             </p>
                           ) : (
@@ -321,10 +321,10 @@ export function MuscuSessionPage() {
                                 onMouseDown={() => selectExercise(ex.id, exercise)}
                                 className="w-full px-4 py-2.5 text-left hover:bg-slate-700 transition-colors flex items-center justify-between group"
                               >
-                                <span className="text-sm text-slate-200 group-hover:text-white">
+                                <span className="text-sm text-[#e5e5e5] group-hover:text-white">
                                   {exercise.name}
                                 </span>
-                                <span className="text-xs text-slate-500">
+                                <span className="text-xs text-[#6b6b6b]">
                                   {MUSCLE_GROUP_LABELS[exercise.muscle_group]}
                                 </span>
                               </button>
@@ -337,7 +337,7 @@ export function MuscuSessionPage() {
                     <button
                       type="button"
                       onClick={() => removeExercise(ex.id)}
-                      className="mt-7 p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="mt-7 p-2 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-transparent transition-all"
                       title="Supprimer l'exercice"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -347,7 +347,7 @@ export function MuscuSessionPage() {
                   {/* Tag groupe musculaire */}
                   {ex.exercise && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs px-2.5 py-1 bg-red-500/15 border border-red-500/25 text-red-300 rounded-lg">
+                      <span className="text-xs px-2.5 py-1 bg-transparent border border-red-800/40 text-red-300 rounded-lg">
                         {MUSCLE_GROUP_LABELS[ex.exercise.muscle_group]}
                       </span>
                     </div>
@@ -357,10 +357,10 @@ export function MuscuSessionPage() {
                   <div className="space-y-2">
                     {/* En-têtes */}
                     <div className="grid grid-cols-[32px_1fr_1fr_1fr_32px] gap-2 px-1">
-                      <span className="text-xs text-slate-500 text-center">#</span>
-                      <span className="text-xs text-slate-500 text-center">Reps</span>
-                      <span className="text-xs text-slate-500 text-center">Poids (kg)</span>
-                      <span className="text-xs text-slate-500 text-center">Repos (s)</span>
+                      <span className="text-xs text-[#6b6b6b] text-center">#</span>
+                      <span className="text-xs text-[#6b6b6b] text-center">Reps</span>
+                      <span className="text-xs text-[#6b6b6b] text-center">Poids (kg)</span>
+                      <span className="text-xs text-[#6b6b6b] text-center">Repos (s)</span>
                       <span />
                     </div>
 
@@ -369,7 +369,7 @@ export function MuscuSessionPage() {
                         key={setIdx}
                         className="grid grid-cols-[32px_1fr_1fr_1fr_32px] gap-2 items-center"
                       >
-                        <span className="text-xs text-slate-500 text-center font-mono">
+                        <span className="text-xs text-[#6b6b6b] text-center font-mono">
                           {setIdx + 1}
                         </span>
                         <input
@@ -382,7 +382,7 @@ export function MuscuSessionPage() {
                               reps: parseInt(e.target.value) || 0,
                             })
                           }
-                          className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-2 py-2 text-sm text-slate-100 text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                          className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                         />
                         <input
                           type="number"
@@ -395,7 +395,7 @@ export function MuscuSessionPage() {
                               weight: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-2 py-2 text-sm text-slate-100 text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                          className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                         />
                         <input
                           type="number"
@@ -411,13 +411,13 @@ export function MuscuSessionPage() {
                                 : null,
                             })
                           }
-                          className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-2 py-2 text-sm text-slate-100 text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder-slate-600"
+                          className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder-slate-600"
                         />
                         <button
                           type="button"
                           onClick={() => removeSet(ex.id, setIdx)}
                           disabled={ex.sets.length <= 1}
-                          className="p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-1 rounded-lg text-[#4a4a4a] hover:text-red-400 hover:bg-transparent transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -430,7 +430,7 @@ export function MuscuSessionPage() {
                       size="sm"
                       icon={<Plus className="w-3.5 h-3.5" />}
                       onClick={() => addSet(ex.id)}
-                      className="w-full mt-1 border border-dashed border-slate-700 hover:border-red-500/50"
+                      className="w-full mt-1 border border-dashed border-white/8 hover:border-red-500/50"
                     >
                       Ajouter série
                     </Button>
@@ -457,7 +457,7 @@ export function MuscuSessionPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <Card className="p-4 bg-red-900/20 border-red-800/30">
+            <Card className="p-4 bg-transparent border-red-900/40">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-red-300">Tonnage total</span>
                 <span className="text-xl font-black text-red-400">
@@ -475,7 +475,7 @@ export function MuscuSessionPage() {
           transition={{ delay: 0.2 }}
         >
           <Card className="p-4 space-y-3">
-            <label className="text-sm font-semibold text-slate-300">
+            <label className="text-sm font-semibold text-[#d4d4d4]">
               Comment tu t'es senti ?
             </label>
             <div className="flex gap-3">
@@ -486,11 +486,11 @@ export function MuscuSessionPage() {
                     type="button"
                     onClick={() => setFeedback(prev => (prev === value ? '' : value))}
                     className={`
-                      flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border transition-all
+                      flex-1 py-2.5 px-3 rounded text-sm font-medium border transition-all
                       ${
                         feedback === value
                           ? 'bg-red-700 border-red-500 text-white'
-                          : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                          : 'bg-[#1c1c1c] border-white/8 text-[#a3a3a3] hover:border-white/10 hover:text-[#e5e5e5]'
                       }
                     `}
                   >
@@ -521,15 +521,15 @@ export function MuscuSessionPage() {
 
         {/* XP info */}
         <div className="flex items-center gap-2 px-1">
-          <div className="p-1 rounded-lg bg-red-500/20">
+          <div className="p-1 rounded-lg bg-transparent">
             <span className="text-xs text-red-400 font-bold">+{XP_REWARDS.WORKOUT_SESSION} XP</span>
           </div>
-          <span className="text-xs text-slate-500">seront gagnés à l'enregistrement</span>
+          <span className="text-xs text-[#6b6b6b]">seront gagnés à l'enregistrement</span>
         </div>
 
         {/* Erreur */}
         {error && (
-          <Card className="p-3 bg-red-500/10 border-red-500/25">
+          <Card className="p-3 bg-transparent border-red-500/25">
             <p className="text-sm text-red-400 text-center">{error}</p>
           </Card>
         )}

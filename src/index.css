@@ -1,25 +1,44 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
-  --color-primary: #dc2626;
-  --color-primary-light: #ef4444;
-  --color-primary-dark: #b91c1c;
+  /* Primaire — rouge sombre (accents app) */
+  --color-primary: #b91c1c;
+  --color-primary-light: #dc2626;
+  --color-primary-dark: #7f1d1d;
+
+  /* Bronze / cuivre (accents spartiate) */
+  --color-bronze: #c9a870;
+  --color-bronze-light: #dfc99e;
+  --color-bronze-dark: #8b6f47;
+  --color-bronze-muted: #6b5435;
+
+  /* UI */
   --color-secondary: #6b7280;
-  --color-accent: #f59e0b;
+  --color-accent: #c9a870;
   --color-success: #10b981;
-  --color-danger: #ef4444;
+  --color-danger: #dc2626;
   --color-warning: #f97316;
 
-  --color-bg-dark: #080808;
+  /* Backgrounds */
+  --color-bg-dark: #0a0a0a;
   --color-bg-card: #111111;
-  --color-bg-elevated: #1a1a1a;
+  --color-bg-elevated: #1c1c1c;
 
+  /* Disciplines — couleurs inchangées */
   --color-musculation: #991b1b;
   --color-running: #1d4ed8;
   --color-weight-track: #15803d;
-  --color-mixed: #ef4444;
+  --color-mixed: #dc2626;
 
+  /* Texte */
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #d4d4d4;
+  --color-text-muted: #a3a3a3;
+
+  /* Fonts */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-rajdhani: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
 }
 
 * {

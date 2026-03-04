@@ -9,17 +9,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-red-700 hover:bg-red-600 text-white border-transparent',
-  secondary: 'bg-slate-700 hover:bg-slate-600 text-slate-100 border-transparent',
-  danger: 'bg-red-700 hover:bg-red-600 text-white border-transparent',
-  ghost: 'bg-transparent hover:bg-white/10 text-slate-300 border-transparent',
-  outline: 'bg-transparent hover:bg-red-700/20 text-red-400 border-red-700',
+  primary: 'bg-[#7f1d1d] hover:bg-[#991b1b] text-white border-[#6b1414]',
+  secondary: 'bg-[#1c1c1c] hover:bg-[#2a2a2a] text-[#d4d4d4] border-white/10',
+  danger: 'bg-red-800 hover:bg-red-700 text-white border-red-900',
+  ghost: 'bg-transparent hover:bg-white/5 text-[#a3a3a3] border-transparent',
+  outline: 'bg-transparent hover:bg-[#c9a870]/10 text-[#c9a870] border-[#c9a870]/50',
 };
 
 const sizeClasses = {
-  sm: 'text-xs px-3 py-1.5 rounded-lg',
-  md: 'text-sm px-4 py-2 rounded-xl',
-  lg: 'text-base px-6 py-3 rounded-xl',
+  sm: 'text-xs px-3 py-1.5',
+  md: 'text-sm px-4 py-2',
+  lg: 'text-sm px-6 py-3',
 };
 
 export function Button({
@@ -35,9 +35,10 @@ export function Button({
   return (
     <button
       className={`
-        inline-flex items-center justify-center gap-2 font-medium border
-        transition-all duration-200 cursor-pointer
-        disabled:opacity-50 disabled:cursor-not-allowed
+        inline-flex items-center justify-center gap-2
+        font-rajdhani font-semibold tracking-wide
+        border transition-colors duration-150 cursor-pointer
+        disabled:opacity-40 disabled:cursor-not-allowed
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${className}

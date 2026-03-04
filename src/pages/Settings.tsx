@@ -204,12 +204,12 @@ export function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-2.5 rounded-2xl bg-slate-600/40 border border-slate-600/40">
-          <Settings2 className="w-6 h-6 text-slate-400" />
+        <div className="p-2.5 rounded bg-slate-600/40 border border-white/10/40">
+          <Settings2 className="w-6 h-6 text-[#a3a3a3]" />
         </div>
         <div>
           <h1 className="text-2xl font-black text-white">Paramètres</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Préférences et compte</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Préférences et compte</p>
         </div>
       </motion.div>
 
@@ -230,25 +230,25 @@ export function SettingsPage() {
             {/* Email row */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">
+                <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium">
                   Adresse e-mail
                 </p>
-                <p className="text-sm text-slate-100 mt-0.5">
+                <p className="text-sm text-[#f5f5f5] mt-0.5">
                   {user?.email ?? '—'}
                 </p>
               </div>
             </div>
 
             {/* Divider */}
-            <div className="border-t border-slate-700/50" />
+            <div className="border-t border-white/5" />
 
             {/* Username row */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">
+                <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium">
                   Pseudo
                 </p>
-                <p className="text-sm text-slate-100 mt-0.5">
+                <p className="text-sm text-[#f5f5f5] mt-0.5">
                   {profile?.username ?? '—'}
                 </p>
               </div>
@@ -298,7 +298,7 @@ export function SettingsPage() {
 
             {/* Pace unit toggle */}
             <div>
-              <p className="text-sm font-medium text-slate-300 mb-2">
+              <p className="text-sm font-medium text-[#d4d4d4] mb-2">
                 Unité d'allure
               </p>
               <div className="flex gap-2">
@@ -311,10 +311,10 @@ export function SettingsPage() {
                       setPrefsError('');
                       setPrefsSaved(false);
                     }}
-                    className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+                    className={`flex-1 py-2 px-3 rounded text-sm font-medium border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${
                       paceUnit === unit
                         ? 'bg-red-700 border-red-600 text-white'
-                        : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-500 hover:text-slate-300'
+                        : 'bg-[#1c1c1c] border-white/10 text-[#a3a3a3] hover:border-slate-500 hover:text-[#d4d4d4]'
                     }`}
                   >
                     {unit}
@@ -328,7 +328,7 @@ export function SettingsPage() {
               <p className="text-xs text-red-400">{prefsError}</p>
             )}
             {prefsSaved && (
-              <p className="text-xs text-emerald-400">Préférences enregistrées.</p>
+              <p className="text-xs text-emerald-600">Préférences enregistrées.</p>
             )}
 
             {/* Save button */}
@@ -384,8 +384,8 @@ export function SettingsPage() {
             ).map(({ field, label, description }) => (
               <div key={field} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
                 <div className="pr-4">
-                  <p className="text-sm font-medium text-slate-200">{label}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+                  <p className="text-sm font-medium text-[#e5e5e5]">{label}</p>
+                  <p className="text-xs text-[#6b6b6b] mt-0.5">{description}</p>
                 </div>
                 <ToggleSwitch
                   id={`toggle-${field}`}
@@ -413,7 +413,7 @@ export function SettingsPage() {
             icon={<LogOut className="w-4 h-4 text-red-400" />}
           />
           <div className="p-4">
-            <p className="text-sm text-slate-400 mb-4">
+            <p className="text-sm text-[#a3a3a3] mb-4">
               Tu seras déconnecté de tous tes appareils.
             </p>
             <Button

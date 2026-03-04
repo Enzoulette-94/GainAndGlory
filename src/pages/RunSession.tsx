@@ -161,12 +161,12 @@ export function RunSessionPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-2.5 rounded-2xl bg-blue-900/20 border border-blue-700/30">
-          <PersonStanding className="w-6 h-6 text-blue-400" />
+        <div className="p-2.5 rounded bg-transparent border border-blue-900/40">
+          <PersonStanding className="w-6 h-6 text-blue-500" />
         </div>
         <div>
           <h1 className="text-2xl font-black text-white">Nouvelle course</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Running</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Running</p>
         </div>
       </motion.div>
 
@@ -208,7 +208,7 @@ export function RunSessionPage() {
             />
 
             <div>
-              <label className="text-sm font-medium text-slate-300 mb-2 block">
+              <label className="text-sm font-medium text-[#d4d4d4] mb-2 block">
                 Durée
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -220,9 +220,9 @@ export function RunSessionPage() {
                     placeholder="0"
                     value={hours}
                     onChange={e => setHours(e.target.value)}
-                    className="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-100 text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
-                  <span className="text-xs text-slate-500 text-center">heures</span>
+                  <span className="text-xs text-[#6b6b6b] text-center">heures</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <input
@@ -232,9 +232,9 @@ export function RunSessionPage() {
                     placeholder="0"
                     value={minutes}
                     onChange={e => setMinutes(e.target.value)}
-                    className="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-100 text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
-                  <span className="text-xs text-slate-500 text-center">minutes</span>
+                  <span className="text-xs text-[#6b6b6b] text-center">minutes</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <input
@@ -244,28 +244,28 @@ export function RunSessionPage() {
                     placeholder="0"
                     value={seconds}
                     onChange={e => setSeconds(e.target.value)}
-                    className="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 rounded-xl px-4 py-2.5 text-sm text-slate-100 text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
-                  <span className="text-xs text-slate-500 text-center">secondes</span>
+                  <span className="text-xs text-[#6b6b6b] text-center">secondes</span>
                 </div>
               </div>
             </div>
 
             {/* Calcul allure en temps réel */}
             {pace > 0 && (
-              <div className="flex items-center gap-4 p-3 bg-blue-900/20 border border-blue-700/30 rounded-xl">
+              <div className="flex items-center gap-4 p-3 bg-transparent border border-blue-900/40 rounded">
                 <div className="flex-1 text-center">
-                  <p className="text-lg font-black text-blue-400">
+                  <p className="text-lg font-black text-blue-500">
                     {formatPace(pace)}
                   </p>
-                  <p className="text-xs text-slate-500">allure</p>
+                  <p className="text-xs text-[#6b6b6b]">allure</p>
                 </div>
                 <div className="w-px h-8 bg-slate-700" />
                 <div className="flex-1 text-center">
-                  <p className="text-lg font-black text-blue-400">
+                  <p className="text-lg font-black text-blue-500">
                     {speed.toFixed(1)} km/h
                   </p>
-                  <p className="text-xs text-slate-500">vitesse</p>
+                  <p className="text-xs text-[#6b6b6b]">vitesse</p>
                 </div>
               </div>
             )}
@@ -298,15 +298,15 @@ export function RunSessionPage() {
           <button
             type="button"
             onClick={() => setShowOptional(prev => !prev)}
-            className="w-full flex items-center justify-between p-4 bg-slate-900/80 border border-slate-700/50 rounded-2xl hover:border-slate-600 hover:bg-slate-800/60 transition-all"
+            className="w-full flex items-center justify-between p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all"
           >
-            <span className="text-sm font-semibold text-slate-300">
+            <span className="text-sm font-semibold text-[#d4d4d4]">
               Informations optionnelles
             </span>
             {showOptional ? (
-              <ChevronUp className="w-4 h-4 text-slate-400" />
+              <ChevronUp className="w-4 h-4 text-[#a3a3a3]" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-slate-400" />
+              <ChevronDown className="w-4 h-4 text-[#a3a3a3]" />
             )}
           </button>
 
@@ -402,7 +402,7 @@ export function RunSessionPage() {
           transition={{ delay: 0.3 }}
         >
           <Card className="p-4 space-y-3">
-            <label className="text-sm font-semibold text-slate-300">
+            <label className="text-sm font-semibold text-[#d4d4d4]">
               Comment tu t'es senti ?
             </label>
             <div className="flex gap-3">
@@ -413,11 +413,11 @@ export function RunSessionPage() {
                     type="button"
                     onClick={() => setFeedback(prev => (prev === value ? '' : value))}
                     className={`
-                      flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border transition-all
+                      flex-1 py-2.5 px-3 rounded text-sm font-medium border transition-all
                       ${
                         feedback === value
                           ? 'bg-red-700 border-red-500 text-white'
-                          : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                          : 'bg-[#1c1c1c] border-white/8 text-[#a3a3a3] hover:border-white/10 hover:text-[#e5e5e5]'
                       }
                     `}
                   >
@@ -448,15 +448,15 @@ export function RunSessionPage() {
 
         {/* XP info */}
         <div className="flex items-center gap-2 px-1">
-          <div className="p-1 rounded-lg bg-red-500/20">
+          <div className="p-1 rounded-lg bg-transparent">
             <span className="text-xs text-red-400 font-bold">+{XP_REWARDS.RUNNING_SESSION} XP</span>
           </div>
-          <span className="text-xs text-slate-500">seront gagnés à l'enregistrement</span>
+          <span className="text-xs text-[#6b6b6b]">seront gagnés à l'enregistrement</span>
         </div>
 
         {/* Erreur */}
         {error && (
-          <Card className="p-3 bg-red-500/10 border-red-500/25">
+          <Card className="p-3 bg-transparent border-red-500/25">
             <p className="text-sm text-red-400 text-center">{error}</p>
           </Card>
         )}
@@ -472,7 +472,7 @@ export function RunSessionPage() {
             type="submit"
             size="lg"
             loading={saving}
-            className="w-full bg-blue-700 hover:bg-blue-600 border-transparent text-white"
+            className="w-full bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
             icon={<PersonStanding className="w-5 h-5" />}
           >
             {saving ? 'Enregistrement...' : 'Enregistrer la course'}

@@ -37,16 +37,16 @@ interface MusculationEntry {
 
 function getMedalColor(rank: number): string {
   if (rank === 1) return 'text-yellow-400';
-  if (rank === 2) return 'text-slate-300';
+  if (rank === 2) return 'text-[#d4d4d4]';
   if (rank === 3) return 'text-amber-600';
-  return 'text-slate-500';
+  return 'text-[#6b6b6b]';
 }
 
 function getMedalBg(rank: number): string {
-  if (rank === 1) return 'bg-yellow-500/10 border-yellow-500/30';
+  if (rank === 1) return 'bg-transparent border-yellow-700/40';
   if (rank === 2) return 'bg-slate-400/10 border-slate-400/30';
   if (rank === 3) return 'bg-amber-600/10 border-amber-600/30';
-  return 'bg-slate-800/60 border-slate-700/40';
+  return 'bg-[#1c1c1c] border-white/8/40';
 }
 
 function getMedalLabel(rank: number): string {
@@ -78,7 +78,7 @@ function PodiumCard({ rank, username, level, value, valueLabel, isCurrentUser }:
 
   return (
     <div
-      className={`relative flex flex-col items-center p-4 rounded-2xl border ${borderClass} ${
+      className={`relative flex flex-col items-center p-4 rounded border ${borderClass} ${
         isCurrentUser ? 'ring-2 ring-red-500/50' : ''
       }`}
     >
@@ -99,20 +99,20 @@ function PodiumCard({ rank, username, level, value, valueLabel, isCurrentUser }:
       <div
         className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-black mb-2 ${
           rank === 1
-            ? 'bg-yellow-500/20 text-yellow-300'
+            ? 'bg-transparent text-yellow-500'
             : rank === 2
-            ? 'bg-slate-400/20 text-slate-300'
+            ? 'bg-slate-400/20 text-[#d4d4d4]'
             : 'bg-amber-600/20 text-amber-400'
         }`}
       >
         {username.charAt(0).toUpperCase()}
       </div>
 
-      <p className="text-sm font-bold text-slate-200 truncate max-w-full">{username}</p>
-      <p className="text-xs text-slate-500 mb-2">Niv. {level}</p>
+      <p className="text-sm font-bold text-[#e5e5e5] truncate max-w-full">{username}</p>
+      <p className="text-xs text-[#6b6b6b] mb-2">Niv. {level}</p>
 
       <p className={`text-base font-black ${medalColor}`}>{value}</p>
-      <p className="text-xs text-slate-500">{valueLabel}</p>
+      <p className="text-xs text-[#6b6b6b]">{valueLabel}</p>
     </div>
   );
 }
@@ -135,39 +135,39 @@ function RankRow({ rank, username, level, value, extra, isCurrentUser, delay }: 
       initial={{ opacity: 0, x: -16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+      className={`flex items-center gap-3 px-4 py-3 rounded border transition-all ${
         isCurrentUser
-          ? 'bg-red-500/10 border-red-500/30 ring-1 ring-red-500/20'
-          : 'bg-slate-900/60 border-slate-700/40 hover:border-slate-600/60 hover:bg-slate-800/40'
+          ? 'bg-transparent border-red-800/40 ring-1 ring-red-500/20'
+          : 'bg-[#111111] border-white/8/40 hover:border-white/10/60 hover:bg-[#181818]'
       }`}
     >
       {/* Rang */}
-      <span className="w-7 text-xs font-bold text-slate-500 text-center flex-shrink-0">
+      <span className="w-7 text-xs font-bold text-[#6b6b6b] text-center flex-shrink-0">
         {getMedalLabel(rank)}
       </span>
 
       {/* Initiale */}
-      <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
+      <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-xs font-bold text-[#a3a3a3] flex-shrink-0">
         {username.charAt(0).toUpperCase()}
       </div>
 
       {/* Nom + niveau */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold truncate ${isCurrentUser ? 'text-red-300' : 'text-slate-200'}`}>
+        <p className={`text-sm font-semibold truncate ${isCurrentUser ? 'text-red-300' : 'text-[#e5e5e5]'}`}>
           {username}
           {isCurrentUser && (
-            <span className="ml-2 text-[10px] font-bold bg-red-600/30 text-red-300 px-1.5 py-0.5 rounded-md">
+            <span className="ml-2 text-[10px] font-bold bg-transparent text-red-300 px-1.5 py-0.5 rounded-md">
               Vous
             </span>
           )}
         </p>
-        <p className="text-xs text-slate-500">Niv. {level}</p>
+        <p className="text-xs text-[#6b6b6b]">Niv. {level}</p>
       </div>
 
       {/* Valeur principale */}
       <div className="text-right flex-shrink-0">
-        <p className="text-sm font-bold text-slate-200">{value}</p>
-        {extra && <p className="text-xs text-slate-500">{extra}</p>}
+        <p className="text-sm font-bold text-[#e5e5e5]">{value}</p>
+        {extra && <p className="text-xs text-[#6b6b6b]">{extra}</p>}
       </div>
     </motion.div>
   );
@@ -218,8 +218,8 @@ function TopXPTab({ currentUserId }: TopXPTabProps) {
   if (entries.length === 0) {
     return (
       <Card className="p-10 text-center">
-        <Crown className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-        <p className="text-sm text-slate-500">Aucun joueur dans le classement pour l'instant.</p>
+        <Crown className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+        <p className="text-sm text-[#6b6b6b]">Aucun joueur dans le classement pour l'instant.</p>
       </Card>
     );
   }
@@ -365,8 +365,8 @@ function TopRunningTab({ currentUserId }: TopRunningTabProps) {
   if (entries.length === 0) {
     return (
       <Card className="p-10 text-center">
-        <PersonStanding className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-        <p className="text-sm text-slate-500">Aucune course enregistrée pour le moment.</p>
+        <PersonStanding className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+        <p className="text-sm text-[#6b6b6b]">Aucune course enregistrée pour le moment.</p>
       </Card>
     );
   }
@@ -505,8 +505,8 @@ function TopMusculationTab({ currentUserId }: TopMusculationTabProps) {
   if (entries.length === 0) {
     return (
       <Card className="p-10 text-center">
-        <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-        <p className="text-sm text-slate-500">Aucune séance enregistrée pour le moment.</p>
+        <Dumbbell className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+        <p className="text-sm text-[#6b6b6b]">Aucune séance enregistrée pour le moment.</p>
       </Card>
     );
   }
@@ -596,12 +596,12 @@ export function HallOfFamePage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-2.5 rounded-2xl bg-yellow-500/20 border border-yellow-500/30">
+        <div className="p-2.5 rounded bg-transparent border border-yellow-700/50">
           <Crown className="w-6 h-6 text-yellow-400" />
         </div>
         <div>
           <h1 className="text-2xl font-black text-white">Hall of Fame</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Classements et légendes</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Classements et légendes</p>
         </div>
       </motion.div>
 
@@ -611,15 +611,15 @@ export function HallOfFamePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08 }}
       >
-        <div className="flex gap-1 p-1 bg-slate-900/60 border border-slate-700/50 rounded-2xl">
+        <div className="flex gap-1 p-1 bg-[#111111] border border-white/5 rounded">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded text-xs font-semibold transition-all ${
                 activeTab === tab.key
-                  ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 shadow'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-transparent text-yellow-500 border border-yellow-500/30 shadow'
+                  : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-[#1c1c1c]'
               }`}
             >
               {tab.icon}
@@ -665,7 +665,7 @@ export function HallOfFamePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="text-center text-xs text-slate-600 pb-2"
+        className="text-center text-xs text-[#4a4a4a] pb-2"
       >
         Classements mis a jour en temps reel - Top 50 joueurs
       </motion.p>

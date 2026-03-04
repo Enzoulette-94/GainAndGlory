@@ -64,17 +64,17 @@ function typeLabel(type: CommunityChallenge['type']): string {
 
 function typeBadgeClass(type: CommunityChallenge['type']): string {
   switch (type) {
-    case 'distance': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-    case 'tonnage': return 'bg-red-500/20 text-red-300 border-red-500/30';
-    case 'sessions': return 'bg-green-500/20 text-green-300 border-green-500/30';
+    case 'distance': return 'bg-transparent text-blue-500 border-blue-800/50';
+    case 'tonnage': return 'bg-transparent text-red-300 border-red-500/30';
+    case 'sessions': return 'bg-transparent text-green-500 border-green-800/50';
   }
 }
 
 function typeProgressColor(type: CommunityChallenge['type']): string {
   switch (type) {
-    case 'distance': return 'bg-blue-500';
+    case 'distance': return 'bg-blue-800';
     case 'tonnage': return 'bg-red-500';
-    case 'sessions': return 'bg-green-500';
+    case 'sessions': return 'bg-green-800';
   }
 }
 
@@ -151,150 +151,119 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
     }
   }
 
-  function renderContent() {
+  // Config par type d'activité
+  const typeConfig = (() => {
     const c = item.content;
     switch (c.type) {
-      case 'workout':
-        return (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 p-2 rounded-xl bg-blue-500/15 border border-blue-500/25">
-              <Dumbbell className="w-4 h-4 text-blue-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm text-slate-200 font-medium">Séance muscu</p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {c.tonnage.toLocaleString('fr-FR')} kg soulevés · {c.sets_count} séries
-              </p>
-              {c.feedback && (
-                <span className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full bg-slate-700/70 border border-slate-600/50 text-slate-300">
-                  {c.feedback}
-                </span>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'run':
-        return (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 p-2 rounded-xl bg-green-500/15 border border-green-500/25">
-              <PersonStanding className="w-4 h-4 text-green-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm text-slate-200 font-medium">Course</p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {formatDistance(c.distance)} · {formatDuration(c.duration)} · {formatPace(c.pace)}
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'badge':
-        return (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 p-2 rounded-xl bg-yellow-500/15 border border-yellow-500/25">
-              <Trophy className="w-4 h-4 text-yellow-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm text-slate-200 font-medium">Badge débloqué</p>
-              <p className="text-xs text-slate-400 mt-0.5">{c.badge_name}</p>
-            </div>
-          </div>
-        );
-
-      case 'level_up':
-        return (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 p-2 rounded-xl bg-red-500/15 border border-red-500/25">
-              <Star className="w-4 h-4 text-red-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm text-slate-200 font-medium">Niveau {c.level} atteint !</p>
-              <p className="text-xs text-slate-400 mt-0.5">{c.title}</p>
-            </div>
-          </div>
-        );
-
-      case 'record':
-        return (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 p-2 rounded-xl bg-orange-500/15 border border-orange-500/25">
-              <Zap className="w-4 h-4 text-orange-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm text-slate-200 font-medium">Nouveau record</p>
-              <p className="text-xs text-slate-400 mt-0.5">{c.discipline}</p>
-            </div>
-          </div>
-        );
-
-      case 'challenge_completed':
-        return (
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 p-2 rounded-xl bg-pink-500/15 border border-pink-500/25">
-              <Target className="w-4 h-4 text-pink-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm text-slate-200 font-medium">Défi complété</p>
-              <p className="text-xs text-slate-400 mt-0.5">{c.challenge_title}</p>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
+      case 'workout': return {
+        label: 'SÉANCE MUSCU',
+        borderColor: 'border-l-red-800/70',
+        labelColor: 'text-red-400',
+        stats: `${c.tonnage.toLocaleString('fr-FR')} kg · ${c.sets_count} sér.`,
+        feedback: c.feedback ?? null,
+      };
+      case 'run': return {
+        label: 'COURSE',
+        borderColor: 'border-l-blue-800/70',
+        labelColor: 'text-blue-500',
+        stats: `${formatDistance(c.distance)} · ${formatDuration(c.duration)}`,
+        feedback: null,
+      };
+      case 'badge': return {
+        label: 'BADGE DÉBLOQUÉ',
+        borderColor: 'border-l-yellow-700/70',
+        labelColor: 'text-yellow-500',
+        stats: c.badge_name,
+        feedback: null,
+      };
+      case 'level_up': return {
+        label: `NIVEAU ${c.level} ATTEINT`,
+        borderColor: 'border-l-[#c9a870]/60',
+        labelColor: 'text-[#c9a870]',
+        stats: c.title,
+        feedback: null,
+      };
+      case 'record': return {
+        label: 'NOUVEAU RECORD',
+        borderColor: 'border-l-orange-800/70',
+        labelColor: 'text-orange-600',
+        stats: c.discipline,
+        feedback: null,
+      };
+      case 'challenge_completed': return {
+        label: 'DÉFI COMPLÉTÉ',
+        borderColor: 'border-l-pink-800/70',
+        labelColor: 'text-pink-600',
+        stats: c.challenge_title,
+        feedback: null,
+      };
+      default: return null;
     }
-  }
+  })();
+
+  if (!typeConfig) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: 0.2 }}
+      className={`border border-white/5 border-l-2 ${typeConfig.borderColor} bg-[#111111] p-4 space-y-3`}
     >
-      <Card className="p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-600/30 border border-red-500/40 flex items-center justify-center">
-            <span className="text-xs font-bold text-red-300">{initials}</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-slate-100 truncate">{username}</span>
-              <span className="text-xs text-slate-500">Niv. {level}</span>
-            </div>
-            <p className="text-xs text-slate-500">{formatRelativeTime(item.created_at)}</p>
-          </div>
+      {/* Header : avatar + nom + niveau + temps */}
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-8 h-8 border border-[#c9a870]/30 flex items-center justify-center bg-[#1c1c1c]">
+          <span className="text-xs font-bold font-rajdhani text-[#c9a870]">{initials}</span>
         </div>
-
-        {/* Activity content */}
-        {renderContent()}
-
-        {/* Footer actions */}
-        <div className="flex items-center gap-4 pt-1 border-t border-slate-700/50">
-          <button
-            onClick={() => onLike(item.id)}
-            className={`flex items-center gap-1.5 text-xs transition-colors ${
-              hasLiked ? 'text-red-400' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${hasLiked ? 'fill-red-400' : ''}`} />
-            <span>{likes.length}</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setShowComments(prev => !prev);
-              if (!showComments) {
-                setTimeout(() => inputRef.current?.focus(), 100);
-              }
-            }}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>{comments.length}</span>
-          </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="font-rajdhani font-bold text-[#f5f5f5] tracking-wide uppercase text-sm">{username}</span>
+            <span className="text-xs text-[#4a4a4a]">Niv. {level}</span>
+          </div>
+          <p className="text-xs text-[#4a4a4a]">{formatRelativeTime(item.created_at)}</p>
         </div>
+      </div>
+
+      {/* Contenu : type à gauche, stats à droite */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className={`font-rajdhani font-semibold tracking-wide text-sm ${typeConfig.labelColor}`}>
+            {typeConfig.label}
+          </p>
+          {typeConfig.feedback && (
+            <span className="inline-block mt-1 text-xs text-[#6b6b6b] border border-white/8 px-2 py-0.5 uppercase tracking-wide font-rajdhani">
+              {typeConfig.feedback}
+            </span>
+          )}
+        </div>
+        <span className="text-xs text-[#a3a3a3] text-right flex-shrink-0 mt-0.5">
+          {typeConfig.stats}
+        </span>
+      </div>
+
+      {/* Footer : like + commentaires */}
+      <div className="flex items-center gap-4 pt-1 border-t border-white/5">
+        <button
+          onClick={() => onLike(item.id)}
+          className={`flex items-center gap-1.5 text-xs transition-colors ${
+            hasLiked ? 'text-red-400' : 'text-[#4a4a4a] hover:text-[#a3a3a3]'
+          }`}
+        >
+          <Heart className={`w-3.5 h-3.5 ${hasLiked ? 'fill-red-400' : ''}`} />
+          <span>{likes.length}</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setShowComments(prev => !prev);
+            if (!showComments) setTimeout(() => inputRef.current?.focus(), 100);
+          }}
+          className="flex items-center gap-1.5 text-xs text-[#4a4a4a] hover:text-[#a3a3a3] transition-colors"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>{comments.length}</span>
+        </button>
+      </div>
 
         {/* Comments section */}
         <AnimatePresence>
@@ -312,27 +281,27 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                   <div className="space-y-2">
                     {comments.map(comment => (
                       <div key={comment.id} className="flex items-start gap-2 group">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-700/80 border border-slate-600/50 flex items-center justify-center mt-0.5">
-                          <span className="text-[10px] font-bold text-slate-300">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-700/80 border border-white/10/50 flex items-center justify-center mt-0.5">
+                          <span className="text-[10px] font-bold text-[#d4d4d4]">
                             {(comment.user?.username ?? '?').slice(0, 2).toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-baseline gap-2 flex-wrap">
-                            <span className="text-xs font-semibold text-slate-300">
+                            <span className="text-xs font-semibold text-[#d4d4d4]">
                               {comment.user?.username ?? 'Inconnu'}
                             </span>
-                            <span className="text-[10px] text-slate-600">
+                            <span className="text-[10px] text-[#4a4a4a]">
                               {formatRelativeTime(comment.created_at)}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5 break-words">{comment.content}</p>
+                          <p className="text-xs text-[#a3a3a3] mt-0.5 break-words">{comment.content}</p>
                         </div>
                         {currentUserId && comment.user_id === currentUserId && (
                           <button
                             onClick={() => handleDeleteComment(comment.id)}
                             disabled={deletingCommentId === comment.id}
-                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-slate-600 hover:text-red-400"
+                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-[#4a4a4a] hover:text-red-400"
                             aria-label="Supprimer le commentaire"
                           >
                             {deletingCommentId === comment.id ? (
@@ -357,12 +326,12 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                       onChange={e => setCommentText(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Ajouter un commentaire..."
-                      className="flex-1 bg-slate-800/60 border border-slate-700/60 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-red-500/60 transition-colors"
+                      className="flex-1 bg-[#1c1c1c] border border-white/8/60 rounded px-3 py-2 text-xs text-[#e5e5e5] placeholder-slate-600 focus:outline-none focus:border-[#c9a870]/40 transition-colors"
                     />
                     <button
                       onClick={handleSendComment}
                       disabled={sendingComment || !commentText.trim()}
-                      className="flex-shrink-0 p-2 rounded-xl bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex-shrink-0 p-2 rounded bg-transparent border border-red-800/50 text-red-400 hover:bg-transparent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       aria-label="Envoyer le commentaire"
                     >
                       <Send className="w-3.5 h-3.5" />
@@ -373,7 +342,6 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
             </motion.div>
           )}
         </AnimatePresence>
-      </Card>
     </motion.div>
   );
 }
@@ -477,9 +445,9 @@ function FeedTab({ currentUserId }: FeedTabProps) {
   if (items.length === 0) {
     return (
       <Card className="p-10 text-center">
-        <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-        <p className="text-slate-400 font-medium">Le feed est vide pour l'instant.</p>
-        <p className="text-slate-500 text-sm mt-1">Les activités de la communauté apparaîtront ici.</p>
+        <MessageCircle className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+        <p className="text-[#a3a3a3] font-medium">Le feed est vide pour l'instant.</p>
+        <p className="text-[#6b6b6b] text-sm mt-1">Les activités de la communauté apparaîtront ici.</p>
       </Card>
     );
   }
@@ -561,14 +529,14 @@ function ChallengeCard({
               {typeLabel(challenge.type)}
             </span>
             {challenge.is_flash && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full border bg-amber-500/20 text-amber-300 border-amber-500/30">
+              <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full border bg-transparent text-amber-500 border-amber-700/50">
                 <Zap className="w-3 h-3" />
                 FLASH
               </span>
             )}
           </div>
           {challenge.creator && (
-            <span className="text-xs text-slate-500 whitespace-nowrap">
+            <span className="text-xs text-[#6b6b6b] whitespace-nowrap">
               par {challenge.creator.username}
             </span>
           )}
@@ -576,9 +544,9 @@ function ChallengeCard({
 
         {/* Title & description */}
         <div>
-          <h3 className="font-semibold text-slate-100 text-base leading-snug">{challenge.title}</h3>
+          <h3 className="font-semibold text-[#f5f5f5] text-base leading-snug">{challenge.title}</h3>
           {challenge.description && (
-            <p className="text-sm text-slate-400 mt-1 leading-relaxed">{challenge.description}</p>
+            <p className="text-sm text-[#a3a3a3] mt-1 leading-relaxed">{challenge.description}</p>
           )}
         </div>
 
@@ -589,7 +557,7 @@ function ChallengeCard({
             color={typeProgressColor(challenge.type)}
             height="sm"
           />
-          <div className="flex justify-between items-center text-xs text-slate-400">
+          <div className="flex justify-between items-center text-xs text-[#a3a3a3]">
             <span>
               {total.toLocaleString('fr-FR')} / {challenge.target_value.toLocaleString('fr-FR')} {challenge.unit}
             </span>
@@ -598,7 +566,7 @@ function ChallengeCard({
         </div>
 
         {/* Footer meta */}
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#6b6b6b]">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5" />
@@ -618,7 +586,7 @@ function ChallengeCard({
 
         {/* My contribution (mine tab) */}
         {showMyContribution && isParticipant && (
-          <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-300">
+          <div className="rounded bg-[#1c1c1c] border border-white/5 px-3 py-2 text-sm text-[#d4d4d4]">
             Ma contribution :{' '}
             <span className="font-semibold text-red-300">
               {myContribution.toLocaleString('fr-FR')} {challenge.unit}
@@ -718,13 +686,13 @@ function ContributeModal({ challenge, userId, onClose, onSaved }: ContributeModa
   return (
     <Modal isOpen={!!challenge} onClose={onClose} title="Ajouter une contribution" size="sm">
       <form onSubmit={handleSubmit} className="p-5 space-y-4">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[#a3a3a3]">
           Défi :{' '}
-          <span className="font-medium text-slate-200">{challenge.title}</span>
+          <span className="font-medium text-[#e5e5e5]">{challenge.title}</span>
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-[#6b6b6b]">
           Ta contribution actuelle :{' '}
-          <span className="text-slate-300 font-medium">
+          <span className="text-[#d4d4d4] font-medium">
             {myContribution.toLocaleString('fr-FR')} {challenge.unit}
           </span>
         </p>
@@ -742,7 +710,7 @@ function ContributeModal({ challenge, userId, onClose, onSaved }: ContributeModa
         />
 
         {value && !isNaN(parseFloat(value)) && parseFloat(value) > 0 && (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#6b6b6b]">
             Nouveau total :{' '}
             <span className="text-red-300 font-semibold">
               {(myContribution + parseFloat(value)).toLocaleString('fr-FR')} {challenge.unit}
@@ -866,17 +834,17 @@ function CreateForm({ userId, onCreated }: CreateFormProps) {
   return (
     <Card className="p-5">
       <div className="flex items-center gap-2 mb-5">
-        <div className="p-2 rounded-xl bg-red-500/20 border border-red-500/30">
+        <div className="p-2 rounded bg-transparent border border-red-800/50">
           <Plus className="w-4 h-4 text-red-400" />
         </div>
-        <h2 className="font-semibold text-slate-100">Proposer un défi</h2>
+        <h2 className="font-semibold text-[#f5f5f5]">Proposer un défi</h2>
       </div>
 
       {success && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-sm text-green-300"
+          className="mb-4 rounded bg-transparent border border-green-900/40 px-4 py-3 text-sm text-green-500"
         >
           Defi cree avec succes ! Il est maintenant actif.
         </motion.div>
@@ -919,7 +887,7 @@ function CreateForm({ userId, onCreated }: CreateFormProps) {
             error={errors.target_value}
           />
           <div className="flex items-end pb-0.5">
-            <span className="text-sm text-slate-400 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 w-full">
+            <span className="text-sm text-[#a3a3a3] bg-[#1c1c1c] border border-white/8 rounded px-4 py-2.5 w-full">
               {unitForType(form.type)}
             </span>
           </div>
@@ -1054,12 +1022,12 @@ export function CommunityPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-2.5 rounded-2xl bg-pink-500/20 border border-pink-500/30">
-          <Users className="w-6 h-6 text-pink-400" />
+        <div className="p-2.5 rounded bg-transparent border border-pink-800/40">
+          <Users className="w-6 h-6 text-pink-600" />
         </div>
         <div>
           <h1 className="text-2xl font-black text-white">Communauté</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Feed social et défis collectifs</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Feed social et défis collectifs</p>
         </div>
       </motion.div>
 
@@ -1068,7 +1036,7 @@ export function CommunityPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="flex gap-1 p-1 bg-slate-800/60 border border-slate-700/50 rounded-2xl"
+        className="flex gap-1 p-1 bg-[#1c1c1c] border border-white/5 rounded"
       >
         {tabs.map(t => (
           <button
@@ -1076,10 +1044,10 @@ export function CommunityPage() {
             onClick={() => setTab(t.id)}
             className={`
               flex-1 flex items-center justify-center gap-1.5 text-sm font-medium
-              px-3 py-2 rounded-xl transition-all duration-200
+              px-3 py-2 rounded transition-all duration-200
               ${tab === t.id
                 ? 'bg-red-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-slate-700/50'
               }
             `}
           >
@@ -1132,9 +1100,9 @@ export function CommunityPage() {
 
             {!loading && !error && challenges.length === 0 && (
               <Card className="p-10 text-center">
-                <Trophy className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-400 font-medium">Aucun défi actif pour le moment.</p>
-                <p className="text-slate-500 text-sm mt-1">
+                <Trophy className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                <p className="text-[#a3a3a3] font-medium">Aucun défi actif pour le moment.</p>
+                <p className="text-[#6b6b6b] text-sm mt-1">
                   Sois le premier à en proposer un !
                 </p>
                 <Button
@@ -1176,15 +1144,15 @@ export function CommunityPage() {
 
             {!loading && !profile && (
               <Card className="p-8 text-center">
-                <p className="text-slate-400 text-sm">Connecte-toi pour voir tes contributions.</p>
+                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour voir tes contributions.</p>
               </Card>
             )}
 
             {!loading && profile && myChallenges.length === 0 && (
               <Card className="p-10 text-center">
-                <Target className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-400 font-medium">Tu ne participes à aucun défi.</p>
-                <p className="text-slate-500 text-sm mt-1">
+                <Target className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                <p className="text-[#a3a3a3] font-medium">Tu ne participes à aucun défi.</p>
+                <p className="text-[#6b6b6b] text-sm mt-1">
                   Rejoins un défi actif pour commencer.
                 </p>
                 <Button
@@ -1231,7 +1199,7 @@ export function CommunityPage() {
               />
             ) : (
               <Card className="p-8 text-center">
-                <p className="text-slate-400 text-sm">Connecte-toi pour proposer un défi.</p>
+                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour proposer un défi.</p>
               </Card>
             )}
           </motion.div>

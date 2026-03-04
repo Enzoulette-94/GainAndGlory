@@ -53,32 +53,32 @@ const TYPE_CONFIG: Record<
 > = {
   course: {
     label: 'Course',
-    border: 'border-blue-500/40',
-    badge: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    dot: 'bg-blue-400',
+    border: 'border-blue-800/50',
+    badge: 'bg-transparent text-blue-500 border-blue-800/50',
+    dot: 'bg-blue-700',
   },
   competition: {
     label: 'Compétition',
     border: 'border-yellow-500/40',
-    badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+    badge: 'bg-transparent text-yellow-500 border-yellow-500/30',
     dot: 'bg-yellow-400',
   },
   trail: {
     label: 'Trail',
     border: 'border-green-500/40',
-    badge: 'bg-green-500/20 text-green-300 border-green-500/30',
-    dot: 'bg-green-400',
+    badge: 'bg-transparent text-green-500 border-green-800/50',
+    dot: 'bg-green-700',
   },
   triathlon: {
     label: 'Triathlon',
     border: 'border-cyan-500/40',
-    badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    dot: 'bg-cyan-400',
+    badge: 'bg-transparent text-cyan-500 border-cyan-800/50',
+    dot: 'bg-cyan-700',
   },
   autre: {
     label: 'Autre',
     border: 'border-slate-500/40',
-    badge: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+    badge: 'bg-slate-500/20 text-[#d4d4d4] border-slate-500/30',
     dot: 'bg-slate-400',
   },
 };
@@ -167,16 +167,16 @@ function Toast({ message, type, onDismiss }: ToastProps) {
       exit={{ opacity: 0, y: 40 }}
       className={`
         fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]
-        flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl
+        flex items-center gap-2.5 px-5 py-3 rounded shadow-2xl
         border text-sm font-medium whitespace-nowrap
         ${type === 'success'
-          ? 'bg-emerald-900/90 border-emerald-700/60 text-emerald-200'
+          ? 'bg-emerald-900/60 border-emerald-800/60 text-emerald-600'
           : 'bg-red-900/90 border-red-700/60 text-red-200'
         }
       `}
     >
       {type === 'success'
-        ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
         : <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
       }
       {message}
@@ -220,12 +220,12 @@ function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardPro
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="font-bold text-slate-100 leading-snug">{event.title}</h3>
+                <h3 className="font-bold text-[#f5f5f5] leading-snug">{event.title}</h3>
 
                 {/* Date row */}
                 <div className="flex items-center gap-1.5 mt-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="text-xs text-slate-400 capitalize">
+                  <Calendar className="w-3.5 h-3.5 text-[#a3a3a3] shrink-0" />
+                  <span className="text-xs text-[#a3a3a3] capitalize">
                     {formatEventDate(event.event_date)}
                   </span>
                 </div>
@@ -235,7 +235,7 @@ function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardPro
               <button
                 onClick={() => onDelete(event.id)}
                 disabled={deletingId === event.id}
-                className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors shrink-0 disabled:opacity-40"
+                className="p-1.5 rounded-lg hover:bg-transparent text-[#6b6b6b] hover:text-red-400 transition-colors shrink-0 disabled:opacity-40"
                 aria-label="Supprimer l'événement"
               >
                 <X className="w-4 h-4" />
@@ -248,10 +248,10 @@ function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardPro
                 className={`
                   flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border
                   ${isToday
-                    ? 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                    ? 'bg-transparent text-orange-500 border-orange-800/50'
                     : isTomorrow
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                      : 'bg-slate-700/60 text-slate-300 border-slate-600/50'
+                      ? 'bg-transparent text-amber-500 border-amber-700/50'
+                      : 'bg-slate-700/60 text-[#d4d4d4] border-white/10/50'
                   }
                 `}
               >
@@ -268,7 +268,7 @@ function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardPro
 
             {/* Description */}
             {event.description && (
-              <p className="mt-2 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+              <p className="mt-2 text-xs text-[#a3a3a3] line-clamp-2 leading-relaxed">
                 {event.description}
               </p>
             )}
@@ -441,12 +441,12 @@ export function EventsPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-cyan-500/20 border border-cyan-500/30">
-            <Flag className="w-6 h-6 text-cyan-400" />
+          <div className="p-2.5 rounded bg-transparent border border-cyan-800/40">
+            <Flag className="w-6 h-6 text-cyan-600" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Événements</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Courses et compétitions</p>
+            <p className="text-[#a3a3a3] text-sm mt-0.5">Courses et compétitions</p>
           </div>
         </div>
 
@@ -470,11 +470,11 @@ export function EventsPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Card className="p-14 text-center">
-            <Flag className="w-14 h-14 mx-auto mb-4 text-slate-600" />
-            <p className="text-slate-400 font-medium text-base">
+            <Flag className="w-14 h-14 mx-auto mb-4 text-[#4a4a4a]" />
+            <p className="text-[#a3a3a3] font-medium text-base">
               Aucun événement planifié
             </p>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-[#6b6b6b] text-sm mt-1">
               Ajoute tes courses et compétitions pour ne rien manquer.
             </p>
             <Button
@@ -499,18 +499,18 @@ export function EventsPage() {
             transition={{ delay: 0.05 }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
+              <span className="text-xs font-bold text-cyan-600 uppercase tracking-widest">
                 A venir
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-500/30">
+              <span className="px-2 py-0.5 rounded-full bg-transparent text-cyan-500 text-xs font-bold border border-cyan-800/40">
                 {upcomingEvents.length}
               </span>
             </div>
 
             {upcomingEvents.length === 0 ? (
               <Card className="p-6 text-center">
-                <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-400 text-sm">
+                <Calendar className="w-10 h-10 mx-auto mb-3 text-[#4a4a4a]" />
+                <p className="text-[#a3a3a3] text-sm">
                   Aucun événement a venir. Planifies-en un !
                 </p>
                 <Button
@@ -547,10 +547,10 @@ export function EventsPage() {
               transition={{ delay: 0.1 }}
             >
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <span className="text-xs font-bold text-[#6b6b6b] uppercase tracking-widest">
                   Passes
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-400 text-xs font-bold border border-slate-600/50">
+                <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-[#a3a3a3] text-xs font-bold border border-white/10/50">
                   {pastEventsAll.length}
                 </span>
               </div>
@@ -572,8 +572,8 @@ export function EventsPage() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-slate-400 truncate">{event.title}</p>
-                          <p className="text-xs text-slate-600 mt-0.5 capitalize">
+                          <p className="text-sm text-[#a3a3a3] truncate">{event.title}</p>
+                          <p className="text-xs text-[#4a4a4a] mt-0.5 capitalize">
                             {formatDate(event.event_date, {
                               day: 'numeric',
                               month: 'long',
@@ -602,7 +602,7 @@ export function EventsPage() {
                 {hasMorePast && (
                   <button
                     onClick={() => setShowAllPast((v) => !v)}
-                    className="w-full flex items-center justify-center gap-1.5 px-4 py-3 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-3 text-xs text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors"
                   >
                     <ChevronDown
                       className={`w-3.5 h-3.5 transition-transform duration-300 ${showAllPast ? 'rotate-180' : ''}`}

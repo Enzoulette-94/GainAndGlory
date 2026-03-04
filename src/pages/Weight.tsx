@@ -154,32 +154,32 @@ export function WeightPage() {
 
     if (isNeutral) {
       return (
-        <div className="flex items-center gap-2 p-3 bg-slate-800/60 border border-slate-700 rounded-xl">
-          <Minus className="w-4 h-4 text-slate-400" />
+        <div className="flex items-center gap-2 p-3 bg-[#1c1c1c] border border-white/8 rounded">
+          <Minus className="w-4 h-4 text-[#a3a3a3]" />
           <div>
-            <p className="text-sm font-semibold text-slate-300">0,0 kg</p>
-            <p className="text-xs text-slate-500">{label}</p>
+            <p className="text-sm font-semibold text-[#d4d4d4]">0,0 kg</p>
+            <p className="text-xs text-[#6b6b6b]">{label}</p>
           </div>
         </div>
       );
     }
 
     return (
-      <div className={`flex items-center gap-2 p-3 rounded-xl border ${
+      <div className={`flex items-center gap-2 p-3 rounded border ${
         isPositive
-          ? 'bg-red-500/10 border-red-500/25'
-          : 'bg-emerald-500/10 border-emerald-500/25'
+          ? 'bg-transparent border-red-500/25'
+          : 'bg-transparent border-emerald-800/40'
       }`}>
         {isPositive ? (
           <TrendingUp className="w-4 h-4 text-red-400 flex-shrink-0" />
         ) : (
-          <TrendingDown className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <TrendingDown className="w-4 h-4 text-emerald-600 flex-shrink-0" />
         )}
         <div>
-          <p className={`text-sm font-semibold ${isPositive ? 'text-red-400' : 'text-emerald-400'}`}>
+          <p className={`text-sm font-semibold ${isPositive ? 'text-red-400' : 'text-emerald-600'}`}>
             {isPositive ? '+' : '-'}{abs} kg
           </p>
-          <p className="text-xs text-slate-500">{label}</p>
+          <p className="text-xs text-[#6b6b6b]">{label}</p>
         </div>
       </div>
     );
@@ -194,19 +194,19 @@ export function WeightPage() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-green-900/20 border border-green-700/30">
-            <Scale className="w-6 h-6 text-green-400" />
+          <div className="p-2.5 rounded bg-transparent border border-green-900/40">
+            <Scale className="w-6 h-6 text-green-600" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Poids</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Suivi corporel</p>
+            <p className="text-[#a3a3a3] text-sm mt-0.5">Suivi corporel</p>
           </div>
         </div>
         <Button
           icon={<Plus className="w-4 h-4" />}
           size="md"
           onClick={openModal}
-          className="bg-green-700 hover:bg-green-600 border-transparent text-white"
+          className="bg-transparent border border-green-800/60 text-green-600 hover:bg-green-900/10 hover:border-green-700"
         >
           Nouvelle pesée
         </Button>
@@ -232,12 +232,12 @@ export function WeightPage() {
               <Card className="p-5">
                 <div className="flex items-end justify-between mb-4">
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">Dernier poids</p>
-                    <p className="text-5xl font-black text-green-400">
+                    <p className="text-xs text-[#a3a3a3] mb-1">Dernier poids</p>
+                    <p className="text-5xl font-black text-green-600">
                       {latestEntry.weight.toFixed(1)}
-                      <span className="text-2xl text-green-400/70 ml-1">kg</span>
+                      <span className="text-2xl text-green-600/70 ml-1">kg</span>
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-[#6b6b6b] mt-1">
                       {formatDate(latestEntry.date, {
                         weekday: 'long',
                         day: 'numeric',
@@ -245,7 +245,7 @@ export function WeightPage() {
                       })}
                     </p>
                   </div>
-                  <Scale className="w-12 h-12 text-green-400/20" />
+                  <Scale className="w-12 h-12 text-green-600/20" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -255,14 +255,14 @@ export function WeightPage() {
               </Card>
             ) : (
               <Card className="p-8 text-center">
-                <Scale className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-400 text-sm mb-4">
+                <Scale className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                <p className="text-[#a3a3a3] text-sm mb-4">
                   Aucune pesée enregistrée pour l'instant.
                 </p>
                 <Button
                   icon={<Plus className="w-4 h-4" />}
                   onClick={openModal}
-                  className="bg-green-700 hover:bg-green-600 border-transparent text-white"
+                  className="bg-transparent border border-green-800/60 text-green-600 hover:bg-green-900/10 hover:border-green-700"
                 >
                   Première pesée
                 </Button>
@@ -278,7 +278,7 @@ export function WeightPage() {
               transition={{ delay: 0.2 }}
             >
               <Card className="p-4">
-                <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider mb-4">
                   Évolution sur 30 jours
                 </h2>
                 <ResponsiveContainer width="100%" height={180}>
@@ -329,7 +329,7 @@ export function WeightPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider mb-3">
                 Historique
               </h2>
               <div className="space-y-2">
@@ -343,30 +343,30 @@ export function WeightPage() {
                       initial={{ opacity: 0, x: -15 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.03 * i }}
-                      className="flex items-center gap-3 p-3.5 bg-slate-900/80 border border-slate-700/50 rounded-2xl"
+                      className="flex items-center gap-3 p-3.5 bg-[#111111] border border-white/5 rounded"
                     >
-                      <div className="p-2 bg-green-900/20 border border-green-700/30 rounded-xl flex-shrink-0">
-                        <Scale className="w-4 h-4 text-green-400" />
+                      <div className="p-2 bg-transparent border border-green-900/40 rounded flex-shrink-0">
+                        <Scale className="w-4 h-4 text-green-600" />
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-200">
+                        <p className="text-sm font-semibold text-[#e5e5e5]">
                           {formatWeight(entry.weight)}
                         </p>
                         {entry.notes && (
-                          <p className="text-xs text-slate-500 truncate">{entry.notes}</p>
+                          <p className="text-xs text-[#6b6b6b] truncate">{entry.notes}</p>
                         )}
                       </div>
 
                       <div className="text-right flex-shrink-0">
                         {delta !== null && Math.abs(delta) >= 0.1 && (
                           <p className={`text-xs font-semibold ${
-                            delta > 0 ? 'text-red-400' : 'text-emerald-400'
+                            delta > 0 ? 'text-red-400' : 'text-emerald-600'
                           }`}>
                             {delta > 0 ? '+' : ''}{delta.toFixed(1)} kg
                           </p>
                         )}
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-[#6b6b6b]">
                           {formatDate(entry.date, { day: 'numeric', month: 'short' })}
                         </p>
                       </div>
@@ -416,10 +416,10 @@ export function WeightPage() {
 
           {/* XP info */}
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-lg bg-red-500/20">
+            <div className="p-1 rounded-lg bg-transparent">
               <span className="text-xs text-red-400 font-bold">+{XP_REWARDS.WEIGHT_ENTRY} XP</span>
             </div>
-            <span className="text-xs text-slate-500">à l'enregistrement</span>
+            <span className="text-xs text-[#6b6b6b]">à l'enregistrement</span>
           </div>
 
           {saveError && (
@@ -437,7 +437,7 @@ export function WeightPage() {
             <Button
               loading={saving}
               onClick={handleSave}
-              className="flex-1 bg-green-700 hover:bg-green-600 border-transparent text-white"
+              className="flex-1 bg-transparent border border-green-800/60 text-green-600 hover:bg-green-900/10 hover:border-green-700"
             >
               {saving ? 'Enregistrement...' : 'Enregistrer'}
             </Button>

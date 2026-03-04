@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dumbbell, Mail, Lock, LogIn } from 'lucide-react';
+import { Shield, Mail, Lock, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { authService } from '../services/auth.service';
 import { Input } from '../components/common/Input';
@@ -35,33 +35,41 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#080808]">
-      {/* Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-900/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-900/20 rounded-full blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background spartiate */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/spartan.avif"
+          alt=""
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-md"
       >
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-2xl bg-gradient-to-r from-red-600 to-red-700">
-              <Dumbbell className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-black text-white">Gain & Glory</h1>
+            <Shield className="w-9 h-9 text-[#c9a870]" />
+            <h1 className="font-rajdhani text-4xl font-bold tracking-wide uppercase text-[#c9a870]">
+              Gain &amp; Glory
+            </h1>
           </div>
-          <p className="text-slate-400">Connecte-toi pour reprendre ta progression</p>
+          <p className="text-[#a3a3a3] font-inter text-sm tracking-wide">
+            Reprends ta progression
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-8">
+        {/* Formulaire */}
+        <div className="bg-black/60 backdrop-blur-md border border-[#c9a870]/20 p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+            <div className="mb-4 p-3 bg-transparent border border-red-800/50 text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -85,7 +93,10 @@ export function LoginPage() {
             />
 
             <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-xs text-red-400 hover:text-red-300 transition-colors">
+              <Link
+                to="/forgot-password"
+                className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors"
+              >
                 Mot de passe oublié ?
               </Link>
             </div>
@@ -97,13 +108,16 @@ export function LoginPage() {
               className="w-full"
               size="lg"
             >
-              Se connecter
+              SE CONNECTER
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-slate-400">
+          <div className="mt-6 text-center text-sm text-[#a3a3a3]">
             Pas encore de compte ?{' '}
-            <Link to="/register" className="text-red-400 hover:text-red-300 font-medium transition-colors">
+            <Link
+              to="/register"
+              className="text-[#c9a870] hover:text-[#dfc99e] font-medium transition-colors"
+            >
               S'inscrire
             </Link>
           </div>

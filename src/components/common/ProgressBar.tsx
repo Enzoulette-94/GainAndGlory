@@ -32,8 +32,8 @@ export function ProgressBar({
     <div className={className}>
       {(showLabel || label) && (
         <div className="flex justify-between items-center mb-1">
-          {label && <span className="text-xs text-slate-400">{label}</span>}
-          {showLabel && <span className="text-xs text-slate-300 font-medium">{Math.round(clampedValue)}%</span>}
+          {label && <span className="text-xs text-[#a3a3a3]">{label}</span>}
+          {showLabel && <span className="text-xs text-[#d4d4d4] font-medium">{Math.round(clampedValue)}%</span>}
         </div>
       )}
       <div className={`w-full bg-slate-700/50 rounded-full overflow-hidden ${heightClasses[height]}`}>

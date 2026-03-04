@@ -12,12 +12,12 @@ export function Card({ children, className = '', onClick, hover = false, glass =
   return (
     <div
       className={`
-        rounded-2xl border border-slate-700/50
+        border border-white/5
         ${glass
           ? 'bg-white/5 backdrop-blur-sm'
-          : 'bg-slate-900/80'
+          : 'bg-[#111111]'
         }
-        ${hover || onClick ? 'hover:border-red-500/50 hover:bg-slate-800/80 transition-all duration-200' : ''}
+        ${hover || onClick ? 'hover:border-[#c9a870]/30 hover:bg-[#1c1c1c] transition-colors duration-150' : ''}
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
@@ -37,12 +37,12 @@ interface CardHeaderProps {
 
 export function CardHeader({ title, subtitle, action, icon }: CardHeaderProps) {
   return (
-    <div className="flex items-start justify-between p-4 border-b border-slate-700/50">
+    <div className="flex items-start justify-between p-4 border-b border-white/5">
       <div className="flex items-center gap-3">
-        {icon && <div className="text-red-400">{icon}</div>}
+        {icon && <div className="text-[#c9a870]">{icon}</div>}
         <div>
-          <h3 className="font-semibold text-slate-100">{title}</h3>
-          {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+          <h3 className="font-rajdhani font-semibold text-[#f5f5f5] tracking-wide">{title}</h3>
+          {subtitle && <p className="text-xs text-[#a3a3a3] mt-0.5">{subtitle}</p>}
         </div>
       </div>
       {action && <div>{action}</div>}

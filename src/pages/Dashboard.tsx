@@ -61,24 +61,39 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
+      {/* Hero bandeau spartiate */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="relative overflow-hidden -mx-4 -mt-6 px-6 py-8 mb-2"
       >
-        <div>
-          <h1 className="text-2xl font-black text-white">
-            {greeting}, {profile.username} 👋
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            {getLevelTitle(profile.global_level)} · Niveau {profile.global_level}
-          </p>
+        {/* Image de fond subtile */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/spartan.avif"
+            alt=""
+            className="w-full h-full object-cover object-[center_20%]"
+          />
+          <div className="absolute inset-0 bg-black/82" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
         </div>
-        <div className="flex items-center gap-2 bg-orange-500/20 border border-orange-500/30 rounded-xl px-3 py-2">
-          <Flame className="w-5 h-5 text-orange-400" />
-          <span className="font-bold text-orange-300">{profile.current_streak}</span>
-          <span className="text-xs text-orange-400">jours</span>
+
+        {/* Contenu */}
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
+              {greeting}, {profile.username}
+            </h1>
+            <p className="text-[#a3a3a3] text-sm mt-1 font-inter">
+              {getLevelTitle(profile.global_level)} · Niveau {profile.global_level}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-black/50 border border-orange-900/50 px-3 py-2 backdrop-blur-sm">
+            <Flame className="w-5 h-5 text-orange-600" />
+            <span className="font-bold text-orange-500 font-rajdhani text-lg">{profile.current_streak}</span>
+            <span className="text-xs text-orange-500">jours</span>
+          </div>
         </div>
       </motion.div>
 
@@ -100,12 +115,12 @@ export function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Cette semaine</h2>
+        <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Cette semaine</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard icon={<Dumbbell className="w-5 h-5" />} value={weekStats.workouts} label="Séances muscu" color="text-red-400" bg="bg-red-900/20 border-red-800/30" />
-          <StatCard icon={<PersonStanding className="w-5 h-5" />} value={weekStats.runs} label="Courses" color="text-blue-400" bg="bg-blue-900/20 border-blue-700/30" />
-          <StatCard icon={<span className="text-base">🏃</span>} value={formatDistance(weekStats.distance)} label="Distance" color="text-blue-400" bg="bg-blue-900/20 border-blue-700/30" />
-          <StatCard icon={<span className="text-base">🏋️</span>} value={`${Math.round(weekStats.tonnage)}kg`} label="Tonnage" color="text-red-400" bg="bg-red-900/20 border-red-800/30" />
+          <StatCard icon={<Dumbbell className="w-5 h-5" />} value={weekStats.workouts} label="Séances muscu" color="text-red-400" bg="bg-transparent border-red-900/50" />
+          <StatCard icon={<PersonStanding className="w-5 h-5" />} value={weekStats.runs} label="Courses" color="text-blue-500" bg="bg-transparent border-blue-900/50" />
+          <StatCard icon={<span className="text-base">🏃</span>} value={formatDistance(weekStats.distance)} label="Distance" color="text-blue-500" bg="bg-transparent border-blue-900/50" />
+          <StatCard icon={<span className="text-base">🏋️</span>} value={`${Math.round(weekStats.tonnage)}kg`} label="Tonnage" color="text-red-400" bg="bg-transparent border-red-900/50" />
         </div>
       </motion.div>
 
@@ -115,11 +130,11 @@ export function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions rapides</h2>
+        <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Actions rapides</h2>
         <div className="grid grid-cols-3 gap-3">
-          <QuickAction to="/musculation/new" icon={<Dumbbell className="w-6 h-6" />} label="Séance muscu" color="from-red-800 to-red-900" />
-          <QuickAction to="/running/new" icon={<PersonStanding className="w-6 h-6" />} label="Nouvelle course" color="from-blue-700 to-blue-900" />
-          <QuickAction to="/weight" icon={<Scale className="w-6 h-6" />} label="Peser" color="from-green-700 to-green-900" />
+          <QuickAction to="/musculation/new" icon={<Dumbbell className="w-6 h-6" />} label="Séance muscu" color="text-red-500 border-red-900/60 hover:border-red-700/70 hover:bg-red-900/10" />
+          <QuickAction to="/running/new" icon={<PersonStanding className="w-6 h-6" />} label="Nouvelle course" color="text-blue-500 border-blue-900/60 hover:border-blue-700/70 hover:bg-blue-900/10" />
+          <QuickAction to="/weight" icon={<Scale className="w-6 h-6" />} label="Peser" color="text-green-600 border-green-900/60 hover:border-green-700/70 hover:bg-green-900/10" />
         </div>
       </motion.div>
 
@@ -130,8 +145,8 @@ export function DashboardPage() {
         transition={{ delay: 0.4 }}
       >
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Dernières activités</h2>
-          <Link to="/calendar" className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
+          <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">Dernières activités</h2>
+          <Link to="/calendar" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] flex items-center gap-1 transition-colors">
             Voir tout <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
@@ -147,7 +162,7 @@ export function DashboardPage() {
           )}
           {lastRun && (
             <ActivityPreview
-              icon={<PersonStanding className="w-4 h-4 text-blue-400" />}
+              icon={<PersonStanding className="w-4 h-4 text-blue-500" />}
               title={`Course · ${formatDistance(lastRun.distance)}`}
               subtitle={formatDuration(lastRun.duration)}
               date={lastRun.date}
@@ -156,7 +171,7 @@ export function DashboardPage() {
           )}
           {lastWeight && (
             <ActivityPreview
-              icon={<Scale className="w-4 h-4 text-green-400" />}
+              icon={<Scale className="w-4 h-4 text-green-600" />}
               title={`Pesée · ${formatWeight(lastWeight.weight)}`}
               subtitle={lastWeight.notes ?? ''}
               date={lastWeight.date}
@@ -164,7 +179,7 @@ export function DashboardPage() {
             />
           )}
           {!lastWorkout && !lastRun && !lastWeight && (
-            <div className="text-center py-8 text-slate-500">
+            <div className="text-center py-8 text-[#6b6b6b]">
               <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Commence à enregistrer tes activités !</p>
               <Link to="/musculation/new" className="text-red-400 text-sm mt-2 inline-block hover:text-red-300 transition-colors">
@@ -182,11 +197,11 @@ function StatCard({ icon, value, label, color, bg }: {
   icon: React.ReactNode; value: string | number; label: string; color: string; bg: string;
 }) {
   return (
-    <div className={`flex items-center gap-3 p-4 rounded-2xl border ${bg}`}>
+    <div className={`flex items-center gap-3 p-4 rounded border ${bg}`}>
       <div className={color}>{icon}</div>
       <div>
         <p className={`text-lg font-bold ${color}`}>{value}</p>
-        <p className="text-xs text-slate-400">{label}</p>
+        <p className="text-xs text-[#a3a3a3]">{label}</p>
       </div>
     </div>
   );
@@ -198,10 +213,10 @@ function QuickAction({ to, icon, label, color }: {
   return (
     <Link
       to={to}
-      className={`flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-r ${color} hover:opacity-90 transition-opacity text-center`}
+      className={`flex flex-col items-center gap-2 p-4 bg-transparent border transition-colors text-center ${color}`}
     >
-      <div className="text-white">{icon}</div>
-      <span className="text-xs font-medium text-white/90">{label}</span>
+      <div>{icon}</div>
+      <span className="text-xs font-rajdhani font-semibold tracking-wide">{label}</span>
     </Link>
   );
 }
@@ -210,13 +225,16 @@ function ActivityPreview({ icon, title, subtitle, date, to }: {
   icon: React.ReactNode; title: string; subtitle: string; date: string; to: string;
 }) {
   return (
-    <Link to={to} className="flex items-center gap-3 p-4 bg-slate-900/60 border border-slate-700/50 rounded-2xl hover:border-slate-600 hover:bg-slate-800/60 transition-all">
-      <div className="p-2 bg-slate-800 rounded-xl">{icon}</div>
+    <Link
+      to={to}
+      className="flex items-center gap-3 p-4 bg-[#111111] border-l-2 border-[#c9a870]/20 hover:border-[#c9a870]/60 hover:bg-[#1c1c1c] transition-all"
+    >
+      <div className="p-2 bg-[#1c1c1c]">{icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-200 truncate">{title}</p>
-        {subtitle && <p className="text-xs text-slate-400 truncate">{subtitle}</p>}
+        <p className="text-sm font-medium text-[#d4d4d4] truncate">{title}</p>
+        {subtitle && <p className="text-xs text-[#a3a3a3] truncate">{subtitle}</p>}
       </div>
-      <span className="text-xs text-slate-500 flex-shrink-0">{formatRelativeTime(date)}</span>
+      <span className="text-xs text-[#6b6b6b] flex-shrink-0">{formatRelativeTime(date)}</span>
     </Link>
   );
 }

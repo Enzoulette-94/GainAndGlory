@@ -13,23 +13,23 @@ export function Input({ label, error, hint, icon, className = '', id, ...props }
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-slate-300">
+        <label htmlFor={inputId} className="text-sm font-medium text-[#d4d4d4]">
           {label}
         </label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a3a3a3]">
             {icon}
           </div>
         )}
         <input
           id={inputId}
           className={`
-            w-full bg-slate-800/60 border rounded-xl px-4 py-2.5 text-sm text-slate-100
-            placeholder-slate-500 outline-none transition-all duration-200
-            focus:ring-2 focus:ring-red-500 focus:border-red-500
-            ${error ? 'border-red-500' : 'border-slate-700 hover:border-slate-600'}
+            w-full bg-[#1c1c1c] border rounded px-4 py-2.5 text-sm text-[#f5f5f5]
+            placeholder-[#4a4a4a] outline-none transition-all duration-200
+            focus:ring-1 focus:ring-[#c9a870]/30 focus:border-[#c9a870]/50
+            ${error ? 'border-red-500' : 'border-white/8 hover:border-white/10'}
             ${icon ? 'pl-10' : ''}
             ${className}
           `}
@@ -37,7 +37,7 @@ export function Input({ label, error, hint, icon, className = '', id, ...props }
         />
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-[#6b6b6b]">{hint}</p>}
     </div>
   );
 }
@@ -54,23 +54,23 @@ export function Textarea({ label, error, hint, className = '', id, ...props }: T
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-slate-300">
+        <label htmlFor={inputId} className="text-sm font-medium text-[#d4d4d4]">
           {label}
         </label>
       )}
       <textarea
         id={inputId}
         className={`
-          w-full bg-slate-800/60 border rounded-xl px-4 py-2.5 text-sm text-slate-100
-          placeholder-slate-500 outline-none transition-all duration-200
-          focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none
-          ${error ? 'border-red-500' : 'border-slate-700 hover:border-slate-600'}
+          w-full bg-[#1c1c1c] border rounded px-4 py-2.5 text-sm text-[#f5f5f5]
+          placeholder-[#4a4a4a] outline-none transition-all duration-200
+          focus:ring-1 focus:ring-[#c9a870]/30 focus:border-[#c9a870]/50 resize-none
+          ${error ? 'border-red-500' : 'border-white/8 hover:border-white/10'}
           ${className}
         `}
         {...props}
       />
       {error && <p className="text-xs text-red-400">{error}</p>}
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-[#6b6b6b]">{hint}</p>}
     </div>
   );
 }
@@ -88,24 +88,24 @@ export function Select({ label, error, options, placeholder, className = '', id,
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-slate-300">
+        <label htmlFor={inputId} className="text-sm font-medium text-[#d4d4d4]">
           {label}
         </label>
       )}
       <select
         id={inputId}
         className={`
-          w-full bg-slate-800/60 border rounded-xl px-4 py-2.5 text-sm text-slate-100
+          w-full bg-[#1c1c1c] border rounded px-4 py-2.5 text-sm text-[#f5f5f5]
           outline-none transition-all duration-200 cursor-pointer
-          focus:ring-2 focus:ring-red-500 focus:border-red-500
-          ${error ? 'border-red-500' : 'border-slate-700 hover:border-slate-600'}
+          focus:ring-1 focus:ring-[#c9a870]/30 focus:border-[#c9a870]/50
+          ${error ? 'border-red-500' : 'border-white/8 hover:border-white/10'}
           ${className}
         `}
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map(opt => (
-          <option key={opt.value} value={opt.value} className="bg-slate-800">
+          <option key={opt.value} value={opt.value} className="bg-[#1c1c1c]">
             {opt.label}
           </option>
         ))}
