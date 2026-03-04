@@ -10,7 +10,7 @@ export const feedService = {
       .from('activity_feed')
       .select(`
         *,
-        user:profiles(id, username, global_level),
+        user:profiles(id, username, global_level, avatar_url),
         likes:activity_likes(id, user_id),
         comments:activity_comments(
           id, content, created_at,
@@ -29,7 +29,7 @@ export const feedService = {
       .from('activity_feed')
       .select(`
         *,
-        user:profiles(id, username, global_level),
+        user:profiles(id, username, global_level, avatar_url),
         likes:activity_likes(id, user_id),
         comments:activity_comments(
           id, content, created_at,
