@@ -926,293 +926,37 @@ function CreateForm({ userId, onCreated }: CreateFormProps) {
 }
 
 // ─────────────────────────────────────────────
-// Main page
+// Main page — Les Monstres (feed only)
 // ─────────────────────────────────────────────
 
 export function CommunityPage() {
   const { profile } = useAuth();
-  const [tab, setTab] = useState<Tab>('feed');
-  const [challenges, setChallenges] = useState<CommunityChallenge[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [joiningId, setJoiningId] = useState<string | null>(null);
-  const [contributeTarget, setContributeTarget] = useState<CommunityChallenge | null>(null);
-
-  const fetchChallenges = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const { data, error: supaErr } = await supabase
-        .from('community_challenges')
-        .select(`
-          *,
-          creator:profiles!created_by(username),
-          participations:challenge_participations(
-            user_id, contribution, completed,
-            user:profiles(username)
-          )
-        `)
-        .eq('status', 'active')
-        .order('end_date', { ascending: true });
-
-      if (supaErr) throw supaErr;
-
-      const enriched = (data ?? []).map((c: CommunityChallenge) => ({
-        ...c,
-        total_contribution: (c.participations ?? []).reduce(
-          (sum: number, p) => sum + (p.contribution ?? 0),
-          0
-        ),
-      }));
-
-      setChallenges(enriched);
-    } catch {
-      setError('Impossible de charger les défis.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchChallenges();
-  }, [fetchChallenges]);
-
-  async function handleJoin(challengeId: string) {
-    if (!profile) return;
-    setJoiningId(challengeId);
-    try {
-      const { error: supaErr } = await supabase.from('challenge_participations').insert({
-        challenge_id: challengeId,
-        user_id: profile.id,
-        contribution: 0,
-      });
-      if (supaErr) throw supaErr;
-      await fetchChallenges();
-    } catch {
-      // silently fail — the user can retry
-    } finally {
-      setJoiningId(null);
-    }
-  }
-
-  function handleOpenContribute(challenge: CommunityChallenge) {
-    setContributeTarget(challenge);
-  }
-
-  function handleContributeSaved() {
-    fetchChallenges();
-  }
-
-  const myChallenges = challenges.filter(c =>
-    (c.participations ?? []).some(p => p.user_id === profile?.id)
-  );
-
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'feed', label: 'Feed', icon: <MessageCircle className="w-4 h-4" /> },
-    { id: 'active', label: 'Défis actifs', icon: <Trophy className="w-4 h-4" /> },
-    { id: 'mine', label: 'Mes contributions', icon: <Target className="w-4 h-4" /> },
-    { id: 'create', label: 'Créer', icon: <Plus className="w-4 h-4" /> },
-  ];
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3"
       >
-        <div className="p-2.5 rounded bg-transparent border border-pink-800/40">
-          <Users className="w-6 h-6 text-pink-600" />
+        <div className="p-2.5 border border-[#c9a870]/30">
+          <Users className="w-6 h-6 text-[#c9a870]" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-white">Communauté</h1>
-          <p className="text-[#a3a3a3] text-sm mt-0.5">Feed social et défis collectifs</p>
+          <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
+            Les Monstres
+          </h1>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Ce que font les autres guerriers</p>
         </div>
       </motion.div>
 
-      {/* Tabs */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="flex gap-1 p-1 bg-[#1c1c1c] border border-white/5 rounded"
+        transition={{ delay: 0.1 }}
       >
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`
-              flex-1 flex items-center justify-center gap-1.5 text-sm font-medium
-              px-3 py-2 rounded transition-all duration-200
-              ${tab === t.id
-                ? 'bg-red-600 text-white shadow-sm'
-                : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-slate-700/50'
-              }
-            `}
-          >
-            {t.icon}
-            <span className="hidden sm:inline">{t.label}</span>
-          </button>
-        ))}
+        <FeedTab currentUserId={profile?.id} />
       </motion.div>
-
-      {/* Tab content */}
-      <AnimatePresence mode="wait">
-        {/* ── Feed ── */}
-        {tab === 'feed' && (
-          <motion.div
-            key="feed"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-          >
-            <FeedTab currentUserId={profile?.id} />
-          </motion.div>
-        )}
-
-        {/* ── Active challenges ── */}
-        {tab === 'active' && (
-          <motion.div
-            key="active"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-4"
-          >
-            {loading && <Loader text="Chargement des défis..." />}
-
-            {!loading && error && (
-              <Card className="p-6 text-center">
-                <p className="text-sm text-red-400">{error}</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={fetchChallenges}
-                  className="mt-3"
-                >
-                  Réessayer
-                </Button>
-              </Card>
-            )}
-
-            {!loading && !error && challenges.length === 0 && (
-              <Card className="p-10 text-center">
-                <Trophy className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] font-medium">Aucun défi actif pour le moment.</p>
-                <p className="text-[#6b6b6b] text-sm mt-1">
-                  Sois le premier à en proposer un !
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTab('create')}
-                  className="mt-4"
-                  icon={<Plus className="w-3.5 h-3.5" />}
-                >
-                  Créer un défi
-                </Button>
-              </Card>
-            )}
-
-            {!loading && !error && challenges.map(challenge => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                userId={profile?.id}
-                onJoin={handleJoin}
-                onContribute={handleOpenContribute}
-                joiningId={joiningId}
-              />
-            ))}
-          </motion.div>
-        )}
-
-        {/* ── My contributions ── */}
-        {tab === 'mine' && (
-          <motion.div
-            key="mine"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-4"
-          >
-            {loading && <Loader text="Chargement..." />}
-
-            {!loading && !profile && (
-              <Card className="p-8 text-center">
-                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour voir tes contributions.</p>
-              </Card>
-            )}
-
-            {!loading && profile && myChallenges.length === 0 && (
-              <Card className="p-10 text-center">
-                <Target className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] font-medium">Tu ne participes à aucun défi.</p>
-                <p className="text-[#6b6b6b] text-sm mt-1">
-                  Rejoins un défi actif pour commencer.
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTab('active')}
-                  className="mt-4"
-                >
-                  Voir les défis
-                </Button>
-              </Card>
-            )}
-
-            {!loading && profile && myChallenges.map(challenge => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                userId={profile?.id}
-                onJoin={handleJoin}
-                onContribute={handleOpenContribute}
-                joiningId={joiningId}
-                showMyContribution
-              />
-            ))}
-          </motion.div>
-        )}
-
-        {/* ── Create ── */}
-        {tab === 'create' && (
-          <motion.div
-            key="create"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-          >
-            {profile ? (
-              <CreateForm
-                userId={profile.id}
-                onCreated={() => {
-                  fetchChallenges();
-                  // stay on create tab so the user sees the success message
-                }}
-              />
-            ) : (
-              <Card className="p-8 text-center">
-                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour proposer un défi.</p>
-              </Card>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Contribution modal */}
-      <ContributeModal
-        challenge={contributeTarget}
-        userId={profile?.id}
-        onClose={() => setContributeTarget(null)}
-        onSaved={handleContributeSaved}
-      />
     </div>
   );
 }

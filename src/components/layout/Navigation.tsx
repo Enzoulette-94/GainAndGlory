@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
-  Calendar, Target, Users, Trophy, CalendarDays, User, Shield,
+  Calendar, Target, Users, Trophy, CalendarDays, User, Shield, Swords,
 } from 'lucide-react';
 
 const navItems = [
@@ -12,7 +12,8 @@ const navItems = [
   { path: '/weight', icon: Scale, label: 'Poids' },
   { path: '/calendar', icon: Calendar, label: 'Calendrier' },
   { path: '/goals', icon: Target, label: 'Objectifs' },
-  { path: '/community', icon: Users, label: 'Communauté' },
+  { path: '/community', icon: Users, label: 'Les Monstres' },
+  { path: '/team-goals', icon: Swords, label: "Objectifs équipe" },
   { path: '/hall-of-fame', icon: Trophy, label: 'Hall of Fame' },
   { path: '/events', icon: CalendarDays, label: 'Événements' },
   { path: '/profile', icon: User, label: 'Profil' },

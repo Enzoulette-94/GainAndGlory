@@ -22,6 +22,7 @@ const HallOfFamePage = lazy(() => import('./pages/HallOfFame').then(m => ({ defa
 const EventsPage = lazy(() => import('./pages/Events').then(m => ({ default: m.EventsPage })));
 const ProfilePage = lazy(() => import('./pages/Profile').then(m => ({ default: m.ProfilePage })));
 const SettingsPage = lazy(() => import('./pages/Settings').then(m => ({ default: m.SettingsPage })));
+const TeamGoalsPage = lazy(() => import('./pages/TeamGoals').then(m => ({ default: m.TeamGoalsPage })));
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/goals" element={<GoalsPage />} />
               <Route path="/community" element={<CommunityPage />} />
+              <Route path="/team-goals" element={<TeamGoalsPage />} />
               <Route path="/hall-of-fame" element={<HallOfFamePage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
