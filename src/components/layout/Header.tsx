@@ -63,10 +63,14 @@ export function Header() {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 p-1.5 hover:bg-white/5 transition-colors"
             >
-              <div className="w-8 h-8 border border-[#c9a870]/50 bg-[#1c1c1c] flex items-center justify-center">
-                <span className="text-xs font-bold text-[#c9a870] font-rajdhani">
-                  {profile?.username?.[0]?.toUpperCase() ?? 'U'}
-                </span>
+              <div className="w-8 h-8 border border-[#c9a870]/50 bg-[#1c1c1c] overflow-hidden flex items-center justify-center">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs font-bold text-[#c9a870] font-rajdhani">
+                    {profile?.username?.[0]?.toUpperCase() ?? 'U'}
+                  </span>
+                )}
               </div>
               <ChevronDown className="w-3 h-3 text-[#a3a3a3] hidden sm:block" />
             </button>

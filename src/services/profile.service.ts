@@ -50,6 +50,20 @@ export const profileService = {
     return this.updateProfile(userId, updates);
   },
 
+  async uploadAvatar(userId: string, file: File): Promise<string> {
+    const ext = file.name.split('.').pop();
+    const path = `${userId}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+    const avatarUrl = `${data.publicUrl}?t=${Date.now()}`;
+    await this.updateProfile(userId, { avatar_url: avatarUrl });
+    return avatarUrl;
+  },
+
   async updateStreak(userId: string) {
     const profile = await this.getProfile(userId);
     const today = new Date().toISOString().split('T')[0];

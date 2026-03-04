@@ -212,8 +212,12 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
     >
       {/* Header : avatar + nom + niveau + temps */}
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-8 h-8 border border-[#c9a870]/30 flex items-center justify-center bg-[#1c1c1c]">
-          <span className="text-xs font-bold font-rajdhani text-[#c9a870]">{initials}</span>
+        <div className="flex-shrink-0 w-8 h-8 border border-[#c9a870]/30 overflow-hidden bg-[#1c1c1c] flex items-center justify-center">
+          {item.user?.avatar_url ? (
+            <img src={item.user.avatar_url} alt={username} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs font-bold font-rajdhani text-[#c9a870]">{initials}</span>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">

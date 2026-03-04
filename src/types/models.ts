@@ -17,6 +17,7 @@ export type {
 export interface Profile {
   id: string;
   username: string;
+  avatar_url: string | null;
   created_at: string;
   fc_max: number | null;
   share_performances: boolean;

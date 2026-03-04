@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Settings2,
   User,
@@ -8,6 +8,7 @@ import {
   LogOut,
   Edit2,
   Save,
+  Camera,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader } from '../components/common/Card';
@@ -55,6 +56,28 @@ function ToggleSwitch({ value, onChange, disabled = false, id }: ToggleSwitchPro
 // ---------------------------------------------------------------------------
 export function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth();
+
+  // --- avatar state ---
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith('image/')) { setAvatarError('Fichier image requis.'); return; }
+    if (file.size > 2 * 1024 * 1024) { setAvatarError('Taille max 2 Mo.'); return; }
+    setAvatarError('');
+    setUploadingAvatar(true);
+    try {
+      await profileService.uploadAvatar(user.id, file);
+      await refreshProfile();
+    } catch {
+      setAvatarError("Erreur lors de l'upload. Vérifie le bucket Supabase.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   // --- username modal state ---
   const [usernameModalOpen, setUsernameModalOpen] = useState(false);
@@ -227,6 +250,39 @@ export function SettingsPage() {
             icon={<User className="w-4 h-4" />}
           />
           <div className="p-4 space-y-4">
+            {/* Avatar row */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="relative w-16 h-16 border border-[#c9a870]/30 hover:border-[#c9a870]/70 bg-[#1c1c1c] flex items-center justify-center overflow-hidden group transition-colors flex-shrink-0"
+              >
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-rajdhani font-bold text-[#c9a870] text-xl">
+                    {profile?.username?.[0]?.toUpperCase() ?? 'U'}
+                  </span>
+                )}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-[#c9a870] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </button>
+              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              <div>
+                <p className="text-sm font-medium text-[#d4d4d4]">Photo de profil</p>
+                <p className="text-xs text-[#6b6b6b] mt-0.5">JPG, PNG — max 2 Mo</p>
+                {avatarError && <p className="text-xs text-red-400 mt-1">{avatarError}</p>}
+              </div>
+            </div>
+
+            <div className="border-t border-white/5" />
+
             {/* Email row */}
             <div className="flex items-center justify-between">
               <div>

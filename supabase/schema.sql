@@ -27,7 +27,8 @@ CREATE TABLE profiles (
   running_level INTEGER DEFAULT 1,
   current_streak INTEGER DEFAULT 0,
   longest_streak INTEGER DEFAULT 0,
-  last_activity_date DATE
+  last_activity_date DATE,
+  avatar_url TEXT
 );
 
 CREATE TABLE exercises (
