@@ -254,6 +254,84 @@ export function CalendarPage() {
         </div>
       </motion.div>
 
+      {/* Objectifs personnels ce mois */}
+      {monthGoals.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">
+              Objectifs ce mois
+            </h2>
+            <Link to="/goals" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">
+              Voir tout →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {monthGoals.map(g => {
+              const pct = g.target_value && g.target_value > 0
+                ? Math.min(100, Math.round(((g.current_value ?? 0) / g.target_value) * 100))
+                : 0;
+              const daysLeft = g.deadline
+                ? Math.max(0, Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+                : null;
+              const typeColor = g.type === 'musculation' ? 'border-red-800/50' : g.type === 'running' ? 'border-blue-800/50' : 'border-green-800/50';
+              const barColor = g.type === 'musculation' ? 'bg-red-800' : g.type === 'running' ? 'bg-blue-800' : 'bg-green-800';
+              return (
+                <div key={g.id} className={`p-3 bg-[#111111] border-l-2 ${typeColor}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-4 h-4 text-[#c9a870] flex-shrink-0" />
+                    <p className="text-sm font-medium text-[#d4d4d4] flex-1 truncate">{g.title}</p>
+                    {daysLeft !== null && (
+                      <span className={`text-xs font-rajdhani font-bold flex-shrink-0 ${daysLeft <= 3 ? 'text-red-400' : 'text-[#c9a870]'}`}>
+                        {daysLeft === 0 ? "Aujourd'hui" : `J-${daysLeft}`}
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-full h-1 bg-white/5">
+                    <div className={`h-1 ${barColor}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  {g.target_value && (
+                    <p className="text-xs text-[#6b6b6b] mt-1">{g.current_value ?? 0} / {g.target_value} {g.unit ?? ''}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Défis d'équipe ce mois */}
+      {monthChallenges.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">
+              Défis d'équipe ce mois
+            </h2>
+            <Link to="/team-goals" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">
+              Voir tout →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {monthChallenges.map(c => {
+              const daysLeft = Math.max(0, Math.ceil((new Date(c.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+              return (
+                <div key={c.id} className="p-3 bg-[#111111] border-l-2 border-pink-800/60">
+                  <div className="flex items-center gap-2">
+                    <Swords className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                    <p className="text-sm font-medium text-[#d4d4d4] flex-1 truncate">{c.title}</p>
+                    <span className="text-xs font-rajdhani font-bold text-pink-500 flex-shrink-0">
+                      {daysLeft === 0 ? 'Dernier jour' : `J-${daysLeft}`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#6b6b6b] mt-1 ml-6">
+                    {formatDate(c.start_date)} → {formatDate(c.end_date)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* Navigation mois */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className="p-4">
@@ -374,84 +452,6 @@ export function CalendarPage() {
           </Card>
         ))}
       </motion.div>
-
-      {/* Objectifs personnels ce mois */}
-      {monthGoals.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">
-              Objectifs ce mois
-            </h2>
-            <Link to="/goals" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">
-              Voir tout →
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {monthGoals.map(g => {
-              const pct = g.target_value && g.target_value > 0
-                ? Math.min(100, Math.round(((g.current_value ?? 0) / g.target_value) * 100))
-                : 0;
-              const daysLeft = g.deadline
-                ? Math.max(0, Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-                : null;
-              const typeColor = g.type === 'musculation' ? 'border-red-800/50' : g.type === 'running' ? 'border-blue-800/50' : 'border-green-800/50';
-              const barColor = g.type === 'musculation' ? 'bg-red-800' : g.type === 'running' ? 'bg-blue-800' : 'bg-green-800';
-              return (
-                <div key={g.id} className={`p-3 bg-[#111111] border-l-2 ${typeColor}`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-[#c9a870] flex-shrink-0" />
-                    <p className="text-sm font-medium text-[#d4d4d4] flex-1 truncate">{g.title}</p>
-                    {daysLeft !== null && (
-                      <span className={`text-xs font-rajdhani font-bold flex-shrink-0 ${daysLeft <= 3 ? 'text-red-400' : 'text-[#c9a870]'}`}>
-                        {daysLeft === 0 ? "Aujourd'hui" : `J-${daysLeft}`}
-                      </span>
-                    )}
-                  </div>
-                  <div className="w-full h-1 bg-white/5">
-                    <div className={`h-1 ${barColor}`} style={{ width: `${pct}%` }} />
-                  </div>
-                  {g.target_value && (
-                    <p className="text-xs text-[#6b6b6b] mt-1">{g.current_value ?? 0} / {g.target_value} {g.unit ?? ''}</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Défis d'équipe ce mois */}
-      {monthChallenges.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">
-              Défis d'équipe ce mois
-            </h2>
-            <Link to="/team-goals" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">
-              Voir tout →
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {monthChallenges.map(c => {
-              const daysLeft = Math.max(0, Math.ceil((new Date(c.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
-              return (
-                <div key={c.id} className="p-3 bg-[#111111] border-l-2 border-pink-800/60">
-                  <div className="flex items-center gap-2">
-                    <Swords className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                    <p className="text-sm font-medium text-[#d4d4d4] flex-1 truncate">{c.title}</p>
-                    <span className="text-xs font-rajdhani font-bold text-pink-500 flex-shrink-0">
-                      {daysLeft === 0 ? 'Dernier jour' : `J-${daysLeft}`}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#6b6b6b] mt-1 ml-6">
-                    {formatDate(c.start_date)} → {formatDate(c.end_date)}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
 
       {/* Modal détail du jour */}
       <Modal isOpen={!!selectedDay} onClose={() => setSelectedDay(null)}
