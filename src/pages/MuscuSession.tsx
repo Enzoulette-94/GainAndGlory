@@ -62,6 +62,7 @@ export function MuscuSessionPage() {
   const navigate = useNavigate();
 
   const [date, setDate] = useState(toLocalDatetimeValue());
+  const [sessionName, setSessionName] = useState('');
   const [exercises, setExercises] = useState<ExerciseBlock[]>([defaultExerciseBlock()]);
   const [feedback, setFeedback] = useState<Feedback | ''>('');
   const [notes, setNotes] = useState('');
@@ -179,6 +180,7 @@ export function MuscuSessionPage() {
       const session = await workoutService.createSession({
         user_id: profile.id,
         date: new Date(date).toISOString(),
+        name: sessionName.trim() || undefined,
         feedback: feedback || undefined,
         notes: notes.trim() || undefined,
         sets,
@@ -192,6 +194,7 @@ export function MuscuSessionPage() {
         sets.length,
         feedback || undefined,
         session.id,
+        sessionName.trim() || undefined,
       );
 
       navigate('/musculation');
@@ -227,7 +230,13 @@ export function MuscuSessionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-4">
+          <Card className="p-4 space-y-3">
+            <Input
+              label="Titre de la séance (optionnel)"
+              placeholder="ex. Chest Day, Push Day, Leg Killer..."
+              value={sessionName}
+              onChange={e => setSessionName(e.target.value)}
+            />
             <Input
               label="Date et heure"
               type="datetime-local"

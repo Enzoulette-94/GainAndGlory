@@ -35,6 +35,7 @@ export function RunSessionPage() {
 
   // Champs principaux
   const [date, setDate] = useState(toLocalDatetimeValue());
+  const [sessionName, setSessionName] = useState('');
   const [distance, setDistance] = useState('');
   const [hours, setHours] = useState('');
   const [minutes, setMinutes] = useState('');
@@ -105,6 +106,7 @@ export function RunSessionPage() {
       const session = await runningService.createSession({
         user_id: profile.id,
         date: new Date(date).toISOString(),
+        name: sessionName.trim() || undefined,
         distance: distanceNum,
         duration: durationSeconds,
         run_type: runType || undefined,
@@ -128,6 +130,7 @@ export function RunSessionPage() {
         pace,
         runType || undefined,
         session.id,
+        sessionName.trim() || undefined,
       );
 
       navigate('/running');
@@ -178,7 +181,13 @@ export function RunSessionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-4">
+          <Card className="p-4 space-y-3">
+            <Input
+              label="Titre de la course (optionnel)"
+              placeholder="ex. Morning Run, Trail des crêtes, Sortie longue..."
+              value={sessionName}
+              onChange={e => setSessionName(e.target.value)}
+            />
             <Input
               label="Date et heure"
               type="datetime-local"

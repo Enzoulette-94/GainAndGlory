@@ -191,6 +191,11 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
         {/* ── MUSCU ── */}
         {!loading && data && isWorkout && (
           <>
+            {data.name && (
+              <h3 className="font-rajdhani font-bold text-lg text-[#f5f5f5] tracking-wide uppercase border-b border-white/5 pb-2">
+                {data.name}
+              </h3>
+            )}
             {/* Méta */}
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
@@ -234,6 +239,11 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
         {/* ── COURSE ── */}
         {!loading && data && !isWorkout && (
           <>
+            {data.name && (
+              <h3 className="font-rajdhani font-bold text-lg text-blue-400 tracking-wide uppercase border-b border-white/5 pb-2">
+                {data.name}
+              </h3>
+            )}
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               {data.run_type && (
@@ -347,14 +357,14 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
     const c = item.content;
     switch (c.type) {
       case 'workout': return {
-        label: 'SÉANCE MUSCU',
+        label: (c as any).name ? (c as any).name.toUpperCase() : 'SÉANCE MUSCU',
         borderColor: 'border-l-red-800/70',
         labelColor: 'text-red-400',
         stats: `${c.tonnage.toLocaleString('fr-FR')} kg · ${c.sets_count} sér.`,
         feedback: c.feedback ?? null,
       };
       case 'run': return {
-        label: 'COURSE',
+        label: (c as any).name ? (c as any).name.toUpperCase() : 'COURSE',
         borderColor: 'border-l-blue-800/70',
         labelColor: 'text-blue-500',
         stats: `${formatDistance(c.distance)} · ${formatDuration(c.duration)}`,

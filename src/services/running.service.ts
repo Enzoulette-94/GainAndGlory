@@ -5,6 +5,7 @@ import type { RunningSession, Shoe } from '../types/models';
 interface CreateRunningSessionInput {
   user_id: string;
   date?: string;
+  name?: string;
   distance: number;
   duration: number;
   run_type?: string;
@@ -29,6 +30,7 @@ export const runningService = {
       .insert({
         user_id: input.user_id,
         date: input.date ?? new Date().toISOString(),
+        name: input.name ?? null,
         distance: input.distance,
         duration: input.duration,
         pace_min_per_km,

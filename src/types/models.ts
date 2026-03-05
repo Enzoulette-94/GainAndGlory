@@ -56,6 +56,7 @@ export interface WorkoutSession {
   id: string;
   user_id: string;
   date: string;
+  name: string | null;
   feedback: Feedback | null;
   total_tonnage: number | null;
   notes: string | null;
@@ -90,6 +91,7 @@ export interface RunningSession {
   id: string;
   user_id: string;
   date: string;
+  name: string | null;
   distance: number;
   duration: number;
   pace_min_per_km: number | null;

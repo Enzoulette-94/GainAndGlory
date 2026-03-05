@@ -79,23 +79,23 @@ export const feedService = {
   },
 
   // Publier une séance muscu dans le feed
-  async publishWorkout(userId: string, tonnage: number, setsCount: number, feedback?: string, sessionId?: string) {
+  async publishWorkout(userId: string, tonnage: number, setsCount: number, feedback?: string, sessionId?: string, name?: string) {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,
         type: 'workout',
-        content: { type: 'workout', tonnage, sets_count: setsCount, feedback, session_id: sessionId },
+        content: { type: 'workout', tonnage, sets_count: setsCount, feedback, session_id: sessionId, name },
       });
     } catch { /* ignore */ }
   },
 
   // Publier une course dans le feed
-  async publishRun(userId: string, distance: number, duration: number, pace: number, runType?: string, sessionId?: string) {
+  async publishRun(userId: string, distance: number, duration: number, pace: number, runType?: string, sessionId?: string, name?: string) {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,
         type: 'run',
-        content: { type: 'run', distance, duration, pace, run_type: runType, session_id: sessionId },
+        content: { type: 'run', distance, duration, pace, run_type: runType, session_id: sessionId, name },
       });
     } catch { /* ignore */ }
   },

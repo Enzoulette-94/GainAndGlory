@@ -13,6 +13,7 @@ interface CreateWorkoutSetInput {
 interface CreateWorkoutSessionInput {
   user_id: string;
   date?: string;
+  name?: string;
   feedback?: string;
   notes?: string;
   sets: CreateWorkoutSetInput[];
@@ -27,6 +28,7 @@ export const workoutService = {
       .insert({
         user_id: input.user_id,
         date: input.date ?? new Date().toISOString(),
+        name: input.name ?? null,
         feedback: input.feedback ?? null,
         notes: input.notes ?? null,
         total_tonnage,
