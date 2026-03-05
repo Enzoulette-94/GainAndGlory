@@ -17,7 +17,7 @@ export function AppLayout() {
       <div className="flex min-h-screen bg-[#080808] relative">
         {/* Fond spartiate global */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <img src="/spartan.avif" alt="" className="w-full h-full object-cover" style={{ objectPosition: '50% 35%' }} />
+          <img src="/spartan.avif" alt="" className="w-full h-full object-cover" style={{ objectPosition: '65% 35%' }} />
           <div className="absolute inset-0 bg-black/85" />
         </div>
         <div className="relative z-10 flex flex-1 min-h-screen">
