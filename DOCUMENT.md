@@ -1,6 +1,6 @@
 # Gain & Glory — Documentation Technique
 
-> Dernière mise à jour : commit `67910d3` — fix(layout): use background-image on div for reliable skull positioning
+> Dernière mise à jour : feat(nav): drawer "Plus" dans BottomNav mobile + fix accessibilité responsive
 
 ---
 
@@ -67,7 +67,9 @@ src/
 │
 ├── pages/                      # Une page = une route
 │   ├── Login.tsx / Register.tsx
-│   ├── Dashboard.tsx           # Résumé hebdo + actions rapides
+│   ├── ForgotPassword.tsx      # Envoi email de réinitialisation
+│   ├── ResetPassword.tsx       # Formulaire nouveau mot de passe (PASSWORD_RECOVERY)
+│   ├── Dashboard.tsx           # Résumé hebdo + actions rapides + motivation du jour
 │   ├── Musculation.tsx         # Liste des séances muscu (édition/suppression)
 │   ├── MuscuSession.tsx        # Formulaire nouvelle séance muscu
 │   ├── Running.tsx             # Liste des courses (édition/suppression)
@@ -99,6 +101,8 @@ src/
 │   ├── models.ts               # Interfaces des entités (importe enums.ts)
 │   └── database.ts             # Types Supabase bruts
 │
+├── data/
+│   └── motivationQuotes.ts     # 365 citations françaises + getDailyQuote()
 └── utils/
     ├── calculations.ts         # XP, allure, tonnage, formatage
     └── constants.ts            # Exercices par défaut, badges, XP_REWARDS, labels
@@ -136,6 +140,11 @@ src/
 - **RLS (Row Level Security)** activé sur toutes les tables.
 - **Realtime** : les notifications sont écoutées en temps réel via `supabase.channel()`.
 - **Storage** : bucket `progress-photos` pour les photos de progression.
+- **SMTP** : configurer Resend (smtp.resend.com:465) dans Supabase > Project Settings > Authentication > SMTP pour les emails de réinitialisation.
+
+### Compatibilité mobile (HTTP)
+
+`crypto.randomUUID()` ne fonctionne que dans les contextes sécurisés (HTTPS ou localhost). Sur mobile en HTTP local, utiliser `Math.random().toString(36).slice(2)` comme fallback (voir `MuscuSession.tsx` et `Musculation.tsx`).
 
 ---
 
@@ -166,7 +175,7 @@ Compteur de jours consécutifs d'activité, mis à jour à chaque session dans `
 ## Navigation & Layout
 
 ### Routes protégées
-Toutes les routes (sauf `/login` et `/register`) sont enveloppées dans `AppLayout` qui :
+Toutes les routes (sauf `/login`, `/register`, `/forgot-password`, `/reset-password`) sont enveloppées dans `AppLayout` qui :
 1. Vérifie l'authentification via `useAuth()`
 2. Redirige vers `/login` si non authentifié
 3. Affiche le fond d'écran spartiate (`/spartan.avif`)
@@ -175,6 +184,9 @@ Toutes les routes (sauf `/login` et `/register`) sont enveloppées dans `AppLayo
 ### Mise en page
 - **Desktop** : `SideNav` à gauche + `Header` en haut
 - **Mobile** : `BottomNav` en bas (masque la SideNav)
+  - 4 liens principaux + bouton **"Plus"** ouvrant un drawer slide-up (Framer Motion)
+  - Drawer liste les liens secondaires en grille 4 colonnes
+  - Touch targets ≥ 44×44px, `safe-area-inset-bottom` pour iPhone
 - Pages chargées en **lazy loading** (`React.lazy`) pour optimiser le bundle initial
 
 ---
@@ -227,6 +239,11 @@ npm run lint     # Linter ESLint
 
 | Commit | Description |
 |---|---|
+| récent | feat(nav): drawer "Plus" dans BottomNav + tests Navigation |
+| récent | feat(auth): pages ForgotPassword et ResetPassword |
+| récent | feat(dashboard): motivation du jour (365 citations, getDailyQuote) |
+| récent | fix(mobile): crypto.randomUUID → Math.random() pour contexte HTTP |
+| récent | fix(responsive): audit complet — z-index, touch targets, grilles, textes |
 | `67910d3` | fix(layout): background-image sur div pour positionnement fiable du crâne |
 | `87f8003` | fix(feed): afficher le ressenti (feedback) sur les cartes de course |
 | `4ccaf9b` | fix(team-goals): afficher avatar + username dans la liste des participants |

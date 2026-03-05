@@ -1,9 +1,10 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
-  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck,
+  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, MoreHorizontal, X,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 
 const navItems = [
@@ -14,7 +15,7 @@ const navItems = [
   { path: '/weight', icon: Scale, label: 'Poids' },
   { path: '/calendar', icon: Calendar, label: 'Calendrier' },
   { path: '/goals', icon: Target, label: 'Objectifs' },
-  { path: '/team-goals', icon: Swords, label: "Objectifs équipe" },
+  { path: '/team-goals', icon: Swords, label: 'Objectifs équipe' },
   { path: '/hall-of-fame', icon: Trophy, label: 'Hall of Fame' },
   { path: '/events', icon: CalendarDays, label: 'Événements' },
   { path: '/profile', icon: User, label: 'Profil' },
@@ -69,27 +70,109 @@ export function SideNav() {
 
 export function BottomNav() {
   const location = useLocation();
-  const mainItems = navItems.slice(0, 5);
+  const { profile } = useAuth();
+  const [showMore, setShowMore] = useState(false);
+  const mainItems = navItems.slice(0, 4);
+  const moreItems = navItems.slice(4);
+
+  const isMoreActive = moreItems.some(item => location.pathname === item.path);
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d]/95 backdrop-blur-sm border-t border-[#c9a870]/10 z-40">
-      <div className="flex items-center justify-around px-2 py-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-        {mainItems.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path;
-          return (
-            <NavLink
-              key={path}
-              to={path}
-              className="flex flex-col items-center gap-0.5 px-3 py-2.5 min-w-[44px] min-h-[44px] justify-center"
+    <>
+      {/* Drawer "Plus" */}
+      <AnimatePresence>
+        {showMore && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="lg:hidden fixed inset-0 bg-black/60 z-40"
+              onClick={() => setShowMore(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#c9a870]/20 z-50 rounded-t-xl"
+              style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
             >
-              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`} />
-              <span className={`text-xs font-medium transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
-                {label}
-              </span>
-            </NavLink>
-          );
-        })}
-      </div>
-    </nav>
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                <span className="font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide text-sm">Menu</span>
+                <button
+                  onClick={() => setShowMore(false)}
+                  className="p-1.5 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-1 p-3">
+                {moreItems.map(({ path, icon: Icon, label }) => {
+                  const isActive = location.pathname === path;
+                  return (
+                    <Link
+                      key={path}
+                      to={path}
+                      onClick={() => setShowMore(false)}
+                      className="flex flex-col items-center gap-1 p-3 min-h-[64px] justify-center transition-colors"
+                    >
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`} />
+                      <span className={`text-xs text-center font-medium leading-tight ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
+                        {label}
+                      </span>
+                    </Link>
+                  );
+                })}
+                {profile?.is_admin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setShowMore(false)}
+                    className="flex flex-col items-center gap-1 p-3 min-h-[64px] justify-center transition-colors"
+                  >
+                    <ShieldCheck className={`w-5 h-5 ${location.pathname === '/admin' ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`} />
+                    <span className={`text-xs text-center font-medium leading-tight ${location.pathname === '/admin' ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
+                      Admin
+                    </span>
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* BottomNav */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0d0d0d]/95 backdrop-blur-sm border-t border-[#c9a870]/10 z-40">
+        <div className="flex items-center justify-around px-2 py-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+          {mainItems.map(({ path, icon: Icon, label }) => {
+            const isActive = location.pathname === path;
+            return (
+              <NavLink
+                key={path}
+                to={path}
+                className="flex flex-col items-center gap-0.5 px-3 py-2.5 min-w-[44px] min-h-[44px] justify-center"
+              >
+                <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`} />
+                <span className={`text-xs font-medium transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
+                  {label}
+                </span>
+              </NavLink>
+            );
+          })}
+
+          {/* Bouton Plus */}
+          <button
+            onClick={() => setShowMore(true)}
+            className="flex flex-col items-center gap-0.5 px-3 py-2.5 min-w-[44px] min-h-[44px] justify-center"
+          >
+            <MoreHorizontal className={`w-5 h-5 transition-colors ${isMoreActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`} />
+            <span className={`text-xs font-medium transition-colors ${isMoreActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
+              Plus
+            </span>
+          </button>
+        </div>
+      </nav>
+    </>
   );
 }

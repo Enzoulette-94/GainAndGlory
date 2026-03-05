@@ -23,6 +23,7 @@
 14. [Système XP & Niveaux](#14-système-xp--niveaux)
 15. [Système de badges](#15-système-de-badges)
 16. [Notifications](#16-notifications)
+17. [Navigation](#17-navigation)
 
 ---
 
@@ -41,8 +42,18 @@
 - Gestion des erreurs (identifiants incorrects)
 - Redirection automatique vers `/dashboard` après connexion
 
+### Mot de passe oublié (`/forgot-password`)
+- Formulaire email → envoie un lien de réinitialisation via Supabase Auth
+- Confirmation visuelle après envoi
+- SMTP configurable (Resend recommandé)
+
+### Réinitialisation du mot de passe (`/reset-password`)
+- Écoute l'événement `PASSWORD_RECOVERY` de Supabase
+- Formulaire nouveau mot de passe + confirmation
+- Redirection automatique vers le dashboard après succès
+
 ### Protection des routes
-- Toutes les routes (sauf `/login` et `/register`) nécessitent une session active
+- Toutes les routes (sauf `/login`, `/register`, `/forgot-password`, `/reset-password`) nécessitent une session active
 - Redirection vers `/login` si non authentifié
 - `AuthContext` expose `user` et `loading` globalement
 
@@ -62,6 +73,11 @@
 ### Barres de progression XP
 - 3 barres : Global, Musculation, Course
 - Affichage du niveau actuel, XP courant / XP requis, pourcentage
+
+### Motivation du jour
+- Citation motivationnelle différente chaque jour
+- 365 phrases françaises (src/data/motivationQuotes.ts)
+- Sélection déterministe selon le jour de l'année (getDailyQuote)
 
 ### Statistiques de la semaine
 - Nombre de séances muscu
@@ -502,6 +518,33 @@
 
 ---
 
+## 19. Navigation
+
+### SideNav (desktop, `lg:` et plus)
+- Barre latérale fixe gauche avec tous les liens
+- Logo "Gain & Glory" en haut
+- Liens actifs mis en évidence (bordure dorée + fond)
+- Lien Admin visible uniquement pour `is_admin = true`
+
+### BottomNav (mobile, `< lg`)
+- Barre de navigation en bas d'écran fixe
+- 4 liens principaux : Dashboard, Muscu, Course, Poids
+- Bouton **"Plus"** (icône MoreHorizontal) pour accéder aux liens secondaires
+- Indicateur actif sur "Plus" si la route courante est un lien secondaire
+- `safe-area-inset-bottom` pour compatibilité iPhone (notch/home indicator)
+- Touch targets ≥ 44×44px
+
+### Drawer "Plus" (mobile)
+- S'ouvre au clic sur le bouton "Plus"
+- Fond semi-transparent avec fermeture au clic en dehors
+- Animation slide-up (Framer Motion, spring)
+- En-tête "Menu" + bouton X pour fermer
+- Grille 4 colonnes avec les liens secondaires : Calendrier, Objectifs, Objectifs équipe, Hall of Fame, Événements, Profil
+- Lien Admin si `is_admin = true`
+- Fermeture automatique au clic sur un lien
+
+---
+
 ## Résumé des fonctionnalités
 
 | Module | Fonctionnalités principales | Statut |
@@ -522,3 +565,5 @@
 | XP & Niveaux | Système exponentiel, 30 niveaux thématiques | ✅ |
 | Badges | Vérification automatique, déblocage, affichage | ✅ |
 | Notifications | Realtime, 7 types, centre de notifs | ✅ |
+| Navigation | SideNav desktop, BottomNav mobile + drawer "Plus" | ✅ |
+| Mot de passe oublié | Envoi email de reset, page réinitialisation | ✅ |
