@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase-client';
 import { profileService } from './profile.service';
-import { getLevelFromXP } from '../utils/calculations';
+import { getLevelFromXP, getStatusTitle } from '../utils/calculations';
 import { XP_REWARDS } from '../utils/constants';
 
 interface XPResult {
@@ -60,7 +60,7 @@ export const xpService = {
           user_id: userId,
           type: 'level_up',
           content: {
-            message: `🎉 Tu es maintenant Niveau ${newLevel} !`,
+            message: `🎉 Niveau ${newLevel} atteint ! Statut débloqué : ${getStatusTitle(newLevel)}`,
             level: newLevel,
             discipline: 'global',
           },

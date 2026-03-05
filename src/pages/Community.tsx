@@ -11,7 +11,7 @@ import { Select } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { Loader } from '../components/common/Loader';
-import { formatDate, formatRelativeTime, formatDistance, formatDuration, formatPace } from '../utils/calculations';
+import { formatDate, formatRelativeTime, formatDistance, formatDuration, formatPace, getStatusTitle } from '../utils/calculations';
 import { feedService } from '../services/feed.service';
 import type { ActivityFeedItem, ActivityComment } from '../types/models';
 
@@ -180,7 +180,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: `NIVEAU ${c.level} ATTEINT`,
         borderColor: 'border-l-[#c9a870]/60',
         labelColor: 'text-[#c9a870]',
-        stats: c.title,
+        stats: `Statut débloqué : ${getStatusTitle(c.level)}`,
         feedback: null,
       };
       case 'record': return {
