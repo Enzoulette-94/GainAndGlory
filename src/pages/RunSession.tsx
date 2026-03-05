@@ -102,7 +102,7 @@ export function RunSessionPage() {
     setError(null);
 
     try {
-      await runningService.createSession({
+      const session = await runningService.createSession({
         user_id: profile.id,
         date: new Date(date).toISOString(),
         distance: distanceNum,
@@ -127,6 +127,7 @@ export function RunSessionPage() {
         durationSeconds,
         pace,
         runType || undefined,
+        session.id,
       );
 
       navigate('/running');

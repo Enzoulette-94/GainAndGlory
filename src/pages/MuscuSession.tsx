@@ -176,7 +176,7 @@ export function MuscuSessionPage() {
     setError(null);
 
     try {
-      await workoutService.createSession({
+      const session = await workoutService.createSession({
         user_id: profile.id,
         date: new Date(date).toISOString(),
         feedback: feedback || undefined,
@@ -191,6 +191,7 @@ export function MuscuSessionPage() {
         totalTonnage,
         sets.length,
         feedback || undefined,
+        session.id,
       );
 
       navigate('/musculation');

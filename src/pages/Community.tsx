@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Plus, Zap, Target, Trophy, Calendar, Heart, MessageCircle, Star, Dumbbell, PersonStanding, Send, X } from 'lucide-react';
+import { Users, Plus, Zap, Target, Trophy, Calendar, Heart, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,6 +93,195 @@ function calcTotal(challenge: CommunityChallenge): number {
 }
 
 // ─────────────────────────────────────────────
+// Session Detail Modal
+// ─────────────────────────────────────────────
+
+function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose: () => void }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const c = item.content as any;
+  const isWorkout = item.type === 'workout';
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        if (isWorkout) {
+          let query = supabase
+            .from('workout_sessions')
+            .select('*, sets:workout_sets(*, exercise:exercises(*))')
+            .eq('user_id', item.user_id);
+          if (c.session_id) {
+            query = query.eq('id', c.session_id);
+          } else {
+            // fallback: séance la plus proche du created_at
+            const ts = new Date(item.created_at);
+            const from = new Date(ts.getTime() - 5 * 60000).toISOString();
+            const to   = new Date(ts.getTime() + 5 * 60000).toISOString();
+            query = query.gte('date', from).lte('date', to).order('date', { ascending: false }).limit(1);
+          }
+          const { data: res } = await query.maybeSingle();
+          setData(res);
+        } else {
+          let query = supabase
+            .from('running_sessions')
+            .select('*, shoe:shoes(*)')
+            .eq('user_id', item.user_id);
+          if (c.session_id) {
+            query = query.eq('id', c.session_id);
+          } else {
+            const ts = new Date(item.created_at);
+            const from = new Date(ts.getTime() - 5 * 60000).toISOString();
+            const to   = new Date(ts.getTime() + 5 * 60000).toISOString();
+            query = query.gte('date', from).lte('date', to).order('date', { ascending: false }).limit(1);
+          }
+          const { data: res } = await query.maybeSingle();
+          setData(res);
+        }
+      } catch { setData(null); }
+      finally { setLoading(false); }
+    })();
+  }, [item, isWorkout, c.session_id]);
+
+  const feedbackLabel = (fb: string | null) => {
+    if (fb === 'facile') return { label: 'Facile', color: 'text-green-500 border-green-900/50' };
+    if (fb === 'difficile') return { label: 'Difficile', color: 'text-orange-500 border-orange-900/50' };
+    if (fb === 'mort') return { label: 'Épuisé', color: 'text-red-500 border-red-900/50' };
+    return null;
+  };
+
+  const runTypeLabel = (t: string | null) => {
+    if (t === 'fractionne') return 'Fractionné';
+    if (t === 'endurance') return 'Endurance';
+    if (t === 'tempo') return 'Tempo';
+    return t;
+  };
+
+  const weatherLabel = (w: string | null) => {
+    if (w === 'ensoleille') return '☀️ Ensoleillé';
+    if (w === 'nuageux') return '☁️ Nuageux';
+    if (w === 'pluie') return '🌧️ Pluie';
+    if (w === 'vent') return '💨 Vent';
+    if (w === 'neige') return '❄️ Neige';
+    return w;
+  };
+
+  // Regrouper les sets par exercice
+  const groupedSets = React.useMemo(() => {
+    if (!data?.sets) return [];
+    const map: Record<string, { name: string; muscleGroup: string; sets: any[] }> = {};
+    for (const s of data.sets) {
+      const id = s.exercise_id;
+      if (!map[id]) map[id] = { name: s.exercise?.name ?? '—', muscleGroup: s.exercise?.muscle_group ?? '', sets: [] };
+      map[id].sets.push(s);
+    }
+    return Object.values(map).map(g => ({ ...g, sets: g.sets.sort((a: any, b: any) => a.set_number - b.set_number) }));
+  }, [data]);
+
+  const title = isWorkout ? 'Détails — Séance muscu' : 'Détails — Course';
+
+  return (
+    <Modal isOpen onClose={onClose} title={title} size="md">
+      <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+        {loading && <Loader text="Chargement de la séance..." />}
+        {!loading && !data && (
+          <p className="text-sm text-[#6b6b6b] text-center py-4">Détails non disponibles pour cette séance.</p>
+        )}
+
+        {/* ── MUSCU ── */}
+        {!loading && data && isWorkout && (
+          <>
+            {/* Méta */}
+            <div className="flex flex-wrap gap-3 text-sm">
+              <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              {data.total_tonnage != null && (
+                <span className="font-rajdhani font-bold text-[#c9a870]">
+                  {data.total_tonnage.toLocaleString('fr-FR')} kg soulevés
+                </span>
+              )}
+              {(() => { const fb = feedbackLabel(data.feedback); return fb ? (
+                <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
+              ) : null; })()}
+            </div>
+            {data.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-[#c9a870]/30 pl-3">{data.notes}</p>}
+
+            {/* Exercices */}
+            {groupedSets.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
+            <div className="space-y-4">
+              {groupedSets.map((group, gi) => (
+                <div key={gi} className="border border-white/5">
+                  <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-white/2">
+                    <Dumbbell className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                    <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{group.name}</span>
+                    <span className="text-xs text-[#6b6b6b] ml-auto">{group.muscleGroup}</span>
+                  </div>
+                  <div className="divide-y divide-white/5">
+                    {group.sets.map((s: any, si: number) => (
+                      <div key={si} className="flex items-center justify-between px-3 py-2 text-sm">
+                        <span className="text-[#6b6b6b] w-14">Série {s.set_number}</span>
+                        <span className="text-[#d4d4d4]">{s.reps} reps</span>
+                        <span className="font-rajdhani font-bold text-[#c9a870]">{s.weight} kg</span>
+                        <span className="text-[#4a4a4a] text-xs">{(s.reps * s.weight).toLocaleString('fr-FR')} kg</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ── COURSE ── */}
+        {!loading && data && !isWorkout && (
+          <>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              {data.run_type && (
+                <span className="text-xs border border-blue-800/50 text-blue-400 px-2 py-0.5 font-rajdhani font-semibold uppercase">
+                  {runTypeLabel(data.run_type)}
+                </span>
+              )}
+              {(() => { const fb = feedbackLabel(data.feedback); return fb ? (
+                <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
+              ) : null; })()}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { icon: <Footprints className="w-4 h-4 text-blue-400" />, label: 'Distance', value: formatDistance(data.distance) },
+                { icon: <Star className="w-4 h-4 text-[#c9a870]" />, label: 'Durée', value: formatDuration(data.duration) },
+                { icon: <TrendingUp className="w-4 h-4 text-green-500" />, label: 'Allure', value: data.pace_min_per_km ? formatPace(data.pace_min_per_km) : '—' },
+                { icon: <Flame className="w-4 h-4 text-red-400" />, label: 'FC moy.', value: data.avg_heart_rate ? `${data.avg_heart_rate} bpm` : '—' },
+                { icon: <Flame className="w-4 h-4 text-red-600" />, label: 'FC max.', value: data.max_heart_rate ? `${data.max_heart_rate} bpm` : '—' },
+                { icon: <Wind className="w-4 h-4 text-[#a3a3a3]" />, label: 'Dénivelé +', value: data.elevation_gain != null ? `${data.elevation_gain} m` : '—' },
+                { icon: <Wind className="w-4 h-4 text-[#6b6b6b]" />, label: 'Dénivelé −', value: data.elevation_loss != null ? `${data.elevation_loss} m` : '—' },
+                { icon: <Thermometer className="w-4 h-4 text-orange-400" />, label: 'Météo', value: data.weather_temp != null ? `${data.weather_temp}°C${data.weather_condition ? ` · ${weatherLabel(data.weather_condition)}` : ''}` : weatherLabel(data.weather_condition) ?? '—' },
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center gap-2 border border-white/5 px-3 py-2">
+                  {stat.icon}
+                  <div>
+                    <p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">{stat.label}</p>
+                    <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{stat.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {data.shoe && (
+              <div className="flex items-center gap-2 text-sm text-[#a3a3a3] border border-white/5 px-3 py-2">
+                <PersonStanding className="w-4 h-4 text-[#c9a870]" />
+                <span>Chaussure : <span className="text-[#e5e5e5] font-medium">{[data.shoe.brand, data.shoe.model].filter(Boolean).join(' ')}</span></span>
+              </div>
+            )}
+            {data.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-blue-800/50 pl-3">{data.notes}</p>}
+          </>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Feed item card
 // ─────────────────────────────────────────────
 
@@ -107,6 +296,8 @@ interface FeedItemCardProps {
 function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDeleted }: FeedItemCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [showDetail, setShowDetail] = useState(false);
+  const canShowDetail = item.type === 'workout' || item.type === 'run';
   const [sendingComment, setSendingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -247,11 +438,19 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
             </span>
           )}
         </div>
-        {typeConfig.stats && (
-          <span className="text-xs text-[#a3a3a3] text-right flex-shrink-0 mt-0.5">
-            {typeConfig.stats}
-          </span>
-        )}
+        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+          {typeConfig.stats && (
+            <span className="text-xs text-[#a3a3a3] text-right">{typeConfig.stats}</span>
+          )}
+          {canShowDetail && (
+            <button
+              onClick={() => setShowDetail(true)}
+              className="flex items-center gap-1 text-[10px] text-[#6b6b6b] hover:text-[#c9a870] transition-colors font-rajdhani font-medium uppercase tracking-wide"
+            >
+              Voir les détails <ChevronRight className="w-3 h-3" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Footer : like + commentaires */}
@@ -355,6 +554,10 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
             </motion.div>
           )}
         </AnimatePresence>
+
+      {showDetail && canShowDetail && (
+        <SessionDetailModal item={item} onClose={() => setShowDetail(false)} />
+      )}
     </motion.div>
   );
 }
