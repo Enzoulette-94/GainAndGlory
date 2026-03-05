@@ -10,6 +10,7 @@ import { goalsService } from '../services/goals.service';
 import { supabase } from '../lib/supabase-client';
 import { XPBar } from '../components/xp-system/XPBar';
 import { getLevelTitle, formatWeight, formatDistance, formatDuration, formatRelativeTime, formatDate } from '../utils/calculations';
+import { getDailyQuote } from '../data/motivationQuotes';
 import type { WorkoutSession, RunningSession, WeightEntry, PersonalGoal } from '../types/models';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -146,11 +147,22 @@ export function DashboardPage() {
         <XPBar profile={profile} discipline="running" />
       </motion.div>
 
-      {/* Stats semaine */}
+      {/* Motivation du jour */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="p-4 bg-[#0e0e0e] border border-[#c9a870]/20 border-l-2 border-l-[#c9a870]/60"
+      >
+        <p className="font-rajdhani text-xs font-semibold text-[#8b6f47] uppercase tracking-wider mb-2">Motivation du jour</p>
+        <p className="text-sm text-[#d4d4d4] italic leading-relaxed">"{getDailyQuote()}"</p>
+      </motion.div>
+
+      {/* Stats semaine */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
       >
         <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Cette semaine</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -165,7 +177,7 @@ export function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.4 }}
       >
         <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Actions rapides</h2>
         <div className="grid grid-cols-3 gap-3">

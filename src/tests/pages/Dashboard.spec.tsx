@@ -97,6 +97,21 @@ describe('DashboardPage', () => {
     });
   });
 
+  describe('Motivation du jour', () => {
+    it('affiche le titre "Motivation du jour"', async () => {
+      renderDashboard();
+      await q(/motivation du jour/i);
+    });
+
+    it('affiche une citation entre guillemets', async () => {
+      renderDashboard();
+      await waitFor(() => {
+        const el = screen.queryAllByText(/"/);
+        expect(el.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
+
   describe('Barres XP', () => {
     it('affiche la section Global XP', async () => {
       renderDashboard();
