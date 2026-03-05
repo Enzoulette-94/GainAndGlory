@@ -43,7 +43,7 @@ function defaultSet(): SetRow {
 
 function defaultExerciseBlock(): ExerciseBlock {
   return {
-    id: crypto.randomUUID(),
+    id: Math.random().toString(36).slice(2),
     exercise: null,
     sets: [defaultSet()],
     searchQuery: '',

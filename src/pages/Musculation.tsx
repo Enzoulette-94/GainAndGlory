@@ -612,7 +612,7 @@ function defaultEditSet(): EditSetRow {
 
 function defaultEditBlock(): EditExerciseBlock {
   return {
-    localId: crypto.randomUUID(),
+    localId: Math.random().toString(36).slice(2),
     exercise: null,
     searchQuery: '',
     showDropdown: false,
@@ -685,7 +685,7 @@ function SessionCard({
         if (!set.exercise_id) continue;
         if (!grouped.has(set.exercise_id)) {
           grouped.set(set.exercise_id, {
-            localId: crypto.randomUUID(),
+            localId: Math.random().toString(36).slice(2),
             exercise: set.exercise ?? null,
             searchQuery: set.exercise?.name ?? '',
             showDropdown: false,
