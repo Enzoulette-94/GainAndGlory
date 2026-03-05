@@ -180,7 +180,9 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: `NIVEAU ${c.level} ATTEINT`,
         borderColor: 'border-l-[#c9a870]/60',
         labelColor: 'text-[#c9a870]',
-        stats: `Statut débloqué : ${getStatusTitle(c.level)}`,
+        stats: null,
+        subLabel: `Statut débloqué : ${getStatusTitle(c.level)}`,
+        subLabelColor: 'text-[#c9a870]',
         feedback: null,
       };
       case 'record': return {
@@ -234,15 +236,22 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           <p className={`font-rajdhani font-semibold tracking-wide text-sm ${typeConfig.labelColor}`}>
             {typeConfig.label}
           </p>
+          {(typeConfig as any).subLabel && (
+            <p className={`font-rajdhani font-semibold tracking-wide text-sm mt-0.5 ${(typeConfig as any).subLabelColor ?? 'text-[#a3a3a3]'}`}>
+              {(typeConfig as any).subLabel}
+            </p>
+          )}
           {typeConfig.feedback && (
             <span className="inline-block mt-1 text-xs text-[#6b6b6b] border border-white/8 px-2 py-0.5 uppercase tracking-wide font-rajdhani">
               {typeConfig.feedback}
             </span>
           )}
         </div>
-        <span className="text-xs text-[#a3a3a3] text-right flex-shrink-0 mt-0.5">
-          {typeConfig.stats}
-        </span>
+        {typeConfig.stats && (
+          <span className="text-xs text-[#a3a3a3] text-right flex-shrink-0 mt-0.5">
+            {typeConfig.stats}
+          </span>
+        )}
       </div>
 
       {/* Footer : like + commentaires */}
