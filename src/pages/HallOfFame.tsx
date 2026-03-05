@@ -14,6 +14,7 @@ interface RankEntry {
   username: string;
   level: number;
   value: number;
+  avatar_url: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -95,9 +96,14 @@ function LeaderboardColumn({
                 {rankLabel(rank)}
               </span>
 
-              {/* Initiale */}
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border ${colors.border} ${colors.bg}`}>
-                <span className={colors.text}>{entry.username.charAt(0).toUpperCase()}</span>
+              {/* Avatar */}
+              <div className={`w-7 h-7 rounded-full flex-shrink-0 border overflow-hidden ${colors.border}`}>
+                {entry.avatar_url
+                  ? <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
+                  : <div className={`w-full h-full flex items-center justify-center text-xs font-black ${colors.bg}`}>
+                      <span className={colors.text}>{entry.username.charAt(0).toUpperCase()}</span>
+                    </div>
+                }
               </div>
 
               {/* Nom + niveau */}
@@ -135,7 +141,7 @@ function useXPRanking() {
     let cancelled = false;
     supabase
       .from('profiles')
-      .select('id, username, total_xp, global_level, current_streak')
+      .select('id, username, total_xp, global_level, current_streak, avatar_url')
       .order('total_xp', { ascending: false })
       .limit(5)
       .then(({ data, error: err }) => {
@@ -143,7 +149,7 @@ function useXPRanking() {
         if (err) { setError('Erreur chargement XP'); }
         else {
           setEntries((data ?? []).map((p: any) => ({
-            id: p.id, username: p.username, level: p.global_level, value: p.total_xp,
+            id: p.id, username: p.username, level: p.global_level, value: p.total_xp, avatar_url: p.avatar_url ?? null,
           })));
         }
         setLoading(false);
@@ -175,7 +181,7 @@ function useRunningRanking() {
         if (sorted.length === 0) { if (!cancelled) { setEntries([]); setLoading(false); } return; }
 
         const { data: profiles, error: err2 } = await supabase
-          .from('profiles').select('id, username, global_level').in('id', sorted.map(([id]) => id));
+          .from('profiles').select('id, username, global_level, avatar_url').in('id', sorted.map(([id]) => id));
         if (err2) throw err2;
 
         const map: Record<string, any> = {};
@@ -183,7 +189,7 @@ function useRunningRanking() {
 
         if (!cancelled) {
           setEntries(sorted.filter(([id]) => map[id]).map(([id, v]) => ({
-            id, username: map[id].username, level: map[id].global_level, value: v,
+            id, username: map[id].username, level: map[id].global_level, value: v, avatar_url: map[id].avatar_url ?? null,
           })));
           setLoading(false);
         }
@@ -216,7 +222,7 @@ function useMusculationRanking() {
         if (sorted.length === 0) { if (!cancelled) { setEntries([]); setLoading(false); } return; }
 
         const { data: profiles, error: err2 } = await supabase
-          .from('profiles').select('id, username, global_level').in('id', sorted.map(([id]) => id));
+          .from('profiles').select('id, username, global_level, avatar_url').in('id', sorted.map(([id]) => id));
         if (err2) throw err2;
 
         const map: Record<string, any> = {};
@@ -224,7 +230,7 @@ function useMusculationRanking() {
 
         if (!cancelled) {
           setEntries(sorted.filter(([id]) => map[id]).map(([id, v]) => ({
-            id, username: map[id].username, level: map[id].global_level, value: v,
+            id, username: map[id].username, level: map[id].global_level, value: v, avatar_url: map[id].avatar_url ?? null,
           })));
           setLoading(false);
         }
