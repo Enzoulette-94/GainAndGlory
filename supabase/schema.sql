@@ -169,6 +169,14 @@ CREATE TABLE events (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE event_participations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id UUID REFERENCES events(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(event_id, user_id)
+);
+
 CREATE TABLE badges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT UNIQUE NOT NULL,
@@ -326,10 +334,16 @@ CREATE POLICY "participations_select" ON challenge_participations FOR SELECT USI
 CREATE POLICY "participations_insert" ON challenge_participations FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "participations_update" ON challenge_participations FOR UPDATE USING (auth.uid() = user_id);
 
--- Events
-CREATE POLICY "events_select" ON events FOR SELECT USING (auth.uid() = user_id);
+-- Events (visibles par tous)
+CREATE POLICY "events_select" ON events FOR SELECT USING (true);
 CREATE POLICY "events_insert" ON events FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "events_delete" ON events FOR DELETE USING (auth.uid() = user_id);
+
+-- Event participations
+ALTER TABLE event_participations ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ep_select" ON event_participations FOR SELECT USING (true);
+CREATE POLICY "ep_insert" ON event_participations FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "ep_delete" ON event_participations FOR DELETE USING (auth.uid() = user_id);
 
 -- User badges
 CREATE POLICY "user_badges_select" ON user_badges FOR SELECT USING (true);

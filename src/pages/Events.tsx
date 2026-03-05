@@ -8,6 +8,9 @@ import {
   ChevronDown,
   CheckCircle2,
   AlertCircle,
+  Users,
+  UserPlus,
+  UserCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,14 +27,20 @@ import { formatDate } from '../utils/calculations';
 // TYPES
 // ============================================================
 
+interface EventParticipant {
+  user_id: string;
+  user: { username: string; avatar_url: string | null } | null;
+}
+
 interface Event {
   id: string;
   user_id: string;
   title: string;
   description: string | null;
-  event_date: string; // YYYY-MM-DD
+  event_date: string;
   type: string | null;
   created_at: string;
+  participations?: EventParticipant[];
 }
 
 type EventType = 'course' | 'competition' | 'trail' | 'triathlon' | 'autre';
@@ -185,21 +194,75 @@ function Toast({ message, type, onDismiss }: ToastProps) {
 }
 
 // ============================================================
+// PARTICIPANT AVATARS
+// ============================================================
+
+function ParticipantList({ participants }: { participants: EventParticipant[] }) {
+  if (participants.length === 0) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-white/5">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Users className="w-3 h-3 text-[#6b6b6b]" />
+        <span className="text-xs text-[#6b6b6b]">
+          {participants.length} participant{participants.length > 1 ? 's' : ''}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {participants.map(p => (
+          <span
+            key={p.user_id}
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/3 border border-white/8 text-xs text-[#a3a3a3]"
+          >
+            {p.user?.avatar_url ? (
+              <img
+                src={p.user.avatar_url}
+                alt=""
+                className="w-4 h-4 rounded-full object-cover"
+              />
+            ) : (
+              <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[9px] text-[#6b6b6b] font-bold">
+                {(p.user?.username ?? '?')[0].toUpperCase()}
+              </span>
+            )}
+            {p.user?.username ?? '—'}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // UPCOMING EVENT CARD
 // ============================================================
 
 interface UpcomingEventCardProps {
   event: Event;
+  currentUserId: string;
+  isParticipating: boolean;
+  participationLoading: boolean;
   onDelete: (id: string) => void;
   deletingId: string | null;
+  onToggleParticipation: (eventId: string, isParticipating: boolean) => void;
 }
 
-function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardProps) {
+function UpcomingEventCard({
+  event,
+  currentUserId,
+  isParticipating,
+  participationLoading,
+  onDelete,
+  deletingId,
+  onToggleParticipation,
+}: UpcomingEventCardProps) {
   const config = getTypeConfig(event.type);
   const countdownLabel = getCountdownLabel(event.event_date);
   const days = getCountdownDays(event.event_date);
   const isToday = days === 0;
   const isTomorrow = days === 1;
+  const isOwner = event.user_id === currentUserId;
+  const participants = event.participations ?? [];
 
   return (
     <motion.div
@@ -231,15 +294,17 @@ function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardPro
                 </div>
               </div>
 
-              {/* Delete button */}
-              <button
-                onClick={() => onDelete(event.id)}
-                disabled={deletingId === event.id}
-                className="p-1.5 rounded-lg hover:bg-transparent text-[#6b6b6b] hover:text-red-400 transition-colors shrink-0 disabled:opacity-40"
-                aria-label="Supprimer l'événement"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {/* Delete button (owner only) */}
+              {isOwner && (
+                <button
+                  onClick={() => onDelete(event.id)}
+                  disabled={deletingId === event.id}
+                  className="p-1.5 rounded-lg hover:bg-transparent text-[#6b6b6b] hover:text-red-400 transition-colors shrink-0 disabled:opacity-40"
+                  aria-label="Supprimer l'événement"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Countdown + type badges */}
@@ -272,6 +337,30 @@ function UpcomingEventCard({ event, onDelete, deletingId }: UpcomingEventCardPro
                 {event.description}
               </p>
             )}
+
+            {/* Bouton participer */}
+            <div className="mt-3">
+              <button
+                onClick={() => onToggleParticipation(event.id, isParticipating)}
+                disabled={participationLoading}
+                className={`
+                  inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold
+                  border transition-all rounded disabled:opacity-50
+                  ${isParticipating
+                    ? 'bg-[#c9a870]/10 border-[#c9a870]/40 text-[#c9a870] hover:bg-red-900/10 hover:border-red-700/40 hover:text-red-400'
+                    : 'bg-transparent border-white/10 text-[#6b6b6b] hover:border-[#c9a870]/40 hover:text-[#c9a870] hover:bg-[#c9a870]/5'
+                  }
+                `}
+              >
+                {isParticipating
+                  ? <><UserCheck className="w-3.5 h-3.5" /> Je participe</>
+                  : <><UserPlus className="w-3.5 h-3.5" /> Participer</>
+                }
+              </button>
+            </div>
+
+            {/* Liste des participants */}
+            <ParticipantList participants={participants} />
           </div>
         </div>
       </Card>
@@ -294,6 +383,7 @@ export function EventsPage() {
   const [showModal, setShowModal] = useState(false);
   const [showAllPast, setShowAllPast] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [participationLoadingId, setParticipationLoadingId] = useState<string | null>(null);
 
   // Form state
   const [form, setForm] = useState<EventForm>(INITIAL_FORM);
@@ -303,15 +393,14 @@ export function EventsPage() {
   // Toast state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // ── Load events ──────────────────────────────────────────────
+  // ── Load events (all users) ───────────────────────────────────
   const loadEvents = useCallback(async () => {
     if (!profile) return;
     try {
       setLoading(true);
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('events')
-        .select('*')
-        .eq('user_id', profile.id)
+        .select('*, participations:event_participations(user_id, user:profiles(username, avatar_url))')
         .order('event_date', { ascending: true });
       setEvents((data as Event[]) ?? []);
     } catch {
@@ -330,6 +419,51 @@ export function EventsPage() {
     setToast({ message, type });
   }
 
+  // ── Toggle participation ──────────────────────────────────────
+  async function toggleParticipation(eventId: string, currently: boolean) {
+    if (!profile) return;
+    setParticipationLoadingId(eventId);
+    try {
+      if (currently) {
+        // Se désinscrire
+        await (supabase as any)
+          .from('event_participations')
+          .delete()
+          .eq('event_id', eventId)
+          .eq('user_id', profile.id);
+
+        setEvents(prev => prev.map(e => {
+          if (e.id !== eventId) return e;
+          return {
+            ...e,
+            participations: (e.participations ?? []).filter(p => p.user_id !== profile.id),
+          };
+        }));
+      } else {
+        // S'inscrire
+        await (supabase as any)
+          .from('event_participations')
+          .insert({ event_id: eventId, user_id: profile.id });
+
+        setEvents(prev => prev.map(e => {
+          if (e.id !== eventId) return e;
+          const newParticipant: EventParticipant = {
+            user_id: profile.id,
+            user: { username: profile.username, avatar_url: profile.avatar_url },
+          };
+          return {
+            ...e,
+            participations: [...(e.participations ?? []), newParticipant],
+          };
+        }));
+      }
+    } catch {
+      showToast('Erreur lors de la participation.', 'error');
+    } finally {
+      setParticipationLoadingId(null);
+    }
+  }
+
   // ── Separate upcoming / past ─────────────────────────────────
   const today = getTodayString();
 
@@ -337,8 +471,9 @@ export function EventsPage() {
     .filter((e) => e.event_date >= today)
     .sort((a, b) => a.event_date.localeCompare(b.event_date));
 
+  // Past: only user's own events
   const pastEventsAll = events
-    .filter((e) => e.event_date < today)
+    .filter((e) => e.event_date < today && e.user_id === profile?.id)
     .sort((a, b) => b.event_date.localeCompare(a.event_date));
 
   const pastEvents = showAllPast
@@ -346,6 +481,7 @@ export function EventsPage() {
     : pastEventsAll.slice(0, PAST_EVENTS_LIMIT);
 
   const hasMorePast = pastEventsAll.length > PAST_EVENTS_LIMIT;
+  const isEmpty = upcomingEvents.length === 0 && pastEventsAll.length === 0;
 
   // ── Open modal ───────────────────────────────────────────────
   function openModal() {
@@ -386,8 +522,9 @@ export function EventsPage() {
       if (error) throw error;
 
       if (data) {
+        const newEvent: Event = { ...(data as Event), participations: [] };
         setEvents((prev) =>
-          ([...prev, data as Event]).sort((a, b) =>
+          ([...prev, newEvent]).sort((a, b) =>
             a.event_date.localeCompare(b.event_date)
           )
         );
@@ -427,8 +564,7 @@ export function EventsPage() {
     }
   }
 
-  // ── Empty state ──────────────────────────────────────────────
-  const isEmpty = events.length === 0;
+  if (!profile) return null;
 
   // ── Render ───────────────────────────────────────────────────
   return (
@@ -491,131 +627,107 @@ export function EventsPage() {
       )}
 
       {/* ── Upcoming events ── */}
-      {!loading && !isEmpty && (
-        <>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold text-[#c9a870] uppercase tracking-widest">
-                A venir
-              </span>
-              <span className="px-2 py-0.5 bg-transparent text-[#c9a870] text-xs font-bold border border-[#c9a870]/30">
-                {upcomingEvents.length}
-              </span>
+      {!loading && upcomingEvents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-bold text-[#c9a870] uppercase tracking-widest">
+              À venir
+            </span>
+            <span className="px-2 py-0.5 bg-transparent text-[#c9a870] text-xs font-bold border border-[#c9a870]/30">
+              {upcomingEvents.length}
+            </span>
+          </div>
+
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-3">
+              {upcomingEvents.map((event) => {
+                const isParticipating = (event.participations ?? []).some(p => p.user_id === profile.id);
+                return (
+                  <UpcomingEventCard
+                    key={event.id}
+                    event={event}
+                    currentUserId={profile.id}
+                    isParticipating={isParticipating}
+                    participationLoading={participationLoadingId === event.id}
+                    onDelete={handleDelete}
+                    deletingId={deletingId}
+                    onToggleParticipation={toggleParticipation}
+                  />
+                );
+              })}
             </div>
+          </AnimatePresence>
+        </motion.div>
+      )}
 
-            {upcomingEvents.length === 0 ? (
-              <Card className="p-6 text-center">
-                <Calendar className="w-10 h-10 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] text-sm">
-                  Aucun événement a venir. Planifies-en un !
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<Plus className="w-3.5 h-3.5" />}
-                  onClick={openModal}
-                  className="mt-3"
-                >
-                  Ajouter
-                </Button>
-              </Card>
-            ) : (
-              <AnimatePresence mode="popLayout">
-                <div className="space-y-3">
-                  {upcomingEvents.map((event) => (
-                    <UpcomingEventCard
-                      key={event.id}
-                      event={event}
-                      onDelete={handleDelete}
-                      deletingId={deletingId}
-                    />
-                  ))}
-                </div>
-              </AnimatePresence>
-            )}
-          </motion.div>
+      {/* ── Past events (user's own) ── */}
+      {!loading && pastEventsAll.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-bold text-[#6b6b6b] uppercase tracking-widest">
+              Passés
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-[#a3a3a3] text-xs font-bold border border-white/10/50">
+              {pastEventsAll.length}
+            </span>
+          </div>
 
-          {/* ── Past events ── */}
-          {pastEventsAll.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-[#6b6b6b] uppercase tracking-widest">
-                  Passes
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-[#a3a3a3] text-xs font-bold border border-white/10/50">
-                  {pastEventsAll.length}
-                </span>
-              </div>
-
-              <Card className="divide-y divide-slate-700/40">
-                <AnimatePresence>
-                  {pastEvents.map((event) => {
-                    const cfg = getTypeConfig(event.type);
-                    return (
-                      <motion.div
-                        key={event.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center gap-3 px-4 py-3"
-                      >
-                        {/* Type dot */}
-                        <div className={`w-2 h-2 rounded-full shrink-0 opacity-50 ${cfg.dot}`} />
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-[#a3a3a3] truncate">{event.title}</p>
-                          <p className="text-xs text-[#4a4a4a] mt-0.5 capitalize">
-                            {formatDate(event.event_date, {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        </div>
-
-                        {/* Type badge compact */}
-                        {event.type && (
-                          <span
-                            className={`
-                              hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border opacity-60
-                              ${cfg.badge}
-                            `}
-                          >
-                            {cfg.label}
-                          </span>
-                        )}
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-
-                {/* Toggle voir plus */}
-                {hasMorePast && (
-                  <button
-                    onClick={() => setShowAllPast((v) => !v)}
-                    className="w-full flex items-center justify-center gap-1.5 px-4 py-3 text-xs text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors"
+          <Card className="divide-y divide-slate-700/40">
+            <AnimatePresence>
+              {pastEvents.map((event) => {
+                const cfg = getTypeConfig(event.type);
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-3 px-4 py-3"
                   >
-                    <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-300 ${showAllPast ? 'rotate-180' : ''}`}
-                    />
-                    {showAllPast
-                      ? 'Voir moins'
-                      : `Voir ${pastEventsAll.length - PAST_EVENTS_LIMIT} de plus`}
-                  </button>
-                )}
-              </Card>
-            </motion.div>
-          )}
-        </>
+                    <div className={`w-2 h-2 rounded-full shrink-0 opacity-50 ${cfg.dot}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[#a3a3a3] truncate">{event.title}</p>
+                      <p className="text-xs text-[#4a4a4a] mt-0.5 capitalize">
+                        {formatDate(event.event_date, {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    {event.type && (
+                      <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border opacity-60 ${cfg.badge}`}>
+                        {cfg.label}
+                      </span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+
+            {hasMorePast && (
+              <button
+                onClick={() => setShowAllPast((v) => !v)}
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-3 text-xs text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors"
+              >
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-300 ${showAllPast ? 'rotate-180' : ''}`}
+                />
+                {showAllPast
+                  ? 'Voir moins'
+                  : `Voir ${pastEventsAll.length - PAST_EVENTS_LIMIT} de plus`}
+              </button>
+            )}
+          </Card>
+        </motion.div>
       )}
 
       {/* ── Modal : Ajouter un événement ── */}
@@ -666,19 +778,10 @@ export function EventsPage() {
           )}
 
           <div className="flex justify-end gap-2 pt-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowModal(false)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
               Annuler
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              loading={saving}
-              onClick={handleSave}
-            >
+            <Button variant="primary" size="sm" loading={saving} onClick={handleSave}>
               Enregistrer
             </Button>
           </div>
