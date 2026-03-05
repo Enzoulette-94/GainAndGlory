@@ -44,7 +44,7 @@ interface CommunityChallenge {
     user_id: string;
     contribution: number;
     completed: boolean;
-    user?: { username: string };
+    user?: { username: string; avatar_url: string | null };
   }[];
   total_contribution?: number;
 }
@@ -238,7 +238,14 @@ function ChallengeCard({
             <div className="flex flex-wrap gap-1.5">
               {(challenge.participations ?? []).map(p => (
                 <span key={p.user_id}
-                  className="inline-flex items-center px-2 py-0.5 border border-white/8 text-[#a3a3a3] font-medium bg-white/3">
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 border border-white/8 text-xs text-[#a3a3a3] bg-white/3">
+                  {p.user?.avatar_url ? (
+                    <img src={p.user.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                  ) : (
+                    <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[9px] text-[#6b6b6b] font-bold">
+                      {(p.user?.username ?? '?')[0].toUpperCase()}
+                    </span>
+                  )}
                   {p.user?.username ?? '—'}
                 </span>
               ))}
@@ -633,7 +640,7 @@ export function TeamGoalsPage() {
           creator:profiles!created_by(username),
           participations:challenge_participations(
             user_id, contribution, completed,
-            user:profiles(username)
+            user:profiles(username, avatar_url)
           )
         `)
         .eq('status', 'active')
