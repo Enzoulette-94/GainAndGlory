@@ -57,6 +57,57 @@ export function getLevelTitle(level: number): LevelTitle {
   return 'Élite';
 }
 
+/** Titre de statut LOTR/DBZ selon le niveau */
+export function getStatusTitle(level: number): string {
+  switch (level) {
+    case 1:  return 'Hobbit du Comté';
+    case 2:  return 'Rôdeur Débutant';
+    case 3:  return 'Homme du Nord';
+    case 4:  return 'Guerrier de Rohan';
+    case 5:  return 'Rôdeur du Nord';
+    case 6:  return 'Gardien de la Comté';
+    case 7:  return 'Chevalier du Gondor';
+    case 8:  return 'Capitaine des Rangers';
+    case 9:  return "Héritier d'Isildur";
+    case 10: return 'Roi du Gondor';
+    case 11: return 'Guerrier Saiyan';
+    case 12: return 'Saiyan Élite';
+    case 13: return 'Guerrier Z';
+    case 14: return 'Super Saiyan (Éveil)';
+    case 15: return 'Super Saiyan';
+    case 16: return 'Super Saiyan Ascendant';
+    case 17: return 'Super Saiyan 2';
+    case 18: return 'Super Saiyan 3';
+    case 19: return 'Super Saiyan God';
+    case 20: return 'Super Saiyan Blue';
+    case 21: return 'Ultra Instinct (Omen)';
+    case 22: return 'Ultra Instinct';
+    case 23: return 'Ultra Instinct Maîtrisé';
+    case 24: return 'Ultra Ego';
+    case 25: return 'Fusion Ultime';
+    case 26: return 'Ange en Formation';
+    case 27: return 'Ange Guerrier';
+    case 28: return 'Dieu de la Destruction (Apprenti)';
+    case 29: return 'Dieu de la Destruction';
+    case 30: return 'Zeno-Sama (Roi Suprême)';
+    default:
+      if (level >= 31 && level <= 40) return 'Entité Divine';
+      if (level >= 41 && level <= 50) return 'Créateur des Univers';
+      return 'Au-delà de la Puissance';
+  }
+}
+
+/** Couleur hex du statut selon le palier de niveau */
+export function getStatusColor(level: number): string {
+  if (level <= 5)  return '#8b6f47';  // Bronze — LOTR débutant
+  if (level <= 10) return '#c0c0c0';  // Argent — LOTR avancé
+  if (level <= 15) return '#ffd700';  // Or — Saiyan
+  if (level <= 20) return '#38bdf8';  // Bleu — Super Saiyan Blue
+  if (level <= 25) return '#c084fc';  // Violet clair — Ultra Instinct
+  if (level <= 30) return '#a855f7';  // Violet — Ange/Dieu
+  return '#ef4444';                   // Rouge — Divin
+}
+
 // ============================================================
 // COURSE À PIED
 // ============================================================

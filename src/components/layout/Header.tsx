@@ -7,6 +7,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { authService } from '../../services/auth.service';
 import { XPBar } from '../xp-system/XPBar';
 import { NotificationCenter } from '../notifications/NotificationCenter';
+import { getStatusTitle, getStatusColor, getLevelProgress } from '../../utils/calculations';
 
 export function Header() {
   const { user, profile } = useAuth();
@@ -17,6 +18,9 @@ export function Header() {
   const handleSignOut = async () => {
     await authService.signOut();
   };
+
+  const statusTitle = profile ? getStatusTitle(profile.global_level) : null;
+  const statusColor = profile ? getStatusColor(profile.global_level) : '#c9a870';
 
   return (
     <header className="sticky top-0 z-30 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-[#c9a870]/15">
@@ -88,7 +92,12 @@ export function Header() {
                   >
                     <div className="px-4 py-3 border-b border-[#c9a870]/10">
                       <p className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide">{profile?.username}</p>
-                      <p className="text-xs text-[#a3a3a3]">{user?.email}</p>
+                      {statusTitle && (
+                        <p className="text-xs font-rajdhani font-medium mt-0.5" style={{ color: statusColor }}>
+                          Niv.{profile?.global_level} · {statusTitle}
+                        </p>
+                      )}
+                      <p className="text-xs text-[#6b6b6b] mt-0.5">{user?.email}</p>
                     </div>
                     <div className="p-1">
                       <Link
