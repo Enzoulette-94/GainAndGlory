@@ -421,7 +421,7 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
           })))
         : form.type === 'tonnage' && form.exercise.trim()
           ? `kg — ${form.exercise.trim()}`
-          : form.type === 'repetitions' && form.exercise.trim()
+          : form.type === 'repetitions' && form.exercise.trim() && form.exercise !== '__custom__'
             ? `reps — ${form.exercise.trim()}`
             : unitForType(form.type);
 
@@ -496,18 +496,31 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
             value={form.exercise} onChange={e => set('exercise', e.target.value)} />
         )}
 
-        {/* Répétitions: exercice ciblé parmi une liste */}
+        {/* Répétitions: exercice ciblé parmi une liste + saisie libre */}
         {isRepetitions && (
-          <Select label="Exercice ciblé (optionnel)"
-            options={[
-              { value: '',          label: '— Aucun (toutes répétitions)' },
-              { value: 'Pompes',    label: 'Pompes' },
-              { value: 'Tractions', label: 'Tractions' },
-              { value: 'Musclu UP', label: 'Musclu UP' },
-            ]}
-            value={form.exercise}
-            onChange={e => set('exercise', e.target.value)}
-          />
+          <div className="space-y-2">
+            <Select label="Exercice ciblé (optionnel)"
+              options={[
+                { value: '',          label: '— Aucun (toutes répétitions)' },
+                { value: 'Pompes',    label: 'Pompes' },
+                { value: 'Tractions', label: 'Tractions' },
+                { value: 'Musclu UP', label: 'Musclu UP' },
+                { value: '__custom__', label: 'Autre (saisie libre)...' },
+              ]}
+              value={['', 'Pompes', 'Tractions', 'Musclu UP'].includes(form.exercise) ? form.exercise : form.exercise === '' ? '' : '__custom__'}
+              onChange={e => {
+                if (e.target.value === '__custom__') set('exercise', '__custom__');
+                else set('exercise', e.target.value);
+              }}
+            />
+            {!['', 'Pompes', 'Tractions', 'Musclu UP'].includes(form.exercise) && (
+              <Input placeholder="Nom de l'exercice..."
+                value={form.exercise === '__custom__' ? '' : form.exercise}
+                onChange={e => set('exercise', e.target.value)}
+                autoFocus
+              />
+            )}
+          </div>
         )}
 
         {/* Cible standard */}
