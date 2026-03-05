@@ -28,7 +28,8 @@ CREATE TABLE profiles (
   current_streak INTEGER DEFAULT 0,
   longest_streak INTEGER DEFAULT 0,
   last_activity_date DATE,
-  avatar_url TEXT
+  avatar_url TEXT,
+  is_admin BOOLEAN DEFAULT false
 );
 
 CREATE TABLE exercises (

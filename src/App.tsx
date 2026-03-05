@@ -23,6 +23,7 @@ const EventsPage = lazy(() => import('./pages/Events').then(m => ({ default: m.E
 const ProfilePage = lazy(() => import('./pages/Profile').then(m => ({ default: m.ProfilePage })));
 const SettingsPage = lazy(() => import('./pages/Settings').then(m => ({ default: m.SettingsPage })));
 const TeamGoalsPage = lazy(() => import('./pages/TeamGoals').then(m => ({ default: m.TeamGoalsPage })));
+const AdminPage = lazy(() => import('./pages/Admin').then(m => ({ default: m.AdminPage })));
 
 export default function App() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/admin" element={<AdminPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

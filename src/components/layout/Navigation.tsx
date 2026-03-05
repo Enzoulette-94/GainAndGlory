@@ -2,8 +2,9 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
-  Calendar, Target, Users, Trophy, CalendarDays, User, Swords,
+  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck,
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -20,6 +21,7 @@ const navItems = [
 ];
 
 export function SideNav() {
+  const { profile } = useAuth();
   return (
     <nav className="hidden lg:flex flex-col gap-0.5 w-60 bg-[#0d0d0d] border-r border-[#c9a870]/10 min-h-screen">
       {/* Logo */}
@@ -44,6 +46,22 @@ export function SideNav() {
           {label}
         </NavLink>
       ))}
+        {profile?.is_admin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) => `
+              flex items-center gap-3 px-3 py-2.5 text-sm font-medium
+              transition-colors duration-150 mt-2 border-t border-[#c9a870]/10 pt-3
+              ${isActive
+                ? 'text-[#c9a870] border-l-2 border-[#c9a870] pl-[10px] bg-[#c9a870]/10'
+                : 'text-[#a3a3a3] hover:bg-white/5 hover:text-[#d4d4d4] border-l-2 border-transparent pl-[10px]'
+              }
+            `}
+          >
+            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+            Admin
+          </NavLink>
+        )}
       </div>
     </nav>
   );
