@@ -165,7 +165,7 @@ export function DashboardPage() {
         transition={{ delay: 0.3 }}
       >
         <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Cette semaine</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard icon={<Dumbbell className="w-5 h-5" />} value={weekStats.workouts} label="Séances muscu" color="text-red-400" bg="bg-transparent border-red-900/50" />
           <StatCard icon={<PersonStanding className="w-5 h-5" />} value={weekStats.runs} label="Courses" color="text-blue-500" bg="bg-transparent border-blue-900/50" />
           <StatCard icon={<span className="text-base">🏃</span>} value={formatDistance(weekStats.distance)} label="Distance" color="text-blue-500" bg="bg-transparent border-blue-900/50" />

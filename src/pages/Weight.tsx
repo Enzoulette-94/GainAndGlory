@@ -306,7 +306,7 @@ export function WeightPage() {
                   <Scale className="w-12 h-12 text-green-600/20" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <VariationBadge value={variation7d} label="7 derniers jours" />
                   <VariationBadge value={variation30d} label="30 derniers jours" />
                 </div>

@@ -221,11 +221,11 @@ function ParticipantList({ participants }: { participants: EventParticipant[] })
                 className="w-4 h-4 rounded-full object-cover"
               />
             ) : (
-              <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[9px] text-[#6b6b6b] font-bold">
+              <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[10px] text-[#6b6b6b] font-bold">
                 {(p.user?.username ?? '?')[0].toUpperCase()}
               </span>
             )}
-            {p.user?.username ?? '—'}
+            <span className="max-w-[100px] truncate">{p.user?.username ?? '—'}</span>
           </span>
         ))}
       </div>
@@ -704,7 +704,7 @@ export function EventsPage() {
                       </p>
                     </div>
                     {event.type && (
-                      <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border opacity-60 ${cfg.badge}`}>
+                      <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-medium border opacity-60 ${cfg.badge}`}>
                         {cfg.label}
                       </span>
                     )}

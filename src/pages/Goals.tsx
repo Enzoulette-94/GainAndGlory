@@ -108,7 +108,7 @@ function Toast({ message, type, onDismiss }: ToastProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 40 }}
       className={`
-        fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]
+        fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] max-w-[calc(100vw-2rem)]
         flex items-center gap-2.5 px-5 py-3 rounded shadow-2xl
         border text-sm font-medium
         ${type === 'success'
@@ -208,7 +208,7 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
                   : <span>Échéance : {formatDate(goal.deadline)}</span>
                 }
                 {overdue && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-md bg-transparent border border-red-800/50 text-red-400 text-[10px] uppercase tracking-wide font-bold">
+                  <span className="ml-1 px-1.5 py-0.5 rounded-md bg-transparent border border-red-800/50 text-red-400 text-xs uppercase tracking-wide font-bold">
                     En retard
                   </span>
                 )}

@@ -293,7 +293,7 @@ export function RunningPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 gap-3"
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
       >
         <Card className="p-4">
           <div className="flex items-center gap-3">

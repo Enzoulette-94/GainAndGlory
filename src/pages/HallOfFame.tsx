@@ -110,9 +110,9 @@ function LeaderboardColumn({
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-semibold truncate ${isMe ? 'text-[#c9a870]' : 'text-[#e5e5e5]'}`}>
                   {entry.username}
-                  {isMe && <span className="ml-1.5 text-[9px] font-bold text-[#c9a870] border border-[#c9a870]/40 px-1 py-0.5">VOUS</span>}
+                  {isMe && <span className="ml-1.5 text-[10px] font-bold text-[#c9a870] border border-[#c9a870]/40 px-1 py-0.5">VOUS</span>}
                 </p>
-                <p className="text-[10px] text-[#6b6b6b]">Niv. {entry.level}</p>
+                <p className="text-xs text-[#6b6b6b]">Niv. {entry.level}</p>
               </div>
 
               {/* Valeur */}
@@ -120,7 +120,7 @@ function LeaderboardColumn({
                 <p className={`text-sm font-bold ${rank === 1 ? colors.text : 'text-[#d4d4d4]'}`}>
                   {formatValue(entry.value)}
                 </p>
-                <p className="text-[10px] text-[#6b6b6b]">{valueLabel}</p>
+                <p className="text-xs text-[#6b6b6b]">{valueLabel}</p>
               </div>
             </motion.div>
           );

@@ -270,7 +270,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
                 <div key={i} className="flex items-center gap-2 border border-white/5 px-3 py-2">
                   {stat.icon}
                   <div>
-                    <p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">{stat.label}</p>
+                    <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">{stat.label}</p>
                     <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{stat.value}</p>
                   </div>
                 </div>
@@ -455,7 +455,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           {canShowDetail && (
             <button
               onClick={() => setShowDetail(true)}
-              className="flex items-center gap-1 text-[10px] text-[#6b6b6b] hover:text-[#c9a870] transition-colors font-rajdhani font-medium uppercase tracking-wide"
+              className="flex items-center gap-1 text-xs text-[#6b6b6b] hover:text-[#c9a870] transition-colors font-rajdhani font-medium uppercase tracking-wide"
             >
               Voir les détails <ChevronRight className="w-3 h-3" />
             </button>
@@ -504,7 +504,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                     {comments.map(comment => (
                       <div key={comment.id} className="flex items-start gap-2 group">
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-700/80 border border-white/10/50 flex items-center justify-center mt-0.5">
-                          <span className="text-[10px] font-bold text-[#d4d4d4]">
+                          <span className="text-xs font-bold text-[#d4d4d4]">
                             {(comment.user?.username ?? '?').slice(0, 2).toUpperCase()}
                           </span>
                         </div>
@@ -513,7 +513,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                             <span className="text-xs font-semibold text-[#d4d4d4]">
                               {comment.user?.username ?? 'Inconnu'}
                             </span>
-                            <span className="text-[10px] text-[#4a4a4a]">
+                            <span className="text-xs text-[#4a4a4a]">
                               {formatRelativeTime(comment.created_at)}
                             </span>
                           </div>
@@ -527,7 +527,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                             aria-label="Supprimer le commentaire"
                           >
                             {deletingCommentId === comment.id ? (
-                              <span className="text-[10px]">...</span>
+                              <span className="text-xs">...</span>
                             ) : (
                               <X className="w-3 h-3" />
                             )}

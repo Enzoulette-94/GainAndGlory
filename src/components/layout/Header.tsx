@@ -28,7 +28,7 @@ export function Header() {
         {/* Logo mobile */}
         <Link to="/dashboard" className="lg:hidden flex items-center gap-2 group">
           <Shield className="w-5 h-5 text-[#c9a870] transition-colors group-hover:text-[#dfc99e]" />
-          <span className="font-rajdhani font-bold text-[#c9a870] text-base tracking-wide uppercase">G&G</span>
+          <span className="font-rajdhani font-bold text-[#c9a870] text-sm sm:text-base tracking-wide uppercase">G&G</span>
         </Link>
 
         {/* XP Bar */}
@@ -48,7 +48,7 @@ export function Header() {
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 rounded-full text-xs font-bold text-white flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}

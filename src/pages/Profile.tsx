@@ -57,7 +57,7 @@ function XPRow({ label, xp, color, delay = 0 }: XPRowProps) {
         </span>
       </div>
       <ProgressBar value={progress} color={color} height="sm" />
-      <p className="text-[10px] text-[#6b6b6b]">{label}</p>
+      <p className="text-xs text-[#6b6b6b]">{label}</p>
     </motion.div>
   );
 }
@@ -317,7 +317,7 @@ export function ProfilePage() {
               </div>
               <p className="text-2xl font-black text-white">{profile.current_streak}</p>
               <p className="text-xs text-[#a3a3a3]">Jours consécutifs</p>
-              <p className="text-[10px] text-[#4a4a4a]">
+              <p className="text-xs text-[#4a4a4a]">
                 Record : {profile.longest_streak} jours
               </p>
             </Card>
@@ -366,7 +366,7 @@ export function ProfilePage() {
                   }}
                 >
                   <p
-                    className="text-[11px] font-semibold truncate"
+                    className="text-xs font-semibold truncate"
                     style={{ color: config.color }}
                   >
                     {badge.name}

@@ -231,7 +231,7 @@ export function RunSessionPage() {
                     placeholder="0"
                     value={hours}
                     onChange={e => setHours(e.target.value)}
-                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-2 sm:px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
                   <span className="text-xs text-[#6b6b6b] text-center">heures</span>
                 </div>
@@ -243,7 +243,7 @@ export function RunSessionPage() {
                     placeholder="0"
                     value={minutes}
                     onChange={e => setMinutes(e.target.value)}
-                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-2 sm:px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
                   <span className="text-xs text-[#6b6b6b] text-center">minutes</span>
                 </div>
@@ -255,7 +255,7 @@ export function RunSessionPage() {
                     placeholder="0"
                     value={seconds}
                     onChange={e => setSeconds(e.target.value)}
-                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                    className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-2 sm:px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                   />
                   <span className="text-xs text-[#6b6b6b] text-center">secondes</span>
                 </div>

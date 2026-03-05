@@ -54,11 +54,11 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             className={`
               relative w-full ${sizeClasses[size]}
               bg-[#0d0d0d] border border-white/8 rounded shadow-2xl
-              max-h-[90vh] flex flex-col
+              max-h-[90vh] min-h-0 flex flex-col
             `}
           >
             {title && (
-              <div className="flex items-center justify-between p-5 border-b border-white/8">
+              <div className="flex items-center justify-between p-3 sm:p-5 border-b border-white/8">
                 <h2 className="text-lg font-semibold text-[#f5f5f5]">{title}</h2>
                 <button
                   onClick={onClose}

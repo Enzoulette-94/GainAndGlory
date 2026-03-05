@@ -44,7 +44,7 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
         <span className="text-xs text-[#6b6b6b] flex-shrink-0">{Math.round(progress * 100)}%</span>
         {statusTitle && (
           <span
-            className="text-[10px] font-rajdhani font-semibold hidden lg:block flex-shrink-0 truncate max-w-[140px]"
+            className="text-xs font-rajdhani font-semibold hidden lg:block flex-shrink-0 truncate max-w-[140px]"
             style={{ color: statusColor ?? '#a3a3a3' }}
           >
             {statusTitle}
