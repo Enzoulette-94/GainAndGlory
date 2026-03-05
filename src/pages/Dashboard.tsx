@@ -387,7 +387,7 @@ function QuickAction({ to, icon, label, color }: {
   return (
     <Link
       to={to}
-      className={`flex flex-col items-center gap-2 p-4 bg-transparent border transition-colors text-center ${color}`}
+      className={`flex flex-col items-center gap-1 p-2 sm:p-4 bg-transparent border transition-colors text-center min-h-[44px] justify-center ${color}`}
     >
       <div>{icon}</div>
       <span className="text-xs font-rajdhani font-semibold tracking-wide">{label}</span>

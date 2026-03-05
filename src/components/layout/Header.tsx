@@ -82,13 +82,13 @@ export function Header() {
             <AnimatePresence>
               {showUserMenu && (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                  <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                   <motion.div
                     initial={{ opacity: 0, y: -8, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-[#111111] border border-[#c9a870]/20 shadow-xl z-20 overflow-hidden"
+                    className="absolute right-0 top-full mt-2 w-48 bg-[#111111] border border-[#c9a870]/20 shadow-xl z-50 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-[#c9a870]/10">
                       <p className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide">{profile?.username}</p>

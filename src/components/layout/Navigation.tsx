@@ -80,10 +80,10 @@ export function BottomNav() {
             <NavLink
               key={path}
               to={path}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5"
+              className="flex flex-col items-center gap-0.5 px-3 py-2.5 min-w-[44px] min-h-[44px] justify-center"
             >
               <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`} />
-              <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
+              <span className={`text-xs font-medium transition-colors ${isActive ? 'text-[#c9a870]' : 'text-[#6b6b6b]'}`}>
                 {label}
               </span>
             </NavLink>
