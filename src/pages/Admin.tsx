@@ -365,7 +365,7 @@ function ChallengesAdmin() {
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await db.from('community_challenges')
-      .select('*, creator:profiles(username)')
+      .select('*, creator:profiles!community_challenges_created_by_fkey(username)')
       .order('created_at', { ascending: false });
     setItems(data ?? []);
     setLoading(false);
