@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Swords, Plus, Trophy, Target, Calendar, Users, Zap } from 'lucide-react';
+import { Swords, Plus, Trophy, Target, Calendar, Users, Zap, Dumbbell, Footprints, Repeat, Layers, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,12 +17,21 @@ import { formatDate } from '../utils/calculations';
 // Types
 // ─────────────────────────────────────────────
 
+type ChallengeType = 'distance' | 'tonnage' | 'sessions' | 'repetitions' | 'mixte';
+
+interface MixteTarget {
+  id: string;
+  metricType: 'kg' | 'km' | 'reps';
+  value: string;
+  exercise?: string;
+}
+
 interface CommunityChallenge {
   id: string;
   created_by: string;
   title: string;
   description: string | null;
-  type: 'distance' | 'tonnage' | 'sessions';
+  type: ChallengeType;
   target_value: number;
   unit: string;
   start_date: string;
@@ -50,36 +59,69 @@ function daysRemaining(endDate: string): number {
   return Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 }
 
-function typeLabel(type: CommunityChallenge['type']): string {
+function typeLabel(type: ChallengeType): string {
   switch (type) {
-    case 'distance': return 'Distance';
-    case 'tonnage': return 'Tonnage';
-    case 'sessions': return 'Séances';
+    case 'distance':    return 'Distance';
+    case 'tonnage':     return 'Tonnage';
+    case 'sessions':    return 'Séances';
+    case 'repetitions': return 'Répétitions';
+    case 'mixte':       return 'Mixte';
   }
 }
 
-function typeBadgeClass(type: CommunityChallenge['type']): string {
+function typeBadgeClass(type: ChallengeType): string {
   switch (type) {
-    case 'distance': return 'bg-transparent text-blue-500 border-blue-800/50';
-    case 'tonnage':  return 'bg-transparent text-red-400 border-red-800/50';
-    case 'sessions': return 'bg-transparent text-green-500 border-green-800/50';
+    case 'distance':    return 'bg-transparent text-blue-500 border-blue-800/50';
+    case 'tonnage':     return 'bg-transparent text-red-400 border-red-800/50';
+    case 'sessions':    return 'bg-transparent text-green-500 border-green-800/50';
+    case 'repetitions': return 'bg-transparent text-purple-400 border-purple-800/50';
+    case 'mixte':       return 'bg-transparent text-[#c9a870] border-[#c9a870]/40';
   }
 }
 
-function typeProgressColor(type: CommunityChallenge['type']): string {
+function typeProgressColor(type: ChallengeType): string {
   switch (type) {
-    case 'distance': return 'bg-blue-800';
-    case 'tonnage':  return 'bg-red-800';
-    case 'sessions': return 'bg-green-800';
+    case 'distance':    return 'bg-blue-800';
+    case 'tonnage':     return 'bg-red-800';
+    case 'sessions':    return 'bg-green-800';
+    case 'repetitions': return 'bg-purple-800';
+    case 'mixte':       return 'bg-[#8b6f47]';
+  }
+}
+
+function typeIcon(type: ChallengeType): React.ReactNode {
+  switch (type) {
+    case 'distance':    return <Footprints className="w-3 h-3" />;
+    case 'tonnage':     return <Dumbbell className="w-3 h-3" />;
+    case 'sessions':    return <Calendar className="w-3 h-3" />;
+    case 'repetitions': return <Repeat className="w-3 h-3" />;
+    case 'mixte':       return <Layers className="w-3 h-3" />;
   }
 }
 
 function unitForType(type: string): string {
   switch (type) {
-    case 'distance': return 'km';
-    case 'tonnage':  return 'kg';
-    case 'sessions': return 'séances';
+    case 'distance':    return 'km';
+    case 'tonnage':     return 'kg';
+    case 'sessions':    return 'séances';
+    case 'repetitions': return 'reps';
     default: return '';
+  }
+}
+
+function parseMixteTargets(unit: string): MixteTarget[] | null {
+  if (!unit.startsWith('[')) return null;
+  try {
+    const parsed = JSON.parse(unit) as { type: 'kg' | 'km' | 'reps'; value: number; exercise?: string }[];
+    return parsed.map((t, i) => ({ id: String(i), metricType: t.type, value: String(t.value), exercise: t.exercise }));
+  } catch { return null; }
+}
+
+function metricLabel(metricType: 'kg' | 'km' | 'reps'): string {
+  switch (metricType) {
+    case 'kg':   return 'kg (Tonnage)';
+    case 'km':   return 'km (Distance)';
+    case 'reps': return 'Répétitions';
   }
 }
 
@@ -119,9 +161,7 @@ function ChallengeCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center gap-1 text-xs font-rajdhani font-medium px-2 py-0.5 border ${typeBadgeClass(challenge.type)}`}>
-              {challenge.type === 'distance' && <Target className="w-3 h-3" />}
-              {challenge.type === 'tonnage'  && <Trophy className="w-3 h-3" />}
-              {challenge.type === 'sessions' && <Calendar className="w-3 h-3" />}
+              {typeIcon(challenge.type)}
               {typeLabel(challenge.type)}
             </span>
             {challenge.is_flash && (
@@ -146,13 +186,37 @@ function ChallengeCard({
         </div>
 
         {/* Progress */}
-        <div className="space-y-1.5">
-          <ProgressBar value={progress} color={typeProgressColor(challenge.type)} height="sm" />
-          <div className="flex justify-between text-xs text-[#a3a3a3]">
-            <span>{total.toLocaleString('fr-FR')} / {challenge.target_value.toLocaleString('fr-FR')} {challenge.unit}</span>
-            <span>{Math.round(progress)}%</span>
+        {challenge.type === 'mixte' ? (
+          <div className="space-y-2">
+            {(() => {
+              const targets = parseMixteTargets(challenge.unit);
+              if (!targets) return null;
+              return (
+                <div className="space-y-1">
+                  {targets.map((t, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs text-[#a3a3a3] border border-white/5 px-2 py-1">
+                      <span className="text-[#d4d4d4] font-medium">
+                        {t.exercise ? `${t.exercise} — ` : ''}{parseFloat(t.value).toLocaleString('fr-FR')} {t.metricType}
+                      </span>
+                      <span className="text-[#6b6b6b]">{metricLabel(t.metricType)}</span>
+                    </div>
+                  ))}
+                  <div className="text-xs text-[#6b6b6b] pt-1">
+                    Contributions totales : <span className="text-[#c9a870] font-medium">{total.toLocaleString('fr-FR')}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
-        </div>
+        ) : (
+          <div className="space-y-1.5">
+            <ProgressBar value={progress} color={typeProgressColor(challenge.type)} height="sm" />
+            <div className="flex justify-between text-xs text-[#a3a3a3]">
+              <span>{total.toLocaleString('fr-FR')} / {challenge.target_value.toLocaleString('fr-FR')} {challenge.unit}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+          </div>
+        )}
 
         {/* Meta */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#6b6b6b]">
@@ -286,8 +350,9 @@ function ContributeModal({ challenge, userId, onClose, onSaved }: {
 interface CreateFormState {
   title: string;
   description: string;
-  type: 'distance' | 'tonnage' | 'sessions';
+  type: ChallengeType;
   target_value: string;
+  exercise: string;
   start_date: string;
   end_date: string;
 }
@@ -295,10 +360,13 @@ interface CreateFormState {
 function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => void }) {
   const today = new Date().toISOString().split('T')[0];
   const [form, setForm] = useState<CreateFormState>({
-    title: '', description: '', type: 'distance', target_value: '', start_date: today, end_date: '',
+    title: '', description: '', type: 'distance', target_value: '', exercise: '', start_date: today, end_date: '',
   });
+  const [mixteTargets, setMixteTargets] = useState<MixteTarget[]>([
+    { id: '1', metricType: 'kg', value: '', exercise: '' },
+  ]);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateFormState, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateFormState | 'mixte', string>>>({});
   const [success, setSuccess] = useState(false);
 
   function set<K extends keyof CreateFormState>(key: K, value: CreateFormState[K]) {
@@ -307,11 +375,29 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
     setSuccess(false);
   }
 
+  function addMixteTarget() {
+    setMixteTargets(t => [...t, { id: String(Date.now()), metricType: 'kg', value: '', exercise: '' }]);
+  }
+
+  function removeMixteTarget(id: string) {
+    setMixteTargets(t => t.filter(x => x.id !== id));
+  }
+
+  function updateMixteTarget(id: string, field: keyof MixteTarget, value: string) {
+    setMixteTargets(t => t.map(x => x.id === id ? { ...x, [field]: value } : x));
+    setErrors(e => ({ ...e, mixte: undefined }));
+  }
+
   function validate(): boolean {
-    const e: Partial<Record<keyof CreateFormState, string>> = {};
+    const e: Partial<Record<keyof CreateFormState | 'mixte', string>> = {};
     if (!form.title.trim()) e.title = 'Le titre est obligatoire.';
-    const target = parseFloat(form.target_value);
-    if (isNaN(target) || target <= 0) e.target_value = 'Objectif invalide.';
+    if (form.type !== 'mixte') {
+      const target = parseFloat(form.target_value);
+      if (isNaN(target) || target <= 0) e.target_value = 'Objectif invalide.';
+    } else {
+      const valid = mixteTargets.every(t => parseFloat(t.value) > 0);
+      if (!valid || mixteTargets.length === 0) e.mixte = 'Chaque cible doit avoir une valeur valide.';
+    }
     if (!form.start_date) e.start_date = 'Date de début obligatoire.';
     if (!form.end_date) e.end_date = 'Date de fin obligatoire.';
     if (form.start_date && form.end_date && form.end_date <= form.start_date)
@@ -326,20 +412,32 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
     setSaving(true);
     setSuccess(false);
     try {
+      const isMixte = form.type === 'mixte';
+      const unit = isMixte
+        ? JSON.stringify(mixteTargets.map(t => ({
+            type: t.metricType,
+            value: parseFloat(t.value),
+            ...(t.exercise?.trim() ? { exercise: t.exercise.trim() } : {}),
+          })))
+        : form.type === 'tonnage' && form.exercise.trim()
+          ? `kg — ${form.exercise.trim()}`
+          : unitForType(form.type);
+
       const { error } = await supabase.from('community_challenges').insert({
         created_by: userId,
         title: form.title.trim(),
         description: form.description.trim() || null,
         type: form.type,
-        target_value: parseFloat(form.target_value),
-        unit: unitForType(form.type),
+        target_value: isMixte ? 0 : parseFloat(form.target_value),
+        unit,
         start_date: form.start_date,
         end_date: form.end_date,
         is_flash: false,
         status: 'active',
       });
       if (error) throw error;
-      setForm({ title: '', description: '', type: 'distance', target_value: '', start_date: today, end_date: '' });
+      setForm({ title: '', description: '', type: 'distance', target_value: '', exercise: '', start_date: today, end_date: '' });
+      setMixteTargets([{ id: '1', metricType: 'kg', value: '', exercise: '' }]);
       setSuccess(true);
       onCreated();
     } catch {
@@ -348,6 +446,9 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
       setSaving(false);
     }
   }
+
+  const isMixte = form.type === 'mixte';
+  const isTonnage = form.type === 'tonnage';
 
   return (
     <Card className="p-5">
@@ -376,23 +477,84 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
           value={form.description} onChange={e => set('description', e.target.value)} rows={3} />
         <Select label="Type"
           options={[
-            { value: 'distance', label: 'Distance (km)' },
-            { value: 'tonnage',  label: 'Tonnage (kg)' },
-            { value: 'sessions', label: 'Séances' },
+            { value: 'distance',    label: 'Distance (km)' },
+            { value: 'tonnage',     label: 'Tonnage (kg)' },
+            { value: 'sessions',    label: 'Séances' },
+            { value: 'repetitions', label: 'Répétitions' },
+            { value: 'mixte',       label: 'Mixte (multi-cibles)' },
           ]}
           value={form.type}
-          onChange={e => set('type', e.target.value as CreateFormState['type'])}
+          onChange={e => { set('type', e.target.value as ChallengeType); }}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Input label={`Objectif (${unitForType(form.type)})`} type="number" min="1" step="any"
-            placeholder="ex. 500" value={form.target_value}
-            onChange={e => set('target_value', e.target.value)} error={errors.target_value} />
-          <div className="flex items-end pb-0.5">
-            <span className="text-sm text-[#a3a3a3] bg-[#1c1c1c] border border-white/8 px-4 py-2.5 w-full">
-              {unitForType(form.type)}
-            </span>
+
+        {/* Tonnage: exercice optionnel */}
+        {isTonnage && (
+          <Input label="Exercice ciblé (optionnel)" placeholder="ex. Squat, Développé couché..."
+            value={form.exercise} onChange={e => set('exercise', e.target.value)} />
+        )}
+
+        {/* Cible standard */}
+        {!isMixte && (
+          <div className="grid grid-cols-2 gap-3">
+            <Input label={`Objectif (${unitForType(form.type)})`} type="number" min="1" step="any"
+              placeholder="ex. 500" value={form.target_value}
+              onChange={e => set('target_value', e.target.value)} error={errors.target_value} />
+            <div className="flex items-end pb-0.5">
+              <span className="text-sm text-[#a3a3a3] bg-[#1c1c1c] border border-white/8 px-4 py-2.5 w-full">
+                {unitForType(form.type)}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Mixte: cibles multiples */}
+        {isMixte && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[#a3a3a3] uppercase tracking-wide">Cibles</p>
+            <AnimatePresence>
+              {mixteTargets.map((target) => (
+                <motion.div key={target.id}
+                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                  className="border border-white/8 p-3 space-y-2 bg-[#111]"
+                >
+                  <div className="grid grid-cols-2 gap-2">
+                    <Select label="Métrique"
+                      options={[
+                        { value: 'kg',   label: 'kg — Tonnage' },
+                        { value: 'km',   label: 'km — Distance' },
+                        { value: 'reps', label: 'Répétitions' },
+                      ]}
+                      value={target.metricType}
+                      onChange={e => updateMixteTarget(target.id, 'metricType', e.target.value)}
+                    />
+                    <Input label="Valeur cible" type="number" min="1" step="any" placeholder="ex. 500"
+                      value={target.value}
+                      onChange={e => updateMixteTarget(target.id, 'value', e.target.value)} />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Input label="Exercice (optionnel)" placeholder="ex. Squat"
+                        value={target.exercise ?? ''}
+                        onChange={e => updateMixteTarget(target.id, 'exercise', e.target.value)} />
+                    </div>
+                    {mixteTargets.length > 1 && (
+                      <button type="button" onClick={() => removeMixteTarget(target.id)}
+                        className="mb-0.5 p-2 text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-700/50 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {errors.mixte && <p className="text-xs text-red-400">{errors.mixte}</p>}
+            <Button type="button" variant="ghost" size="sm" icon={<Plus className="w-3.5 h-3.5" />}
+              onClick={addMixteTarget} className="w-full border border-dashed border-white/10">
+              Ajouter une cible
+            </Button>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <Input label="Date de début" type="date" value={form.start_date}
             onChange={e => set('start_date', e.target.value)} error={errors.start_date} />
