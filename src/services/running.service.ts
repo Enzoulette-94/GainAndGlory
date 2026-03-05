@@ -90,6 +90,18 @@ export const runningService = {
     if (error) throw error;
   },
 
+  async updateSession(sessionId: string, updates: {
+    name?: string | null; date?: string; feedback?: string | null; notes?: string | null;
+    distance?: number; duration?: number; run_type?: string | null;
+    elevation_gain?: number | null; elevation_loss?: number | null;
+    avg_heart_rate?: number | null; max_heart_rate?: number | null;
+    weather_temp?: number | null; weather_condition?: string | null;
+    shoe_id?: string | null; pace_min_per_km?: number | null; pace_km_per_h?: number | null;
+  }) {
+    const { error } = await supabase.from('running_sessions').update(updates).eq('id', sessionId);
+    if (error) throw error;
+  },
+
   async getTotalDistance(userId: string): Promise<number> {
     const { data, error } = await supabase
       .from('running_sessions')

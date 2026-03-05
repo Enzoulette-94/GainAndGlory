@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip,
@@ -11,6 +11,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { workoutService } from '../services/workout.service';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { Input, Textarea } from '../components/common/Input';
+import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
 import {
   formatRelativeTime,
@@ -80,10 +82,7 @@ export function MusculationPage() {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
 
   // ── Chargement initial ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!profile) return;
-
-    const userId = profile.id;
+  function loadData(userId: string) {
     setLoading(true);
     setError(null);
 
@@ -95,9 +94,7 @@ export function MusculationPage() {
       workoutService.getPersonalRecords(userId),
     ])
       .then(([allSessions, count, tonnage, exList, prs]) => {
-        // Les 50 premières servent aux graphiques
         setChartSessions(allSessions);
-        // Les 10 premières pour l'affichage initial séances
         setSessions(allSessions.slice(0, SESSIONS_PER_PAGE));
         setTotalSessions(count);
         setTotalTonnage(tonnage);
@@ -106,6 +103,11 @@ export function MusculationPage() {
       })
       .catch(() => setError('Impossible de charger les données.'))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    if (!profile) return;
+    loadData(profile.id);
   }, [profile]);
 
   // ── Sessions filtrées ───────────────────────────────────────────────────────
@@ -414,7 +416,12 @@ export function MusculationPage() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.05 * Math.min(i, 5) }}
                     >
-                      <SessionCard session={session} />
+                      <SessionCard
+                        session={session}
+                        allExercises={exercises}
+                        onUpdated={() => profile && loadData(profile.id)}
+                        onDeleted={() => profile && loadData(profile.id)}
+                      />
                     </motion.div>
                   ))}
 
@@ -583,9 +590,49 @@ export function MusculationPage() {
   );
 }
 
+// ─── Types éditeur exercices ──────────────────────────────────────────────────
+
+interface EditSetRow {
+  reps: number;
+  weight: number;
+  rest_time: number | null;
+}
+
+interface EditExerciseBlock {
+  localId: string;
+  exercise: Exercise | null;
+  searchQuery: string;
+  showDropdown: boolean;
+  sets: EditSetRow[];
+}
+
+function defaultEditSet(): EditSetRow {
+  return { reps: 10, weight: 0, rest_time: null };
+}
+
+function defaultEditBlock(): EditExerciseBlock {
+  return {
+    localId: crypto.randomUUID(),
+    exercise: null,
+    searchQuery: '',
+    showDropdown: false,
+    sets: [defaultEditSet()],
+  };
+}
+
 // ─── SessionCard ─────────────────────────────────────────────────────────────
 
-function SessionCard({ session }: { session: WorkoutSession }) {
+function SessionCard({
+  session,
+  allExercises,
+  onUpdated,
+  onDeleted,
+}: {
+  session: WorkoutSession;
+  allExercises: Exercise[];
+  onUpdated: () => void;
+  onDeleted: () => void;
+}) {
   const setsCount = session.sets?.length ?? 0;
   const exerciseCount = session.sets
     ? new Set(session.sets.map((s) => s.exercise_id)).size
@@ -595,43 +642,442 @@ function SessionCard({ session }: { session: WorkoutSession }) {
   const feedbackLabel = feedback ? FEEDBACK_LABELS[feedback] : null;
   const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-[#6b6b6b]';
 
+  // ── Edit state ──────────────────────────────────────────────────────────────
+  const [showEdit, setShowEdit] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editFeedback, setEditFeedback] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [editBlocks, setEditBlocks] = useState<EditExerciseBlock[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // ── Delete state ────────────────────────────────────────────────────────────
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // ── Tonnage preview ─────────────────────────────────────────────────────────
+  const editTonnage = useMemo(() => {
+    return editBlocks.reduce((sum, b) => sum + b.sets.reduce((s2, s) => s2 + s.reps * s.weight, 0), 0);
+  }, [editBlocks]);
+
+  // ── Autocomplete helper ─────────────────────────────────────────────────────
+  function filteredExercises(query: string) {
+    if (!query.trim()) return allExercises.slice(0, 8);
+    const q = query.toLowerCase();
+    return allExercises
+      .filter(e => e.name.toLowerCase().includes(q) || MUSCLE_GROUP_LABELS[e.muscle_group]?.toLowerCase().includes(q))
+      .slice(0, 8);
+  }
+
+  // ── Open edit ───────────────────────────────────────────────────────────────
+  function openEdit() {
+    setEditName(session.name ?? '');
+    setEditDate(session.date.slice(0, 10));
+    setEditFeedback(session.feedback ?? '');
+    setEditNotes(session.notes ?? '');
+    setSaveError(null);
+
+    // Grouper les sets existants par exercice
+    if (session.sets && session.sets.length > 0) {
+      const grouped: Map<string, EditExerciseBlock> = new Map();
+      for (const set of session.sets) {
+        if (!set.exercise_id) continue;
+        if (!grouped.has(set.exercise_id)) {
+          grouped.set(set.exercise_id, {
+            localId: crypto.randomUUID(),
+            exercise: set.exercise ?? null,
+            searchQuery: set.exercise?.name ?? '',
+            showDropdown: false,
+            sets: [],
+          });
+        }
+        grouped.get(set.exercise_id)!.sets.push({
+          reps: set.reps,
+          weight: set.weight,
+          rest_time: set.rest_time,
+        });
+      }
+      setEditBlocks(Array.from(grouped.values()));
+    } else {
+      setEditBlocks([defaultEditBlock()]);
+    }
+
+    setShowEdit(true);
+  }
+
+  // ── Exercise block helpers ──────────────────────────────────────────────────
+  function updateBlock(localId: string, patch: Partial<EditExerciseBlock>) {
+    setEditBlocks(prev => prev.map(b => b.localId === localId ? { ...b, ...patch } : b));
+  }
+
+  function removeBlock(localId: string) {
+    setEditBlocks(prev => prev.filter(b => b.localId !== localId));
+  }
+
+  function updateEditSet(localId: string, idx: number, patch: Partial<EditSetRow>) {
+    setEditBlocks(prev => prev.map(b => {
+      if (b.localId !== localId) return b;
+      return { ...b, sets: b.sets.map((s, i) => i === idx ? { ...s, ...patch } : s) };
+    }));
+  }
+
+  function addEditSet(localId: string) {
+    setEditBlocks(prev => prev.map(b => {
+      if (b.localId !== localId) return b;
+      const last = b.sets[b.sets.length - 1] ?? defaultEditSet();
+      return { ...b, sets: [...b.sets, { ...last }] };
+    }));
+  }
+
+  function removeEditSet(localId: string, idx: number) {
+    setEditBlocks(prev => prev.map(b => {
+      if (b.localId !== localId || b.sets.length <= 1) return b;
+      return { ...b, sets: b.sets.filter((_, i) => i !== idx) };
+    }));
+  }
+
+  // ── Save ────────────────────────────────────────────────────────────────────
+  async function handleSave() {
+    const validBlocks = editBlocks.filter(b => b.exercise !== null);
+    if (validBlocks.length === 0) {
+      setSaveError('Ajoute au moins un exercice.');
+      return;
+    }
+    setSaving(true);
+    setSaveError(null);
+    try {
+      // Sauvegarder les métadonnées
+      await workoutService.updateSession(session.id, {
+        name: editName.trim() || null,
+        date: editDate,
+        feedback: editFeedback || null,
+        notes: editNotes.trim() || null,
+      });
+
+      // Remplacer les séries
+      const sets = validBlocks.flatMap((b, _) =>
+        b.sets.map((s, si) => ({
+          exercise_id: b.exercise!.id,
+          set_number: si + 1,
+          reps: s.reps,
+          weight: s.weight,
+          rest_time: s.rest_time,
+        }))
+      );
+      await workoutService.replaceSets(session.id, sets);
+
+      setShowEdit(false);
+      onUpdated();
+    } catch {
+      setSaveError('Erreur lors de la sauvegarde.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── Delete ──────────────────────────────────────────────────────────────────
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await workoutService.deleteSession(session.id);
+      setShowDelete(false);
+      onDeleted();
+    } catch {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
-      <div className="p-2.5 bg-transparent border border-red-900/40 rounded flex-shrink-0">
-        <Dumbbell className="w-5 h-5 text-red-400" />
+    <>
+      <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
+        <div className="p-2.5 bg-transparent border border-red-900/40 rounded flex-shrink-0">
+          <Dumbbell className="w-5 h-5 text-red-400" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <p className="text-sm font-semibold text-[#e5e5e5]">
+              {session.name
+                ? session.name
+                : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
+            </p>
+            {feedbackLabel && (
+              <span className={`text-xs ${feedbackColor}`}>{feedbackLabel}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
+            {session.total_tonnage != null && session.total_tonnage > 0 && (
+              <span className="font-medium text-[#d4d4d4]">
+                {formatNumber(session.total_tonnage)} kg
+              </span>
+            )}
+            {exerciseCount > 0 && (
+              <span>{exerciseCount} exercice{exerciseCount > 1 ? 's' : ''}</span>
+            )}
+            {setsCount > 0 && (
+              <span>{setsCount} série{setsCount > 1 ? 's' : ''}</span>
+            )}
+          </div>
+          {session.notes && (
+            <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs text-[#6b6b6b]">
+            {formatRelativeTime(session.date)}
+          </span>
+          <button
+            onClick={openEdit}
+            className="p-1.5 rounded text-[#6b6b6b] hover:text-[#d4d4d4] hover:bg-white/5 transition-all"
+            title="Modifier"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setShowDelete(true)}
+            className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-red-900/10 transition-all"
+            title="Supprimer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-[#e5e5e5]">
-            {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
+      {/* ── Modal édition ─────────────────────────────────────────────────── */}
+      <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Modifier la séance" size="xl">
+        <div className="p-5 space-y-5">
+          {/* Métadonnées */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <Input
+                label="Titre (optionnel)"
+                placeholder="Ex: Push day, Legs..."
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+              />
+            </div>
+            <Input
+              label="Date"
+              type="date"
+              value={editDate}
+              onChange={e => setEditDate(e.target.value)}
+            />
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[#a3a3a3] uppercase tracking-wider">Ressenti</label>
+              <select
+                value={editFeedback}
+                onChange={e => setEditFeedback(e.target.value)}
+                className="w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-[#c9a870]/40 appearance-none cursor-pointer"
+              >
+                <option value="">— Aucun —</option>
+                <option value="facile">{FEEDBACK_LABELS.facile}</option>
+                <option value="difficile">{FEEDBACK_LABELS.difficile}</option>
+                <option value="mort">{FEEDBACK_LABELS.mort}</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <Textarea
+                label="Notes (optionnel)"
+                placeholder="Remarques..."
+                value={editNotes}
+                onChange={e => setEditNotes(e.target.value)}
+                rows={2}
+              />
+            </div>
+          </div>
+
+          {/* Séparateur */}
+          <div className="h-px bg-white/5" />
+
+          {/* Exercices */}
+          <div>
+            <p className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider mb-3">Exercices</p>
+
+            <AnimatePresence>
+              {editBlocks.map((block, bIdx) => (
+                <motion.div
+                  key={block.localId}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="mb-3 p-3 bg-[#161616] border border-white/5 rounded"
+                >
+                  {/* Sélecteur exercice */}
+                  <div className="flex items-start gap-2 mb-3">
+                    <div className="flex-1 relative">
+                      <label className="text-xs text-[#6b6b6b] mb-1 block">Exercice {bIdx + 1}</label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b6b6b]" />
+                        <input
+                          type="text"
+                          placeholder="Rechercher..."
+                          value={block.searchQuery}
+                          onChange={e => updateBlock(block.localId, {
+                            searchQuery: e.target.value,
+                            showDropdown: true,
+                            exercise: e.target.value !== block.exercise?.name ? null : block.exercise,
+                          })}
+                          onFocus={() => updateBlock(block.localId, { showDropdown: true })}
+                          className="w-full bg-[#1c1c1c] border border-white/8 pl-9 pr-9 py-2 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all"
+                        />
+                        {block.exercise && (
+                          <button
+                            type="button"
+                            onClick={() => updateBlock(block.localId, { exercise: null, searchQuery: '', showDropdown: true })}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b6b6b] hover:text-[#d4d4d4]"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Dropdown */}
+                      {block.showDropdown && !block.exercise && (
+                        <div className="absolute z-30 w-full mt-1 bg-[#1c1c1c] border border-white/8 rounded shadow-xl overflow-hidden">
+                          {filteredExercises(block.searchQuery).length === 0 ? (
+                            <p className="px-4 py-3 text-sm text-[#a3a3a3]">Aucun résultat</p>
+                          ) : (
+                            filteredExercises(block.searchQuery).map(ex => (
+                              <button
+                                key={ex.id}
+                                type="button"
+                                onMouseDown={() => updateBlock(block.localId, {
+                                  exercise: ex,
+                                  searchQuery: ex.name,
+                                  showDropdown: false,
+                                })}
+                                className="w-full px-4 py-2.5 text-left hover:bg-[#2a2a2a] transition-colors flex items-center justify-between"
+                              >
+                                <span className="text-sm text-[#e5e5e5]">{ex.name}</span>
+                                <span className="text-xs text-[#6b6b6b]">{MUSCLE_GROUP_LABELS[ex.muscle_group]}</span>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeBlock(block.localId)}
+                      className="mt-5 p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-red-900/10 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Tag groupe musculaire */}
+                  {block.exercise && (
+                    <span className="text-xs px-2 py-0.5 bg-transparent border border-red-800/40 text-red-300 mb-2 inline-block">
+                      {MUSCLE_GROUP_LABELS[block.exercise.muscle_group]}
+                    </span>
+                  )}
+
+                  {/* Tableau séries */}
+                  <div className="space-y-1.5">
+                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_24px] gap-2 px-1">
+                      <span className="text-xs text-[#4a4a4a] text-center">#</span>
+                      <span className="text-xs text-[#4a4a4a] text-center">Reps</span>
+                      <span className="text-xs text-[#4a4a4a] text-center">kg</span>
+                      <span className="text-xs text-[#4a4a4a] text-center">Repos(s)</span>
+                      <span />
+                    </div>
+
+                    {block.sets.map((set, si) => (
+                      <div key={si} className="grid grid-cols-[24px_1fr_1fr_1fr_24px] gap-2 items-center">
+                        <span className="text-xs text-[#4a4a4a] text-center font-mono">{si + 1}</span>
+                        <input
+                          type="number" min={1} max={999}
+                          value={set.reps}
+                          onChange={e => updateEditSet(block.localId, si, { reps: parseInt(e.target.value) || 0 })}
+                          className="w-full bg-[#0d0d0d] border border-white/8 px-2 py-1.5 text-sm text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all"
+                        />
+                        <input
+                          type="number" min={0} max={9999} step={0.5}
+                          value={set.weight}
+                          onChange={e => updateEditSet(block.localId, si, { weight: parseFloat(e.target.value) || 0 })}
+                          className="w-full bg-[#0d0d0d] border border-white/8 px-2 py-1.5 text-sm text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all"
+                        />
+                        <input
+                          type="number" min={0} max={600} step={5}
+                          placeholder="—"
+                          value={set.rest_time ?? ''}
+                          onChange={e => updateEditSet(block.localId, si, { rest_time: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full bg-[#0d0d0d] border border-white/8 px-2 py-1.5 text-sm text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all placeholder-[#2a2a2a]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeEditSet(block.localId, si)}
+                          disabled={block.sets.length <= 1}
+                          className="p-1 text-[#4a4a4a] hover:text-red-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => addEditSet(block.localId)}
+                      className="w-full py-1.5 mt-1 text-xs text-[#6b6b6b] hover:text-[#d4d4d4] border border-dashed border-white/8 hover:border-red-500/40 transition-all rounded"
+                    >
+                      + Ajouter série
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            <button
+              type="button"
+              onClick={() => setEditBlocks(prev => [...prev, defaultEditBlock()])}
+              className="w-full py-2 text-xs text-[#6b6b6b] hover:text-[#d4d4d4] border border-dashed border-white/8 hover:border-white/20 transition-all rounded"
+            >
+              + Ajouter exercice
+            </button>
+          </div>
+
+          {/* Tonnage preview */}
+          {editTonnage > 0 && (
+            <div className="flex items-center justify-between px-3 py-2 bg-transparent border border-red-900/30 rounded">
+              <span className="text-xs text-red-300">Tonnage total</span>
+              <span className="text-sm font-black text-red-400">{formatNumber(editTonnage)} kg</span>
+            </div>
+          )}
+
+          {saveError && <p className="text-sm text-red-400">{saveError}</p>}
+
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={() => setShowEdit(false)} className="flex-1">Annuler</Button>
+            <Button loading={saving} onClick={handleSave} className="flex-1">
+              {saving ? 'Sauvegarde...' : 'Enregistrer'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Modal suppression ──────────────────────────────────────────────── */}
+      <Modal isOpen={showDelete} onClose={() => setShowDelete(false)} title="Supprimer la séance" size="sm">
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-[#a3a3a3]">
+            Cette action est irréversible. La séance et toutes ses séries seront supprimées.
           </p>
-          {feedbackLabel && (
-            <span className={`text-xs ${feedbackColor}`}>{feedbackLabel}</span>
-          )}
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => setShowDelete(false)} className="flex-1">Annuler</Button>
+            <Button
+              loading={deleting}
+              onClick={handleDelete}
+              className="flex-1 bg-transparent border border-red-800/60 text-red-400 hover:bg-red-900/10 hover:border-red-700"
+            >
+              {deleting ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
-          {session.total_tonnage != null && session.total_tonnage > 0 && (
-            <span className="font-medium text-[#d4d4d4]">
-              {formatNumber(session.total_tonnage)} kg
-            </span>
-          )}
-          {exerciseCount > 0 && (
-            <span>{exerciseCount} exercice{exerciseCount > 1 ? 's' : ''}</span>
-          )}
-          {setsCount > 0 && (
-            <span>{setsCount} série{setsCount > 1 ? 's' : ''}</span>
-          )}
-        </div>
-        {session.notes && (
-          <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
-        )}
-      </div>
-
-      <span className="text-xs text-[#6b6b6b] flex-shrink-0">
-        {formatRelativeTime(session.date)}
-      </span>
-    </div>
+      </Modal>
+    </>
   );
 }
 

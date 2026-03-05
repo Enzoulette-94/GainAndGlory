@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Scale, Plus, TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
+import { Scale, Plus, TrendingUp, TrendingDown, Minus, X, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LineChart,
@@ -47,6 +47,18 @@ export function WeightPage() {
   const [newNotes, setNewNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Modal édition pesée
+  const [editEntry, setEditEntry] = useState<WeightEntry | null>(null);
+  const [editWeight, setEditWeight] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  // Suppression
+  const [deleteEntry, setDeleteEntry] = useState<WeightEntry | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadEntries = () => {
     if (!profile) return;
@@ -142,6 +154,52 @@ export function WeightPage() {
     setNewNotes('');
     setSaveError(null);
     setShowModal(true);
+  }
+
+  function openEdit(entry: WeightEntry) {
+    setEditEntry(entry);
+    setEditWeight(String(entry.weight));
+    setEditDate(entry.date);
+    setEditNotes(entry.notes ?? '');
+    setEditError(null);
+  }
+
+  async function handleEditSave() {
+    if (!editEntry) return;
+    const w = parseFloat(editWeight);
+    if (isNaN(w) || w <= 0) {
+      setEditError('Entre un poids valide.');
+      return;
+    }
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      await weightService.updateEntry(editEntry.id, {
+        weight: w,
+        date: editDate,
+        notes: editNotes.trim() || null,
+      });
+      setEditEntry(null);
+      setLoading(true);
+      loadEntries();
+    } catch {
+      setEditError('Erreur lors de la sauvegarde.');
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteEntry) return;
+    setDeleting(true);
+    try {
+      await weightService.deleteEntry(deleteEntry.id);
+      setDeleteEntry(null);
+      setLoading(true);
+      loadEntries();
+    } catch {
+      setDeleting(false);
+    }
   }
 
   if (!profile) return null;
@@ -358,17 +416,33 @@ export function WeightPage() {
                         )}
                       </div>
 
-                      <div className="text-right flex-shrink-0">
-                        {delta !== null && Math.abs(delta) >= 0.1 && (
-                          <p className={`text-xs font-semibold ${
-                            delta > 0 ? 'text-red-400' : 'text-emerald-600'
-                          }`}>
-                            {delta > 0 ? '+' : ''}{delta.toFixed(1)} kg
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="text-right">
+                          {delta !== null && Math.abs(delta) >= 0.1 && (
+                            <p className={`text-xs font-semibold ${
+                              delta > 0 ? 'text-red-400' : 'text-emerald-600'
+                            }`}>
+                              {delta > 0 ? '+' : ''}{delta.toFixed(1)} kg
+                            </p>
+                          )}
+                          <p className="text-xs text-[#6b6b6b]">
+                            {formatDate(entry.date, { day: 'numeric', month: 'short' })}
                           </p>
-                        )}
-                        <p className="text-xs text-[#6b6b6b]">
-                          {formatDate(entry.date, { day: 'numeric', month: 'short' })}
-                        </p>
+                        </div>
+                        <button
+                          onClick={() => openEdit(entry)}
+                          className="p-1.5 rounded text-[#6b6b6b] hover:text-[#d4d4d4] hover:bg-white/5 transition-all"
+                          title="Modifier"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteEntry(entry)}
+                          className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-red-900/10 transition-all"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </motion.div>
                   );
@@ -378,6 +452,84 @@ export function WeightPage() {
           )}
         </>
       )}
+
+      {/* Modal édition pesée */}
+      <Modal
+        isOpen={!!editEntry}
+        onClose={() => setEditEntry(null)}
+        title="Modifier la pesée"
+        size="sm"
+      >
+        <div className="p-5 space-y-4">
+          <Input
+            label="Poids (kg)"
+            type="number"
+            min="20"
+            max="500"
+            step="0.1"
+            placeholder="Ex: 75.5"
+            value={editWeight}
+            onChange={e => setEditWeight(e.target.value)}
+            autoFocus
+          />
+          <Input
+            label="Date"
+            type="date"
+            value={editDate}
+            onChange={e => setEditDate(e.target.value)}
+          />
+          <Textarea
+            label="Notes (optionnel)"
+            placeholder="Remarques..."
+            value={editNotes}
+            onChange={e => setEditNotes(e.target.value)}
+            rows={2}
+          />
+          {editError && <p className="text-sm text-red-400">{editError}</p>}
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={() => setEditEntry(null)} className="flex-1">
+              Annuler
+            </Button>
+            <Button
+              loading={editSaving}
+              onClick={handleEditSave}
+              className="flex-1 bg-transparent border border-green-800/60 text-green-600 hover:bg-green-900/10 hover:border-green-700"
+            >
+              {editSaving ? 'Sauvegarde...' : 'Enregistrer'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal suppression pesée */}
+      <Modal
+        isOpen={!!deleteEntry}
+        onClose={() => setDeleteEntry(null)}
+        title="Supprimer la pesée"
+        size="sm"
+      >
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-[#a3a3a3]">
+            Supprimer la pesée du{' '}
+            <span className="text-white font-semibold">
+              {deleteEntry ? formatDate(deleteEntry.date, { day: 'numeric', month: 'long' }) : ''}
+            </span>{' '}
+            ({deleteEntry ? formatWeight(deleteEntry.weight) : ''}) ? Cette action est irréversible.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => setDeleteEntry(null)} className="flex-1">
+              Annuler
+            </Button>
+            <Button
+              loading={deleting}
+              onClick={handleDeleteConfirm}
+              className="flex-1 bg-transparent border border-red-800/60 text-red-400 hover:bg-red-900/10 hover:border-red-700"
+            >
+              {deleting ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Modal nouvelle pesée */}
       <Modal

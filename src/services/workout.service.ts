@@ -111,6 +111,37 @@ export const workoutService = {
     if (error) throw error;
   },
 
+  async updateSession(sessionId: string, updates: { name?: string | null; date?: string; feedback?: string | null; notes?: string | null; total_tonnage?: number }) {
+    const { error } = await supabase.from('workout_sessions').update(updates).eq('id', sessionId);
+    if (error) throw error;
+  },
+
+  async replaceSets(sessionId: string, sets: Array<{ exercise_id: string; set_number: number; reps: number; weight: number; rest_time?: number | null }>) {
+    // Supprimer toutes les séries existantes
+    const { error: deleteError } = await supabase.from('workout_sets').delete().eq('session_id', sessionId);
+    if (deleteError) throw deleteError;
+
+    // Réinsérer les nouvelles séries
+    if (sets.length > 0) {
+      const { error: insertError } = await supabase.from('workout_sets').insert(
+        sets.map(s => ({
+          session_id: sessionId,
+          exercise_id: s.exercise_id,
+          set_number: s.set_number,
+          reps: s.reps,
+          weight: s.weight,
+          rest_time: s.rest_time ?? null,
+        }))
+      );
+      if (insertError) throw insertError;
+    }
+
+    // Mettre à jour le tonnage
+    const total_tonnage = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+    const { error: updateError } = await supabase.from('workout_sessions').update({ total_tonnage }).eq('id', sessionId);
+    if (updateError) throw updateError;
+  },
+
   async getExercises(): Promise<Exercise[]> {
     const { data, error } = await supabase
       .from('exercises')

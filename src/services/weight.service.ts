@@ -51,6 +51,11 @@ export const weightService = {
     if (error) throw error;
   },
 
+  async updateEntry(entryId: string, updates: { weight?: number; date?: string; notes?: string | null }) {
+    const { error } = await supabase.from('weight_entries').update(updates).eq('id', entryId);
+    if (error) throw error;
+  },
+
   async getLatest(userId: string): Promise<WeightEntry | null> {
     const { data, error } = await supabase
       .from('weight_entries')

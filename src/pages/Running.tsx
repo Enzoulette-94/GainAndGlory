@@ -10,6 +10,8 @@ import {
   List,
   ChevronDown,
   Activity,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -27,6 +29,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { runningService } from '../services/running.service';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { Input, Textarea } from '../components/common/Input';
+import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
 import {
   formatRelativeTime,
@@ -136,9 +140,7 @@ export function RunningPage() {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('tout');
   const [visibleCount, setVisibleCount] = useState(10);
 
-  useEffect(() => {
-    if (!profile) return;
-    const userId = profile.id;
+  function loadData(userId: string) {
     setLoading(true);
     setError(null);
 
@@ -156,6 +158,11 @@ export function RunningPage() {
       })
       .catch(() => setError('Impossible de charger les données.'))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    if (!profile) return;
+    loadData(profile.id);
   }, [profile]);
 
   // ── Sorties filtrées ────────────────────────────────────────────────────────
@@ -445,7 +452,11 @@ export function RunningPage() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.04 * i }}
                     >
-                      <RunSessionCard session={session} />
+                      <RunSessionCard
+                        session={session}
+                        onUpdated={() => profile && loadData(profile.id)}
+                        onDeleted={() => profile && loadData(profile.id)}
+                      />
                     </motion.div>
                   ))}
 
@@ -658,54 +669,251 @@ export function RunningPage() {
 
 // ─── Carte session ────────────────────────────────────────────────────────────
 
-function RunSessionCard({ session }: { session: RunningSession }) {
+function RunSessionCard({
+  session,
+  onUpdated,
+  onDeleted,
+}: {
+  session: RunningSession;
+  onUpdated: () => void;
+  onDeleted: () => void;
+}) {
   const feedback = session.feedback as Feedback | null;
   const runType = session.run_type as RunType | null;
   const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-[#6b6b6b]';
 
+  // Edit state
+  const [showEdit, setShowEdit] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editDistance, setEditDistance] = useState('');
+  const [editDuration, setEditDuration] = useState('');
+  const [editRunType, setEditRunType] = useState('');
+  const [editFeedback, setEditFeedback] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Delete state
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  function openEdit() {
+    setEditName((session as RunningSession & { name?: string | null }).name ?? '');
+    setEditDate(session.date.slice(0, 10));
+    setEditDistance(String(session.distance));
+    setEditDuration(String(session.duration));
+    setEditRunType(session.run_type ?? '');
+    setEditFeedback(session.feedback ?? '');
+    setEditNotes(session.notes ?? '');
+    setSaveError(null);
+    setShowEdit(true);
+  }
+
+  async function handleSave() {
+    const dist = parseFloat(editDistance);
+    const dur = parseInt(editDuration, 10);
+    if (isNaN(dist) || dist <= 0 || isNaN(dur) || dur <= 0) {
+      setSaveError('Distance et durée doivent être valides.');
+      return;
+    }
+    const pace_min_per_km = dur / dist;
+    const pace_km_per_h = (dist / dur) * 60;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await runningService.updateSession(session.id, {
+        name: editName.trim() || null,
+        date: editDate,
+        distance: dist,
+        duration: dur,
+        run_type: editRunType || null,
+        feedback: editFeedback || null,
+        notes: editNotes.trim() || null,
+        pace_min_per_km,
+        pace_km_per_h,
+      });
+      setShowEdit(false);
+      onUpdated();
+    } catch {
+      setSaveError('Erreur lors de la sauvegarde.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await runningService.deleteSession(session.id);
+      setShowDelete(false);
+      onDeleted();
+    } catch {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
-      <div className="p-2.5 bg-transparent border border-blue-900/40 rounded flex-shrink-0">
-        <PersonStanding className="w-5 h-5 text-blue-500" />
+    <>
+      <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
+        <div className="p-2.5 bg-transparent border border-blue-900/40 rounded flex-shrink-0">
+          <PersonStanding className="w-5 h-5 text-blue-500" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <p className="text-sm font-semibold text-[#e5e5e5]">
+              {(session as RunningSession & { name?: string | null }).name
+                ? (session as RunningSession & { name?: string | null }).name
+                : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
+            </p>
+            {runType && (
+              <span className="text-xs px-2 py-0.5 bg-transparent border border-blue-900/40 text-blue-500 rounded-md">
+                {RUN_TYPE_LABELS[runType]}
+              </span>
+            )}
+            {feedback && (
+              <span className={`text-xs ${feedbackColor}`}>
+                {FEEDBACK_LABELS[feedback]}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
+            <span className="font-medium text-[#d4d4d4]">
+              {formatDistance(session.distance)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {formatDuration(session.duration)}
+            </span>
+            {session.pace_min_per_km && session.pace_min_per_km > 0 && (
+              <span>{formatPace(session.pace_min_per_km)}</span>
+            )}
+          </div>
+          {session.notes && (
+            <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs text-[#6b6b6b]">
+            {formatRelativeTime(session.date)}
+          </span>
+          <button
+            onClick={openEdit}
+            className="p-1.5 rounded text-[#6b6b6b] hover:text-[#d4d4d4] hover:bg-white/5 transition-all"
+            title="Modifier"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setShowDelete(true)}
+            className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-red-900/10 transition-all"
+            title="Supprimer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-[#e5e5e5]">
-            {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
+      {/* Modal édition */}
+      <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Modifier la course" size="sm">
+        <div className="p-5 space-y-4">
+          <Input
+            label="Titre (optionnel)"
+            placeholder="Ex: Trail du matin, 10K du parc..."
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+          />
+          <Input
+            label="Date"
+            type="date"
+            value={editDate}
+            onChange={e => setEditDate(e.target.value)}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Distance (km)"
+              type="number"
+              step="0.01"
+              min="0"
+              value={editDistance}
+              onChange={e => setEditDistance(e.target.value)}
+            />
+            <Input
+              label="Durée (min)"
+              type="number"
+              min="1"
+              value={editDuration}
+              onChange={e => setEditDuration(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[#a3a3a3] uppercase tracking-wider">Type de course</label>
+            <select
+              value={editRunType}
+              onChange={e => setEditRunType(e.target.value)}
+              className="w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-blue-500/40 appearance-none cursor-pointer"
+            >
+              <option value="">— Aucun —</option>
+              <option value="endurance">{RUN_TYPE_LABELS.endurance}</option>
+              <option value="fractionne">{RUN_TYPE_LABELS.fractionne}</option>
+              <option value="tempo">{RUN_TYPE_LABELS.tempo}</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[#a3a3a3] uppercase tracking-wider">Ressenti</label>
+            <select
+              value={editFeedback}
+              onChange={e => setEditFeedback(e.target.value)}
+              className="w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-blue-500/40 appearance-none cursor-pointer"
+            >
+              <option value="">— Aucun —</option>
+              <option value="facile">{FEEDBACK_LABELS.facile}</option>
+              <option value="difficile">{FEEDBACK_LABELS.difficile}</option>
+              <option value="mort">{FEEDBACK_LABELS.mort}</option>
+            </select>
+          </div>
+          <Textarea
+            label="Notes (optionnel)"
+            placeholder="Remarques..."
+            value={editNotes}
+            onChange={e => setEditNotes(e.target.value)}
+            rows={2}
+          />
+          {saveError && <p className="text-sm text-red-400">{saveError}</p>}
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={() => setShowEdit(false)} className="flex-1">Annuler</Button>
+            <Button
+              loading={saving}
+              onClick={handleSave}
+              className="flex-1 bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
+            >
+              {saving ? 'Sauvegarde...' : 'Enregistrer'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal suppression */}
+      <Modal isOpen={showDelete} onClose={() => setShowDelete(false)} title="Supprimer la course" size="sm">
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-[#a3a3a3]">
+            Cette action est irréversible. La course sera définitivement supprimée.
           </p>
-          {runType && (
-            <span className="text-xs px-2 py-0.5 bg-transparent border border-blue-900/40 text-blue-500 rounded-md">
-              {RUN_TYPE_LABELS[runType]}
-            </span>
-          )}
-          {feedback && (
-            <span className={`text-xs ${feedbackColor}`}>
-              {FEEDBACK_LABELS[feedback]}
-            </span>
-          )}
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => setShowDelete(false)} className="flex-1">Annuler</Button>
+            <Button
+              loading={deleting}
+              onClick={handleDelete}
+              className="flex-1 bg-transparent border border-red-800/60 text-red-400 hover:bg-red-900/10 hover:border-red-700"
+            >
+              {deleting ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
-          <span className="font-medium text-[#d4d4d4]">
-            {formatDistance(session.distance)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {formatDuration(session.duration)}
-          </span>
-          {session.pace_min_per_km && session.pace_min_per_km > 0 && (
-            <span>{formatPace(session.pace_min_per_km)}</span>
-          )}
-        </div>
-        {session.notes && (
-          <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
-        )}
-      </div>
-
-      <span className="text-xs text-[#6b6b6b] flex-shrink-0">
-        {formatRelativeTime(session.date)}
-      </span>
-    </div>
+      </Modal>
+    </>
   );
 }
 
