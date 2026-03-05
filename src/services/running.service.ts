@@ -25,31 +25,43 @@ export const runningService = {
     const pace_min_per_km = calcPaceMinPerKm(input.distance, input.duration);
     const pace_km_per_h = calcSpeedKmH(input.distance, input.duration);
 
-    const { data, error } = await supabase
+    const basePayload = {
+      user_id: input.user_id,
+      date: input.date ?? new Date().toISOString(),
+      distance: input.distance,
+      duration: input.duration,
+      pace_min_per_km,
+      pace_km_per_h,
+      run_type: input.run_type ?? null,
+      elevation_gain: input.elevation_gain ?? null,
+      elevation_loss: input.elevation_loss ?? null,
+      avg_heart_rate: input.avg_heart_rate ?? null,
+      max_heart_rate: input.max_heart_rate ?? null,
+      weather_temp: input.weather_temp ?? null,
+      weather_condition: input.weather_condition ?? null,
+      shoe_id: input.shoe_id ?? null,
+      feedback: input.feedback ?? null,
+      notes: input.notes ?? null,
+    };
+
+    // Essai avec name (colonne optionnelle — peut ne pas exister encore)
+    let result = await supabase
       .from('running_sessions')
-      .insert({
-        user_id: input.user_id,
-        date: input.date ?? new Date().toISOString(),
-        name: input.name ?? null,
-        distance: input.distance,
-        duration: input.duration,
-        pace_min_per_km,
-        pace_km_per_h,
-        run_type: input.run_type ?? null,
-        elevation_gain: input.elevation_gain ?? null,
-        elevation_loss: input.elevation_loss ?? null,
-        avg_heart_rate: input.avg_heart_rate ?? null,
-        max_heart_rate: input.max_heart_rate ?? null,
-        weather_temp: input.weather_temp ?? null,
-        weather_condition: input.weather_condition ?? null,
-        shoe_id: input.shoe_id ?? null,
-        feedback: input.feedback ?? null,
-        notes: input.notes ?? null,
-      })
+      .insert({ ...basePayload, name: input.name ?? null })
       .select()
       .single();
 
-    if (error) throw error;
+    // Fallback sans name si la colonne n'existe pas encore
+    if (result.error) {
+      result = await supabase
+        .from('running_sessions')
+        .insert(basePayload)
+        .select()
+        .single();
+    }
+
+    if (result.error) throw result.error;
+    const data = result.data;
 
     // Mettre à jour le kilométrage des chaussures
     if (input.shoe_id) {

@@ -23,20 +23,30 @@ export const workoutService = {
   async createSession(input: CreateWorkoutSessionInput): Promise<WorkoutSession> {
     const total_tonnage = calcTonnage(input.sets);
 
-    const { data: session, error } = await supabase
+    const basePayload = {
+      user_id: input.user_id,
+      date: input.date ?? new Date().toISOString(),
+      feedback: input.feedback ?? null,
+      notes: input.notes ?? null,
+      total_tonnage,
+    };
+
+    let sessionResult = await supabase
       .from('workout_sessions')
-      .insert({
-        user_id: input.user_id,
-        date: input.date ?? new Date().toISOString(),
-        name: input.name ?? null,
-        feedback: input.feedback ?? null,
-        notes: input.notes ?? null,
-        total_tonnage,
-      })
+      .insert({ ...basePayload, name: input.name ?? null })
       .select()
       .single();
 
-    if (error) throw error;
+    if (sessionResult.error) {
+      sessionResult = await supabase
+        .from('workout_sessions')
+        .insert(basePayload)
+        .select()
+        .single();
+    }
+
+    if (sessionResult.error) throw sessionResult.error;
+    const session = sessionResult.data;
 
     if (input.sets.length > 0) {
       const setsToInsert = input.sets.map(s => ({
