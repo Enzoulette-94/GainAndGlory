@@ -221,7 +221,7 @@ function ParticipantList({ participants }: { participants: EventParticipant[] })
                 className="w-4 h-4 rounded-full object-cover"
               />
             ) : (
-              <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[10px] text-[#6b6b6b] font-bold">
+              <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-xs text-[#6b6b6b] font-bold leading-none">
                 {(p.user?.username ?? '?')[0].toUpperCase()}
               </span>
             )}

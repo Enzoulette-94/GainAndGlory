@@ -451,7 +451,7 @@ export function GoalsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="grid grid-cols-3 gap-3"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-3"
       >
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-[#c9a870]">{activeGoals.length}</p>
