@@ -421,7 +421,9 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
           })))
         : form.type === 'tonnage' && form.exercise.trim()
           ? `kg — ${form.exercise.trim()}`
-          : unitForType(form.type);
+          : form.type === 'repetitions' && form.exercise.trim()
+            ? `reps — ${form.exercise.trim()}`
+            : unitForType(form.type);
 
       const { error } = await supabase.from('community_challenges').insert({
         created_by: userId,
@@ -449,6 +451,7 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
 
   const isMixte = form.type === 'mixte';
   const isTonnage = form.type === 'tonnage';
+  const isRepetitions = form.type === 'repetitions';
 
   return (
     <Card className="p-5">
@@ -487,10 +490,24 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
           onChange={e => { set('type', e.target.value as ChallengeType); }}
         />
 
-        {/* Tonnage: exercice optionnel */}
+        {/* Tonnage: exercice optionnel (texte libre) */}
         {isTonnage && (
           <Input label="Exercice ciblé (optionnel)" placeholder="ex. Squat, Développé couché..."
             value={form.exercise} onChange={e => set('exercise', e.target.value)} />
+        )}
+
+        {/* Répétitions: exercice ciblé parmi une liste */}
+        {isRepetitions && (
+          <Select label="Exercice ciblé (optionnel)"
+            options={[
+              { value: '',          label: '— Aucun (toutes répétitions)' },
+              { value: 'Pompes',    label: 'Pompes' },
+              { value: 'Tractions', label: 'Tractions' },
+              { value: 'Musclu UP', label: 'Musclu UP' },
+            ]}
+            value={form.exercise}
+            onChange={e => set('exercise', e.target.value)}
+          />
         )}
 
         {/* Cible standard */}
