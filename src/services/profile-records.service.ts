@@ -15,20 +15,32 @@ export const profileRecordsService = {
     return data ?? [];
   },
 
-  async createRecord(userId: string, title: string, value: string, unit: string): Promise<ProfileRecord> {
+  async createRecord(
+    userId: string,
+    title: string,
+    value: string,
+    unit: string,
+    category: 'musculation' | 'course',
+  ): Promise<ProfileRecord> {
     const { data, error } = await db
       .from('profile_records')
-      .insert({ user_id: userId, title, value, unit })
+      .insert({ user_id: userId, title, value, unit, category })
       .select()
       .single();
     if (error) throw error;
     return data;
   },
 
-  async updateRecord(id: string, title: string, value: string, unit: string): Promise<ProfileRecord> {
+  async updateRecord(
+    id: string,
+    title: string,
+    value: string,
+    unit: string,
+    category: 'musculation' | 'course',
+  ): Promise<ProfileRecord> {
     const { data, error } = await db
       .from('profile_records')
-      .update({ title, value, unit })
+      .update({ title, value, unit, category })
       .eq('id', id)
       .select()
       .single();

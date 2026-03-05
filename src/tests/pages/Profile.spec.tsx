@@ -35,14 +35,14 @@ vi.mock('../../services/profile.service', () => ({
 }));
 
 const mockRecords = [
-  { id: 'r-1', user_id: 'user-1', title: 'Squat', value: '120', unit: 'kg', created_at: '2025-01-01T00:00:00Z' },
-  { id: 'r-2', user_id: 'user-1', title: '5 km', value: '22:30', unit: 'min', created_at: '2025-01-02T00:00:00Z' },
+  { id: 'r-1', user_id: 'user-1', title: 'Squat', value: '120', unit: 'kg', category: 'musculation', created_at: '2025-01-01T00:00:00Z' },
+  { id: 'r-2', user_id: 'user-1', title: '5 km', value: '22:30', unit: '5 km', category: 'course', created_at: '2025-01-02T00:00:00Z' },
 ];
 
 vi.mock('../../services/profile-records.service', () => ({
   profileRecordsService: {
     getRecords: vi.fn().mockResolvedValue(mockRecords),
-    createRecord: vi.fn().mockResolvedValue({ id: 'r-3', user_id: 'user-1', title: 'Bench', value: '100', unit: 'kg', created_at: '2025-01-03T00:00:00Z' }),
+    createRecord: vi.fn().mockResolvedValue({ id: 'r-3', user_id: 'user-1', title: 'Bench', value: '100', unit: 'kg', category: 'musculation', created_at: '2025-01-03T00:00:00Z' }),
     updateRecord: vi.fn().mockResolvedValue(mockRecords[0]),
     deleteRecord: vi.fn().mockResolvedValue(undefined),
   },
@@ -100,6 +100,16 @@ describe('ProfilePage', () => {
       await q(/5 km/i);
     });
 
+    it('affiche la sous-section "Musculation"', async () => {
+      renderProfile();
+      await q(/musculation/i);
+    });
+
+    it('affiche la sous-section "Course"', async () => {
+      renderProfile();
+      await q(/course/i);
+    });
+
     it('affiche le séparateur "•" entre titre et valeur (format inline)', async () => {
       renderProfile();
       await waitFor(() => {
@@ -107,7 +117,7 @@ describe('ProfilePage', () => {
       }, { timeout: 3000 });
     });
 
-    it('affiche l\'unité "kg" à côté de la valeur', async () => {
+    it('affiche l\'unité "kg" à côté de la valeur muscu', async () => {
       renderProfile();
       await waitFor(() => {
         expect(screen.queryAllByText(/kg/i).length).toBeGreaterThan(0);
@@ -119,6 +129,15 @@ describe('ProfilePage', () => {
       await waitFor(() => {
         expect(document.querySelectorAll('[aria-label="Modifier"]').length).toBeGreaterThan(0);
         expect(document.querySelectorAll('[aria-label="Supprimer"]').length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche le sélecteur de catégorie dans la modal (Musculation / Course)', async () => {
+      renderProfile();
+      await waitFor(() => expect(screen.queryAllByText(/ajouter/i).length).toBeGreaterThan(0), { timeout: 3000 });
+      fireEvent.click(screen.getAllByText(/ajouter/i)[0]);
+      await waitFor(() => {
+        expect(screen.queryAllByText(/musculation/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
 

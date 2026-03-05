@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Edit2, Dumbbell, Timer, Route, Flame, Camera, Trophy, Plus, Trash2, Pencil } from 'lucide-react';
+import { Edit2, Dumbbell, Timer, Route, Flame, Camera, Trophy, Plus, Trash2, Pencil, PersonStanding } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
@@ -77,9 +77,11 @@ export function ProfilePage() {
   // record modal
   const [recordModalOpen, setRecordModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ProfileRecord | null>(null);
+  const [recCategory, setRecCategory] = useState<'musculation' | 'course'>('musculation');
   const [recTitle, setRecTitle] = useState('');
   const [recValue, setRecValue] = useState('');
-  const [recUnit, setRecUnit] = useState('');
+  const [recUnit, setRecUnit] = useState<'kg' | 'reps'>('kg');
+  const [recDistance, setRecDistance] = useState('');
   const [recError, setRecError] = useState('');
   const [savingRecord, setSavingRecord] = useState(false);
 
@@ -189,29 +191,43 @@ export function ProfilePage() {
 
   // ─── record handlers ─────────────────────────────────────────────────────
 
-  function openAddRecord() {
+  function openAddRecord(cat: 'musculation' | 'course' = 'musculation') {
     setEditingRecord(null);
-    setRecTitle(''); setRecValue(''); setRecUnit(''); setRecError('');
+    setRecCategory(cat);
+    setRecTitle(''); setRecValue(''); setRecUnit('kg'); setRecDistance(''); setRecError('');
     setRecordModalOpen(true);
   }
 
   function openEditRecord(r: ProfileRecord) {
     setEditingRecord(r);
-    setRecTitle(r.title); setRecValue(r.value); setRecUnit(r.unit); setRecError('');
+    const cat = r.category ?? 'musculation';
+    setRecCategory(cat);
+    setRecTitle(r.title);
+    setRecValue(r.value);
+    if (cat === 'course') {
+      setRecDistance(r.unit.replace(/\s*km$/i, '').trim());
+      setRecUnit('kg');
+    } else {
+      setRecUnit((r.unit === 'reps' ? 'reps' : 'kg') as 'kg' | 'reps');
+      setRecDistance('');
+    }
+    setRecError('');
     setRecordModalOpen(true);
   }
 
   async function handleSaveRecord() {
     if (!profile) return;
     if (!recTitle.trim()) { setRecError('Le titre est requis.'); return; }
-    if (!recValue.trim()) { setRecError('La valeur est requise.'); return; }
+    if (!recValue.trim()) { setRecError(recCategory === 'course' ? 'La durée est requise.' : 'La valeur est requise.'); return; }
+    if (recCategory === 'course' && !recDistance.trim()) { setRecError('La distance est requise.'); return; }
+    const unit = recCategory === 'course' ? `${recDistance.trim()} km` : recUnit;
     setSavingRecord(true); setRecError('');
     try {
       if (editingRecord) {
-        const updated = await profileRecordsService.updateRecord(editingRecord.id, recTitle.trim(), recValue.trim(), recUnit.trim());
+        const updated = await profileRecordsService.updateRecord(editingRecord.id, recTitle.trim(), recValue.trim(), unit, recCategory);
         setRecords(prev => prev.map(r => r.id === updated.id ? updated : r));
       } else {
-        const created = await profileRecordsService.createRecord(profile.id, recTitle.trim(), recValue.trim(), recUnit.trim());
+        const created = await profileRecordsService.createRecord(profile.id, recTitle.trim(), recValue.trim(), unit, recCategory);
         setRecords(prev => [...prev, created]);
       }
       setRecordModalOpen(false);
@@ -391,7 +407,7 @@ export function ProfilePage() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Meilleures performances</h2>
           <button
-            onClick={openAddRecord}
+            onClick={() => openAddRecord()}
             className="flex items-center gap-1 text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors"
             aria-label="Ajouter une performance"
           >
@@ -406,36 +422,77 @@ export function ProfilePage() {
           <Card className="p-6 text-center">
             <Trophy className="w-8 h-8 text-[#4a4a4a] mx-auto mb-2" />
             <p className="text-[#6b6b6b] text-sm">Aucune performance enregistrée</p>
-            <button onClick={openAddRecord} className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] mt-1 transition-colors">
-              + Ajouter ma première performance
-            </button>
+            <div className="flex justify-center gap-4 mt-2">
+              <button onClick={() => openAddRecord('musculation')} className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors flex items-center gap-1">
+                <Dumbbell className="w-3 h-3" /> Musculation
+              </button>
+              <button onClick={() => openAddRecord('course')} className="text-xs text-blue-400/70 hover:text-blue-400 transition-colors flex items-center gap-1">
+                <PersonStanding className="w-3 h-3" /> Course
+              </button>
+            </div>
           </Card>
         ) : (
-          <div className="space-y-2">
-            {records.map((r, i) => (
-              <motion.div
-                key={r.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.27 + i * 0.04 }}
-                className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
-              >
-                <Trophy className="w-3.5 h-3.5 text-[#c9a870] flex-shrink-0" />
-                <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
-                <span className="text-[#6b6b6b] text-xs">•</span>
-                <span className="text-sm font-bold text-[#c9a870]">
-                  {r.value}{r.unit ? <span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span> : null}
-                </span>
-                <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-                  <button onClick={() => openEditRecord(r)} className="p-1 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors" aria-label="Modifier">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => handleDeleteRecord(r.id)} className="p-1 text-[#6b6b6b] hover:text-red-400 transition-colors" aria-label="Supprimer">
-                    <Trash2 className="w-3.5 h-3.5" />
+          <div className="space-y-4">
+            {/* Musculation */}
+            {records.filter(r => (r.category ?? 'musculation') === 'musculation').length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Dumbbell className="w-3.5 h-3.5 text-[#c9a870]" />
+                  <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Musculation</span>
+                  <button onClick={() => openAddRecord('musculation')} className="ml-auto text-[10px] text-[#c9a870]/50 hover:text-[#c9a870] transition-colors flex items-center gap-0.5">
+                    <Plus className="w-3 h-3" />Ajouter
                   </button>
                 </div>
-              </motion.div>
-            ))}
+                <div className="space-y-1.5">
+                  {records.filter(r => (r.category ?? 'musculation') === 'musculation').map((r, i) => (
+                    <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 + i * 0.04 }}
+                      className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
+                    >
+                      <Trophy className="w-3.5 h-3.5 text-[#c9a870] flex-shrink-0" />
+                      <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                      <span className="text-[#6b6b6b] text-xs">•</span>
+                      <span className="text-sm font-bold text-[#c9a870]">
+                        {r.value}<span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span>
+                      </span>
+                      <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                        <button onClick={() => openEditRecord(r)} className="p-1 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors" aria-label="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDeleteRecord(r.id)} className="p-1 text-[#6b6b6b] hover:text-red-400 transition-colors" aria-label="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Course */}
+            {records.filter(r => r.category === 'course').length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <PersonStanding className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Course</span>
+                  <button onClick={() => openAddRecord('course')} className="ml-auto text-[10px] text-blue-400/50 hover:text-blue-400 transition-colors flex items-center gap-0.5">
+                    <Plus className="w-3 h-3" />Ajouter
+                  </button>
+                </div>
+                <div className="space-y-1.5">
+                  {records.filter(r => r.category === 'course').map((r, i) => (
+                    <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 + i * 0.04 }}
+                      className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-blue-800/50"
+                    >
+                      <PersonStanding className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                      <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                      <span className="text-[#6b6b6b] text-xs">•</span>
+                      <span className="text-sm font-bold text-blue-400">{r.value}</span>
+                      <span className="text-xs text-[#6b6b6b]">{r.unit}</span>
+                      <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                        <button onClick={() => openEditRecord(r)} className="p-1 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors" aria-label="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDeleteRecord(r.id)} className="p-1 text-[#6b6b6b] hover:text-red-400 transition-colors" aria-label="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </motion.div>
@@ -500,30 +557,96 @@ export function ProfilePage() {
         size="sm"
       >
         <div className="p-5 space-y-4">
-          <Input
-            label="Titre"
-            value={recTitle}
-            onChange={e => { setRecTitle(e.target.value); setRecError(''); }}
-            placeholder="ex: Squat, 5 km, Développé couché…"
-            maxLength={60}
-            autoFocus
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Valeur"
-              value={recValue}
-              onChange={e => { setRecValue(e.target.value); setRecError(''); }}
-              placeholder="ex: 120 ou 22:30"
-              maxLength={20}
-            />
-            <Input
-              label="Unité"
-              value={recUnit}
-              onChange={e => setRecUnit(e.target.value)}
-              placeholder="ex: kg, min, km"
-              maxLength={10}
-            />
+          {/* Sélecteur de catégorie */}
+          <div className="flex rounded overflow-hidden border border-white/10">
+            <button
+              type="button"
+              onClick={() => { setRecCategory('musculation'); setRecError(''); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-colors ${
+                recCategory === 'musculation' ? 'bg-[#c9a870]/15 text-[#c9a870]' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'
+              }`}
+            >
+              <Dumbbell className="w-3.5 h-3.5" />
+              Musculation
+            </button>
+            <button
+              type="button"
+              onClick={() => { setRecCategory('course'); setRecError(''); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium border-l border-white/10 transition-colors ${
+                recCategory === 'course' ? 'bg-blue-500/15 text-blue-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'
+              }`}
+            >
+              <PersonStanding className="w-3.5 h-3.5" />
+              Course
+            </button>
           </div>
+
+          {recCategory === 'musculation' ? (
+            <>
+              <Input
+                label="Exercice"
+                value={recTitle}
+                onChange={e => { setRecTitle(e.target.value); setRecError(''); }}
+                placeholder="ex: Squat, DC, Tractions…"
+                maxLength={60}
+                autoFocus
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Valeur"
+                  value={recValue}
+                  onChange={e => { setRecValue(e.target.value); setRecError(''); }}
+                  placeholder="ex: 120 ou 25"
+                  maxLength={20}
+                />
+                <div>
+                  <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">Unité</p>
+                  <div className="flex rounded overflow-hidden border border-white/10 h-10">
+                    {(['kg', 'reps'] as const).map((u, idx) => (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => setRecUnit(u)}
+                        className={`flex-1 text-sm font-medium transition-colors ${idx > 0 ? 'border-l border-white/10' : ''} ${
+                          recUnit === u ? 'bg-[#c9a870]/15 text-[#c9a870]' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'
+                        }`}
+                      >
+                        {u}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <Input
+                label="Nom de l'épreuve"
+                value={recTitle}
+                onChange={e => { setRecTitle(e.target.value); setRecError(''); }}
+                placeholder="ex: 5 km, Semi-marathon, Trail des Crêtes…"
+                maxLength={60}
+                autoFocus
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Distance (km)"
+                  value={recDistance}
+                  onChange={e => { setRecDistance(e.target.value); setRecError(''); }}
+                  placeholder="ex: 5 ou 21.1"
+                  maxLength={10}
+                />
+                <Input
+                  label="Durée"
+                  value={recValue}
+                  onChange={e => { setRecValue(e.target.value); setRecError(''); }}
+                  placeholder="ex: 22:30 ou 1:45:00"
+                  maxLength={20}
+                />
+              </div>
+            </>
+          )}
+
           {recError && <p className="text-xs text-red-400">{recError}</p>}
           <div className="flex gap-3 pt-1">
             <Button variant="secondary" className="flex-1" onClick={() => setRecordModalOpen(false)} disabled={savingRecord}>

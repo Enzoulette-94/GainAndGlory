@@ -23,7 +23,8 @@ const mockProfile = {
 };
 
 const mockRecords = [
-  { id: 'r-1', user_id: 'user-42', title: 'Deadlift', value: '180', unit: 'kg', created_at: '2025-01-01T00:00:00Z' },
+  { id: 'r-1', user_id: 'user-42', title: 'Deadlift', value: '180', unit: 'kg', category: 'musculation', created_at: '2025-01-01T00:00:00Z' },
+  { id: 'r-2', user_id: 'user-42', title: '10 km', value: '45:00', unit: '10 km', category: 'course', created_at: '2025-01-02T00:00:00Z' },
 ];
 
 vi.mock('../../services/profile.service', () => ({
@@ -87,14 +88,24 @@ describe('UserProfilePage', () => {
     await waitFor(() => expect(screen.queryAllByText('60').length).toBeGreaterThan(0), { timeout: 3000 });
   });
 
-  it('affiche les performances manuelles (Deadlift)', async () => {
+  it('affiche les performances manuelles (Deadlift) — sous-section Musculation', async () => {
     renderUserProfile();
     await q(/deadlift/i);
   });
 
-  it('affiche la valeur de la performance (180)', async () => {
+  it('affiche la valeur de la performance muscu (180)', async () => {
     renderUserProfile();
     await waitFor(() => expect(screen.queryAllByText(/180/).length).toBeGreaterThan(0), { timeout: 3000 });
+  });
+
+  it('affiche la sous-section Course avec le record "10 km"', async () => {
+    renderUserProfile();
+    await q(/10 km/i);
+  });
+
+  it('affiche la durée du record de course (45:00)', async () => {
+    renderUserProfile();
+    await waitFor(() => expect(screen.queryAllByText(/45:00/).length).toBeGreaterThan(0), { timeout: 3000 });
   });
 
   it('affiche la section badges', async () => {

@@ -193,6 +193,7 @@ export interface ProfileRecord {
   title: string;
   value: string;
   unit: string;
+  category: 'musculation' | 'course';
   created_at: string;
 }
 

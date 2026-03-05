@@ -27,9 +27,9 @@ const mockWorkoutSessions = [
 ];
 
 const mockRecords = [
-  { id: 'r-1', user_id: 'user-1', title: 'Deadlift', value: '180', unit: 'kg' },
-  { id: 'r-2', user_id: 'user-2', title: 'Deadlift', value: '200', unit: 'kg' },
-  { id: 'r-3', user_id: 'user-1', title: '5 km', value: '22:30', unit: 'min' },
+  { id: 'r-1', user_id: 'user-1', title: 'Deadlift', value: '180', unit: 'kg', category: 'musculation' },
+  { id: 'r-2', user_id: 'user-2', title: 'Deadlift', value: '200', unit: 'kg', category: 'musculation' },
+  { id: 'r-3', user_id: 'user-1', title: 'Trail des Vosges', value: '2:15:00', unit: '21 km', category: 'course' },
 ];
 
 vi.mock('../../lib/supabase-client', () => {
@@ -112,14 +112,24 @@ describe('HallOfFamePage', () => {
       await q(/records personnels/i);
     });
 
-    it('affiche le titre de l\'exercice "Deadlift"', async () => {
+    it('affiche le sous-titre "profils publics uniquement"', async () => {
       renderHoF();
-      await q(/deadlift/i);
+      await q(/profils publics/i);
     });
 
-    it('affiche l\'exercice "5 km"', async () => {
+    it('affiche la sous-section "Musculation"', async () => {
       renderHoF();
-      await q(/5 km/i);
+      await q(/musculation/i);
+    });
+
+    it('affiche la sous-section "Course"', async () => {
+      renderHoF();
+      await q(/course/i);
+    });
+
+    it('affiche le titre de l\'exercice muscu "Deadlift"', async () => {
+      renderHoF();
+      await q(/deadlift/i);
     });
 
     it('affiche la valeur du record de Deadlift (200)', async () => {
@@ -129,19 +139,26 @@ describe('HallOfFamePage', () => {
       }, { timeout: 3000 });
     });
 
-    it('affiche l\'indication de tri "meilleure charge" pour kg', async () => {
+    it('affiche le record de course "Trail des Vosges"', async () => {
+      renderHoF();
+      await q(/trail des vosges/i);
+    });
+
+    it('affiche la durée du record de course (2:15:00)', async () => {
+      renderHoF();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/2:15:00/).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche l\'indication de tri "meilleure charge" pour muscu', async () => {
       renderHoF();
       await q(/meilleure charge/i);
     });
 
-    it('affiche l\'indication de tri "meilleur temps" pour min', async () => {
+    it('affiche l\'indication de tri "meilleur temps" pour course', async () => {
       renderHoF();
       await q(/meilleur temps/i);
-    });
-
-    it('affiche le sous-titre "profils publics uniquement"', async () => {
-      renderHoF();
-      await q(/profils publics/i);
     });
   });
 });

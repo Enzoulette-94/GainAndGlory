@@ -202,6 +202,7 @@ CREATE TABLE profile_records (
   title TEXT NOT NULL,
   value TEXT NOT NULL,
   unit TEXT NOT NULL DEFAULT '',
+  category TEXT NOT NULL DEFAULT 'musculation',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

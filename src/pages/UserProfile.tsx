@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Dumbbell, Timer, Route, Flame, Trophy, ArrowLeft } from 'lucide-react';
+import { Dumbbell, Timer, Route, Flame, Trophy, ArrowLeft, PersonStanding } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
@@ -161,25 +161,55 @@ export function UserProfilePage() {
 
       {/* ── PERFORMANCES ─────────────────────────────────────────────── */}
       {records.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider mb-3">Meilleures performances</h2>
-          <div className="space-y-2">
-            {records.map((r, i) => (
-              <motion.div
-                key={r.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.27 + i * 0.04 }}
-                className="flex items-center gap-3 p-3 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
-              >
-                <Trophy className="w-4 h-4 text-[#c9a870] flex-shrink-0" />
-                <p className="text-sm font-medium text-[#d4d4d4] flex-1 truncate">{r.title}</p>
-                <span className="text-sm font-bold text-[#c9a870] flex-shrink-0">
-                  {r.value}{r.unit ? <span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span> : null}
-                </span>
-              </motion.div>
-            ))}
-          </div>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="space-y-4">
+          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Meilleures performances</h2>
+
+          {/* Musculation */}
+          {records.filter(r => (r.category ?? 'musculation') === 'musculation').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Dumbbell className="w-3.5 h-3.5 text-[#c9a870]" />
+                <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Musculation</span>
+              </div>
+              <div className="space-y-1.5">
+                {records.filter(r => (r.category ?? 'musculation') === 'musculation').map((r, i) => (
+                  <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 + i * 0.04 }}
+                    className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
+                  >
+                    <Trophy className="w-3.5 h-3.5 text-[#c9a870] flex-shrink-0" />
+                    <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                    <span className="text-[#6b6b6b] text-xs">•</span>
+                    <span className="text-sm font-bold text-[#c9a870]">
+                      {r.value}<span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span>
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Course */}
+          {records.filter(r => r.category === 'course').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <PersonStanding className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Course</span>
+              </div>
+              <div className="space-y-1.5">
+                {records.filter(r => r.category === 'course').map((r, i) => (
+                  <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 + i * 0.04 }}
+                    className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-blue-800/50"
+                  >
+                    <PersonStanding className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                    <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                    <span className="text-[#6b6b6b] text-xs">•</span>
+                    <span className="text-sm font-bold text-blue-400">{r.value}</span>
+                    <span className="text-xs text-[#6b6b6b]">{r.unit}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 

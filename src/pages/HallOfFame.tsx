@@ -31,6 +31,7 @@ interface RecordEntry {
 interface RecordGroup {
   title: string;
   unit: string;
+  category: 'musculation' | 'course';
   ascending: boolean;
   entries: RecordEntry[];
 }
@@ -381,17 +382,18 @@ function useRecordsRanking() {
           .in('user_id', userIds);
         if (err2) throw err2;
 
-        const groupMap: Record<string, { title: string; unit: string; entries: RecordEntry[] }> = {};
+        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course'; entries: RecordEntry[] }> = {};
         for (const rec of (records ?? []) as any[]) {
-          const key = rec.title.trim().toLowerCase();
+          const cat: 'musculation' | 'course' = rec.category === 'course' ? 'course' : 'musculation';
+          const key = `${cat}::${rec.title.trim().toLowerCase()}`;
           if (!groupMap[key]) {
-            groupMap[key] = { title: rec.title.trim(), unit: rec.unit, entries: [] };
+            groupMap[key] = { title: rec.title.trim(), unit: rec.unit, category: cat, entries: [] };
           }
           const profile = profileMap[rec.user_id];
           if (!profile) continue;
 
           const numericValue = parseRecordValue(rec.value);
-          const ascending = isAscendingUnit(rec.unit);
+          const ascending = cat === 'course';
           const existing = groupMap[key].entries.find(e => e.user_id === rec.user_id);
 
           if (existing) {
@@ -413,11 +415,11 @@ function useRecordsRanking() {
         }
 
         const result: RecordGroup[] = Object.values(groupMap).map(group => {
-          const ascending = isAscendingUnit(group.unit);
+          const ascending = group.category === 'course';
           const sorted = [...group.entries]
             .sort((a, b) => ascending ? a.numericValue - b.numericValue : b.numericValue - a.numericValue)
             .slice(0, 5);
-          return { title: group.title, unit: group.unit, ascending, entries: sorted };
+          return { title: group.title, unit: group.unit, category: group.category, ascending, entries: sorted };
         });
 
         result.sort((a, b) => b.entries.length - a.entries.length || a.title.localeCompare(b.title));
@@ -509,9 +511,10 @@ export function HallOfFamePage() {
       {!records.loading && !records.error && records.groups.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}
+          className="space-y-6"
         >
           {/* Section header */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3">
             <div className="p-2 border border-[#c9a870]/30">
               <Trophy className="w-5 h-5 text-[#c9a870]" />
             </div>
@@ -525,11 +528,35 @@ export function HallOfFamePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {records.groups.map(group => (
-              <RecordGroupCard key={group.title} group={group} currentUserId={currentUserId} />
-            ))}
-          </div>
+          {/* Musculation */}
+          {records.groups.filter(g => g.category === 'musculation').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Dumbbell className="w-4 h-4 text-[#c9a870]" />
+                <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-[#c9a870]">Musculation</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {records.groups.filter(g => g.category === 'musculation').map(group => (
+                  <RecordGroupCard key={`muscu-${group.title}`} group={group} currentUserId={currentUserId} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Course */}
+          {records.groups.filter(g => g.category === 'course').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <PersonStanding className="w-4 h-4 text-blue-400" />
+                <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-blue-400">Course</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {records.groups.filter(g => g.category === 'course').map(group => (
+                  <RecordGroupCard key={`course-${group.title}`} group={group} currentUserId={currentUserId} />
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
       {records.loading && (
