@@ -131,6 +131,7 @@ export function RunSessionPage() {
         runType || undefined,
         session.id,
         sessionName.trim() || undefined,
+        feedback || undefined,
       );
 
       navigate('/running');

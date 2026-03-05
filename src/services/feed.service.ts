@@ -90,12 +90,12 @@ export const feedService = {
   },
 
   // Publier une course dans le feed
-  async publishRun(userId: string, distance: number, duration: number, pace: number, runType?: string, sessionId?: string, name?: string) {
+  async publishRun(userId: string, distance: number, duration: number, pace: number, runType?: string, sessionId?: string, name?: string, feedback?: string) {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,
         type: 'run',
-        content: { type: 'run', distance, duration, pace, run_type: runType, session_id: sessionId, name },
+        content: { type: 'run', distance, duration, pace, run_type: runType, session_id: sessionId, name, feedback },
       });
     } catch { /* ignore */ }
   },

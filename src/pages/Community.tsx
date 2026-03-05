@@ -368,7 +368,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         borderColor: 'border-l-blue-800/70',
         labelColor: 'text-blue-500',
         stats: `${formatDistance(c.distance)} · ${formatDuration(c.duration)}`,
-        feedback: null,
+        feedback: (c as any).feedback ?? null,
       };
       case 'badge': return {
         label: 'BADGE DÉBLOQUÉ',
