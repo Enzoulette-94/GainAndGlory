@@ -30,7 +30,7 @@ function toLocalDatetimeValue(): string {
 }
 
 export function RunSessionPage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // Champs principaux
@@ -122,6 +122,7 @@ export function RunSessionPage() {
       });
 
       await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
+      await refreshProfile();
 
       await feedService.publishRun(
         profile.id,

@@ -58,7 +58,7 @@ function toLocalDatetimeValue(): string {
 }
 
 export function MuscuSessionPage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   const [date, setDate] = useState(toLocalDatetimeValue());
@@ -187,6 +187,7 @@ export function MuscuSessionPage() {
       });
 
       await xpService.awardXP(profile.id, 'WORKOUT_SESSION', 'musculation');
+      await refreshProfile();
 
       await feedService.publishWorkout(
         profile.id,

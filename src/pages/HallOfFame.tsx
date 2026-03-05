@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Crown, Dumbbell, PersonStanding, Star, Flame } from 'lucide-react';
+import { Crown, Dumbbell, PersonStanding, Star, Flame, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/common/Card';
@@ -17,6 +18,23 @@ interface RankEntry {
   avatar_url: string | null;
 }
 
+interface RecordEntry {
+  recordId: string;
+  user_id: string;
+  username: string;
+  level: number;
+  avatar_url: string | null;
+  value: string;
+  numericValue: number;
+}
+
+interface RecordGroup {
+  title: string;
+  unit: string;
+  ascending: boolean;
+  entries: RecordEntry[];
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function rankColor(rank: number) {
@@ -31,6 +49,21 @@ function rankLabel(rank: number) {
   if (rank === 2) return '🥈';
   if (rank === 3) return '🥉';
   return `#${rank}`;
+}
+
+function parseRecordValue(value: string): number {
+  const trimmed = value.trim();
+  if (trimmed.includes(':')) {
+    const parts = trimmed.split(':');
+    if (parts.length === 2)
+      return (parseFloat(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
+  }
+  return parseFloat(trimmed.replace(',', '.').replace(/[^\d.]/g, '')) || 0;
+}
+
+function isAscendingUnit(unit: string): boolean {
+  const u = unit.toLowerCase().trim();
+  return u.includes('min') || u === 's' || u === 'sec' || u.includes('seconde');
 }
 
 // ─── Colonne de classement ────────────────────────────────────────────────────
@@ -89,7 +122,7 @@ function LeaderboardColumn({
               transition={{ delay: i * 0.05 }}
               className={`flex items-center gap-3 px-4 py-3 ${colors.bg} ${
                 isMe ? 'ring-1 ring-inset ring-[#c9a870]/30' : ''
-              }`}
+              } ${!isMe ? 'cursor-pointer hover:bg-white/5 transition-colors' : ''}`}
             >
               {/* Rang */}
               <span className={`w-6 text-center text-sm flex-shrink-0 ${rank <= 3 ? 'text-base' : `text-xs font-bold ${colors.text}`}`}>
@@ -108,10 +141,16 @@ function LeaderboardColumn({
 
               {/* Nom + niveau */}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold truncate ${isMe ? 'text-[#c9a870]' : 'text-[#e5e5e5]'}`}>
-                  {entry.username}
-                  {isMe && <span className="ml-1.5 text-[10px] font-bold text-[#c9a870] border border-[#c9a870]/40 px-1 py-0.5">VOUS</span>}
-                </p>
+                {isMe ? (
+                  <p className="text-sm font-semibold truncate text-[#c9a870]">
+                    {entry.username}
+                    <span className="ml-1.5 text-[10px] font-bold text-[#c9a870] border border-[#c9a870]/40 px-1 py-0.5">VOUS</span>
+                  </p>
+                ) : (
+                  <Link to={`/profil/${entry.id}`} className="text-sm font-semibold truncate text-[#e5e5e5] hover:text-[#c9a870] transition-colors">
+                    {entry.username}
+                  </Link>
+                )}
                 <p className="text-xs text-[#6b6b6b]">Niv. {entry.level}</p>
               </div>
 
@@ -242,15 +281,168 @@ function useMusculationRanking() {
   return { entries, loading, error };
 }
 
+// ─── Carte record par exercice ────────────────────────────────────────────────
+
+function RecordGroupCard({ group, currentUserId }: { group: RecordGroup; currentUserId: string | null }) {
+  return (
+    <Card className="flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+        <div>
+          <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-[#c9a870]">
+            {group.title}
+          </h3>
+          <p className="text-xs text-[#6b6b6b]">
+            {group.unit} · {group.ascending ? '↓ meilleur temps' : '↑ meilleure charge'}
+          </p>
+        </div>
+        <Trophy className="w-4 h-4 text-[#c9a870]/30" />
+      </div>
+
+      <div className="flex flex-col divide-y divide-white/5">
+        {group.entries.map((entry, i) => {
+          const rank = i + 1;
+          const colors = rankColor(rank);
+          const isMe = entry.user_id === currentUserId;
+          return (
+            <div
+              key={entry.user_id}
+              className={`flex items-center gap-3 px-4 py-3 ${colors.bg} ${isMe ? 'ring-1 ring-inset ring-[#c9a870]/30' : ''}`}
+            >
+              <span className={`w-6 text-center flex-shrink-0 ${rank <= 3 ? 'text-base' : `text-xs font-bold ${colors.text}`}`}>
+                {rankLabel(rank)}
+              </span>
+
+              <div className={`w-6 h-6 rounded-full flex-shrink-0 border overflow-hidden ${colors.border}`}>
+                {entry.avatar_url
+                  ? <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
+                  : <div className={`w-full h-full flex items-center justify-center text-[10px] font-black ${colors.bg}`}>
+                      <span className={colors.text}>{entry.username.charAt(0).toUpperCase()}</span>
+                    </div>
+                }
+              </div>
+
+              <div className="flex-1 min-w-0">
+                {isMe ? (
+                  <p className="text-sm font-semibold truncate text-[#c9a870]">
+                    {entry.username}
+                    <span className="ml-1.5 text-[10px] font-bold text-[#c9a870] border border-[#c9a870]/40 px-1 py-0.5">VOUS</span>
+                  </p>
+                ) : (
+                  <Link to={`/profil/${entry.user_id}`} className="text-sm font-semibold truncate text-[#e5e5e5] hover:text-[#c9a870] transition-colors">
+                    {entry.username}
+                  </Link>
+                )}
+                <p className="text-xs text-[#6b6b6b]">Niv. {entry.level}</p>
+              </div>
+
+              <div className="text-right flex-shrink-0">
+                <p className={`text-sm font-bold ${rank === 1 ? colors.text : 'text-[#d4d4d4]'}`}>
+                  {entry.value}
+                </p>
+                <p className="text-xs text-[#6b6b6b]">{group.unit}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// ─── Hook records ──────────────────────────────────────────────────────────────
+
+function useRecordsRanking() {
+  const [groups, setGroups] = useState<RecordGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: profiles, error: err1 } = await (supabase as any)
+          .from('profiles')
+          .select('id, username, global_level, avatar_url, share_performances')
+          .eq('share_performances', true);
+        if (err1) throw err1;
+
+        const profileMap: Record<string, any> = {};
+        for (const p of (profiles ?? []) as any[]) profileMap[p.id] = p;
+
+        const userIds = Object.keys(profileMap);
+        if (userIds.length === 0) {
+          if (!cancelled) { setGroups([]); setLoading(false); }
+          return;
+        }
+
+        const { data: records, error: err2 } = await (supabase as any)
+          .from('profile_records')
+          .select('id, user_id, title, value, unit')
+          .in('user_id', userIds);
+        if (err2) throw err2;
+
+        const groupMap: Record<string, { title: string; unit: string; entries: RecordEntry[] }> = {};
+        for (const rec of (records ?? []) as any[]) {
+          const key = rec.title.trim().toLowerCase();
+          if (!groupMap[key]) {
+            groupMap[key] = { title: rec.title.trim(), unit: rec.unit, entries: [] };
+          }
+          const profile = profileMap[rec.user_id];
+          if (!profile) continue;
+
+          const numericValue = parseRecordValue(rec.value);
+          const ascending = isAscendingUnit(rec.unit);
+          const existing = groupMap[key].entries.find(e => e.user_id === rec.user_id);
+
+          if (existing) {
+            if (ascending ? numericValue < existing.numericValue : numericValue > existing.numericValue) {
+              existing.value = rec.value;
+              existing.numericValue = numericValue;
+            }
+          } else {
+            groupMap[key].entries.push({
+              recordId: rec.id,
+              user_id: rec.user_id,
+              username: profile.username,
+              level: profile.global_level,
+              avatar_url: profile.avatar_url ?? null,
+              value: rec.value,
+              numericValue,
+            });
+          }
+        }
+
+        const result: RecordGroup[] = Object.values(groupMap).map(group => {
+          const ascending = isAscendingUnit(group.unit);
+          const sorted = [...group.entries]
+            .sort((a, b) => ascending ? a.numericValue - b.numericValue : b.numericValue - a.numericValue)
+            .slice(0, 5);
+          return { title: group.title, unit: group.unit, ascending, entries: sorted };
+        });
+
+        result.sort((a, b) => b.entries.length - a.entries.length || a.title.localeCompare(b.title));
+
+        if (!cancelled) { setGroups(result); setLoading(false); }
+      } catch {
+        if (!cancelled) { setError('Erreur chargement records'); setLoading(false); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { groups, loading, error };
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function HallOfFamePage() {
   const { profile } = useAuth();
   const currentUserId = profile?.id ?? null;
 
-  const xp   = useXPRanking();
-  const run  = useRunningRanking();
-  const musc = useMusculationRanking();
+  const xp      = useXPRanking();
+  const run     = useRunningRanking();
+  const musc    = useMusculationRanking();
+  const records = useRecordsRanking();
 
   return (
     <div className="space-y-6">
@@ -312,6 +504,39 @@ export function HallOfFamePage() {
           emptyIcon={<Dumbbell className="w-8 h-8" />}
         />
       </motion.div>
+
+      {/* Records personnels */}
+      {!records.loading && !records.error && records.groups.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}
+        >
+          {/* Section header */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 border border-[#c9a870]/30">
+              <Trophy className="w-5 h-5 text-[#c9a870]" />
+            </div>
+            <div>
+              <h2 className="font-rajdhani text-xl font-bold tracking-wide uppercase text-[#c9a870]">
+                Records Personnels
+              </h2>
+              <p className="text-[#a3a3a3] text-xs">
+                Classements par exercice · profils publics uniquement
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {records.groups.map(group => (
+              <RecordGroupCard key={group.title} group={group} currentUserId={currentUserId} />
+            ))}
+          </div>
+        </motion.div>
+      )}
+      {records.loading && (
+        <div className="flex justify-center py-4">
+          <Loader text="" />
+        </div>
+      )}
 
       <motion.p
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}

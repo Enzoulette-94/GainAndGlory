@@ -28,6 +28,19 @@ interface ChallengeItem {
   type: string;
 }
 
+interface EventItem {
+  id: string;
+  title: string;
+  event_date: string;
+  type: string | null;
+  description: string | null;
+}
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  course: 'Course', competition: 'Compétition', trail: 'Trail',
+  triathlon: 'Triathlon', autre: 'Autre',
+};
+
 type DayActivity = {
   date: string;
   hasWorkout: boolean;
@@ -35,11 +48,13 @@ type DayActivity = {
   hasWeight: boolean;
   hasGoalDeadline: boolean;
   hasChallengeEvent: boolean;
+  hasEvent: boolean;
   workouts: WorkoutSession[];
   runs: RunningSession[];
   weights: WeightEntry[];
   goalDeadlines: PersonalGoal[];
   challengeEvents: { challenge: ChallengeItem; kind: 'start' | 'end' | 'active' }[];
+  events: EventItem[];
 };
 
 const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -49,7 +64,10 @@ const MONTHS_FR = [
 ];
 
 function toDateStr(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function getActivityDateStr(dateStr: string): string {
@@ -64,6 +82,7 @@ export function CalendarPage() {
   const [weights, setWeights] = useState<WeightEntry[]>([]);
   const [goals, setGoals] = useState<PersonalGoal[]>([]);
   const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<DayActivity | null>(null);
 
@@ -79,12 +98,17 @@ export function CalendarPage() {
         .select('id, title, start_date, end_date, type')
         .in('status', ['active', 'pending'])
         .then(({ data }: { data: ChallengeItem[] | null }) => data ?? []),
-    ]).then(([w, r, wt, g, c]) => {
+      db.from('events')
+        .select('id, title, event_date, type, description')
+        .order('event_date', { ascending: true })
+        .then(({ data }: { data: EventItem[] | null }) => data ?? []),
+    ]).then(([w, r, wt, g, c, ev]) => {
       setWorkouts(w);
       setRuns(r);
       setWeights(wt);
       setGoals((g as PersonalGoal[]).filter(g => g.status === 'active' && g.deadline));
       setChallenges(c as ChallengeItem[]);
+      setEvents(ev as EventItem[]);
     }).finally(() => setLoading(false));
   }, [profile]);
 
@@ -96,9 +120,9 @@ export function CalendarPage() {
         map.set(d, {
           date: d,
           hasWorkout: false, hasRun: false, hasWeight: false,
-          hasGoalDeadline: false, hasChallengeEvent: false,
+          hasGoalDeadline: false, hasChallengeEvent: false, hasEvent: false,
           workouts: [], runs: [], weights: [],
-          goalDeadlines: [], challengeEvents: [],
+          goalDeadlines: [], challengeEvents: [], events: [],
         });
       }
       return map.get(d)!;
@@ -132,42 +156,25 @@ export function CalendarPage() {
       a.goalDeadlines.push(g);
     }
 
-    // Défis : start_date, end_date, et jours intermédiaires (hasChallengeEvent)
+    // Défis : uniquement la date de fin
     for (const c of challenges) {
-      const start = c.start_date.split('T')[0];
       const end = c.end_date.split('T')[0];
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-
-      // Marquer start
-      const aStart = ensure(start);
-      aStart.hasChallengeEvent = true;
-      aStart.challengeEvents.push({ challenge: c, kind: 'start' });
-
-      // Marquer end
       const aEnd = ensure(end);
       aEnd.hasChallengeEvent = true;
-      // Avoid double-adding if same day
       if (!aEnd.challengeEvents.find(e => e.challenge.id === c.id)) {
         aEnd.challengeEvents.push({ challenge: c, kind: 'end' });
       }
+    }
 
-      // Jours intermédiaires (juste le flag, pas d'event détaillé)
-      const cur = new Date(startDate);
-      cur.setDate(cur.getDate() + 1);
-      while (cur < endDate) {
-        const dStr = toDateStr(cur);
-        const a = ensure(dStr);
-        a.hasChallengeEvent = true;
-        if (!a.challengeEvents.find(e => e.challenge.id === c.id)) {
-          a.challengeEvents.push({ challenge: c, kind: 'active' });
-        }
-        cur.setDate(cur.getDate() + 1);
-      }
+    for (const ev of events) {
+      const d = ev.event_date.split('T')[0];
+      const a = ensure(d);
+      a.hasEvent = true;
+      a.events.push(ev);
     }
 
     return map;
-  }, [workouts, runs, weights, goals, challenges]);
+  }, [workouts, runs, weights, goals, challenges, events]);
 
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -215,6 +222,16 @@ export function CalendarPage() {
       return d.getFullYear() === year && d.getMonth() === month;
     });
   }, [goals, currentDate]);
+
+  // Événements ce mois
+  const monthEvents = useMemo(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    return events.filter(ev => {
+      const d = new Date(ev.event_date);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+  }, [events, currentDate]);
 
   // Défis actifs ce mois
   const monthChallenges = useMemo(() => {
@@ -332,6 +349,41 @@ export function CalendarPage() {
         </motion.div>
       )}
 
+      {/* Événements ce mois */}
+      {monthEvents.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider">
+              Événements ce mois
+            </h2>
+            <Link to="/events" className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">
+              Voir tout →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {monthEvents.map(ev => {
+              const daysLeft = Math.max(0, Math.ceil((new Date(ev.event_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+              return (
+                <div key={ev.id} className="p-3 bg-[#111111] border-l-2 border-violet-800/60">
+                  <div className="flex items-center gap-2">
+                    <Flag className="w-4 h-4 text-violet-500 flex-shrink-0" />
+                    <p className="text-sm font-medium text-[#d4d4d4] flex-1 truncate">{ev.title}</p>
+                    <span className="text-xs font-rajdhani font-bold text-violet-500 flex-shrink-0">
+                      {daysLeft === 0 ? "Aujourd'hui" : `J-${daysLeft}`}
+                    </span>
+                  </div>
+                  {ev.type && (
+                    <p className="text-xs text-[#6b6b6b] mt-1 ml-6">
+                      {EVENT_TYPE_LABELS[ev.type] ?? ev.type}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* Navigation mois */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className="p-4">
@@ -377,7 +429,8 @@ export function CalendarPage() {
                 const hasActivity = !!(activity?.hasWorkout || activity?.hasRun || activity?.hasWeight);
                 const hasGoal = !!activity?.hasGoalDeadline;
                 const hasChallenge = !!activity?.hasChallengeEvent;
-                const isClickable = !!(hasActivity || hasGoal || hasChallenge);
+                const hasEvent = !!activity?.hasEvent;
+                const isClickable = !!(hasActivity || hasGoal || hasChallenge || hasEvent);
 
                 return (
                   <button
@@ -388,7 +441,7 @@ export function CalendarPage() {
                       text-sm font-medium transition-all duration-150 p-1
                       ${isToday ? 'ring-1 ring-[#c9a870]' : ''}
                       ${isClickable ? 'cursor-pointer hover:scale-105' : 'cursor-default'}
-                      ${isFuture && !hasGoal && !hasChallenge ? 'opacity-30' : ''}
+                      ${isFuture && !hasGoal && !hasChallenge && !hasEvent ? 'opacity-30' : ''}
                       ${isToday ? 'bg-[#c9a870]/10' : hasActivity ? 'bg-[#1c1c1c] hover:bg-white/5' : ''}
                     `}
                   >
@@ -401,6 +454,7 @@ export function CalendarPage() {
                       {activity?.hasWeight && <div className="w-1.5 h-1.5 rounded-full bg-green-700" />}
                       {hasGoal && <div className="w-1.5 h-1.5 rounded-full bg-[#c9a870]" />}
                       {hasChallenge && !hasGoal && <div className="w-1.5 h-1.5 rounded-full bg-pink-600" />}
+                      {hasEvent && <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />}
                     </div>
                   </button>
                 );
@@ -416,6 +470,7 @@ export function CalendarPage() {
               { color: 'bg-green-700', label: 'Pesée' },
               { color: 'bg-[#c9a870]', label: 'Objectif' },
               { color: 'bg-pink-600', label: 'Défi équipe' },
+              { color: 'bg-violet-500', label: 'Événement' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full ${color}`} />
@@ -583,6 +638,35 @@ export function CalendarPage() {
                           {kind === 'start' ? 'DÉBUT' : 'FIN'}
                         </span>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Événements */}
+            {selectedDay.events.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Flag className="w-4 h-4 text-violet-500" />
+                  <h3 className="text-sm font-semibold text-[#e5e5e5]">
+                    Événements ({selectedDay.events.length})
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {selectedDay.events.map(ev => (
+                    <div key={ev.id} className="p-3 bg-[#1c1c1c] border border-violet-800/30">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-[#d4d4d4]">{ev.title}</p>
+                        {ev.type && (
+                          <span className="text-xs text-violet-400">
+                            {EVENT_TYPE_LABELS[ev.type] ?? ev.type}
+                          </span>
+                        )}
+                      </div>
+                      {ev.description && (
+                        <p className="text-xs text-[#6b6b6b] mt-1">{ev.description}</p>
+                      )}
                     </div>
                   ))}
                 </div>

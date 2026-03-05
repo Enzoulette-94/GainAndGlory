@@ -75,11 +75,11 @@ src/
 │   ├── Running.tsx             # Liste des courses (édition/suppression)
 │   ├── RunSession.tsx          # Formulaire nouvelle course
 │   ├── Weight.tsx              # Suivi du poids + graphique (édition/suppression)
-│   ├── Calendar.tsx            # Calendrier d'activité
+│   ├── Calendar.tsx            # Calendrier d'activité (muscu, course, pesée, objectifs, défis, événements)
 │   ├── Goals.tsx               # Objectifs personnels
 │   ├── Community.tsx           # Feed social (likes, commentaires)
 │   ├── TeamGoals.tsx           # Objectifs par équipes
-│   ├── HallOfFame.tsx          # Classements (tonnage, distance, XP)
+│   ├── HallOfFame.tsx          # Classements globaux (XP, distance, tonnage) + Records Personnels par exercice
 │   ├── Events.tsx              # Événements sportifs (participation)
 │   ├── Profile.tsx             # Profil utilisateur
 │   ├── Settings.tsx            # Paramètres
@@ -162,7 +162,31 @@ Chaque action rapporte de l'XP (défini dans `src/utils/constants.ts`) :
 L'XP est réparti sur 3 compteurs : Global, Musculation, Course. Chacun a son propre niveau.
 
 ### Niveaux
-Les seuils de niveaux sont calculés dans `src/utils/calculations.ts`. Chaque niveau a un **titre de statut** thématique (inspiré LOTR/DBZ) avec une couleur dédiée.
+Les seuils de niveaux sont calculés dans `src/utils/calculations.ts` (`getXPForLevel`). Chaque niveau a un **titre de statut** thématique (inspiré LOTR/DBZ) avec une couleur dédiée.
+
+**Formule** : croissance exponentielle (×1.5) jusqu'au niveau 14, puis palier fixe à **700 XP** par niveau à partir du niveau 15 (~2 semaines d'activité régulière).
+
+| Niveau | XP ce palier | XP total cumulé | Temps estimé¹ |
+|--------|-------------:|----------------:|---------------|
+| 1 → 2  | 100          | 0               | 2 jours       |
+| 2 → 3  | 150          | 100             | 3 jours       |
+| 3 → 4  | 225          | 250             | 5 jours       |
+| 4 → 5  | 337          | 475             | 1 semaine     |
+| 5 → 6  | 506          | 812             | 1.5 semaine   |
+| 6 → 7  | 759          | 1 318           | 2 semaines    |
+| 7 → 8  | 1 139        | 2 077           | 3 semaines    |
+| 8 → 9  | 1 708        | 3 216           | 5 semaines    |
+| 9 → 10 | 2 562        | 4 924           | 7 semaines    |
+| 10 → 11| 3 844        | 7 486           | ~3 mois       |
+| 11 → 12| 5 766        | 11 330          | ~4 mois       |
+| 12 → 13| 8 649        | 17 096          | ~6 mois       |
+| 13 → 14| 12 974       | 25 745          | ~9 mois       |
+| 14 → 15| **700**      | 38 719          | **2 semaines**|
+| 15 → 16| 700          | 39 419          | 2 semaines    |
+| 20 → 21| 700          | 42 919          | 2 semaines    |
+| 30     | —            | 46 219          | ~3 ans total  |
+
+> ¹ Base : ~350 XP/semaine (5 séances muscu + 2 courses + pesées)
 
 ### Badges
 Les badges sont vérifiés à chaque nouvelle activité via `badges.service.ts`. Ils se débloquent selon des critères (nombre de séances, tonnage total, distance cumulée…).

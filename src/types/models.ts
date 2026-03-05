@@ -187,6 +187,15 @@ export interface Badge {
   is_secret: boolean;
 }
 
+export interface ProfileRecord {
+  id: string;
+  user_id: string;
+  title: string;
+  value: string;
+  unit: string;
+  created_at: string;
+}
+
 export interface UserBadge {
   id: string;
   user_id: string;

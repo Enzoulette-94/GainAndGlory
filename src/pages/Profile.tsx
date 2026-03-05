@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Edit2, Dumbbell, Timer, Route, Flame, Camera } from 'lucide-react';
+import { Edit2, Dumbbell, Timer, Route, Flame, Camera, Trophy, Plus, Trash2, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
 import { badgesService } from '../services/badges.service';
 import { profileService } from '../services/profile.service';
+import { profileRecordsService } from '../services/profile-records.service';
 import { getLevelProgress, getLevelTitle, formatDate, formatDistance } from '../utils/calculations';
 import { BADGE_RARITY_CONFIG } from '../utils/constants';
 import { Card } from '../components/common/Card';
@@ -14,7 +15,7 @@ import { Modal } from '../components/common/Modal';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { Loader } from '../components/common/Loader';
 import { useAuth } from '../contexts/AuthContext';
-import type { UserBadge } from '../types/models';
+import type { UserBadge, ProfileRecord } from '../types/models';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -70,7 +71,17 @@ export function ProfilePage() {
   // stats loading
   const [stats, setStats] = useState<StatsData | null>(null);
   const [badges, setBadges] = useState<UserBadge[]>([]);
+  const [records, setRecords] = useState<ProfileRecord[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+
+  // record modal
+  const [recordModalOpen, setRecordModalOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<ProfileRecord | null>(null);
+  const [recTitle, setRecTitle] = useState('');
+  const [recValue, setRecValue] = useState('');
+  const [recUnit, setRecUnit] = useState('');
+  const [recError, setRecError] = useState('');
+  const [savingRecord, setSavingRecord] = useState(false);
 
   // edit modal
   const [editOpen, setEditOpen] = useState(false);
@@ -102,17 +113,20 @@ export function ProfilePage() {
 
   const loadData = useCallback(async (userId: string) => {
     try {
-      const [muscuCount, runCount, totalDistance, userBadges] = await Promise.all([
+      const [muscuCount, runCount, totalDistance, userBadges, userRecords] = await Promise.all([
         workoutService.getSessionsCount(userId),
         runningService.getSessionsCount(userId),
         runningService.getTotalDistance(userId),
         badgesService.getUserBadges(userId),
+        profileRecordsService.getRecords(userId),
       ]);
       setStats({ muscuCount, runCount, totalDistance });
       setBadges(userBadges);
+      setRecords(userRecords);
     } catch {
       setStats({ muscuCount: 0, runCount: 0, totalDistance: 0 });
       setBadges([]);
+      setRecords([]);
     } finally {
       setDataLoading(false);
     }
@@ -171,6 +185,48 @@ export function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  // ─── record handlers ─────────────────────────────────────────────────────
+
+  function openAddRecord() {
+    setEditingRecord(null);
+    setRecTitle(''); setRecValue(''); setRecUnit(''); setRecError('');
+    setRecordModalOpen(true);
+  }
+
+  function openEditRecord(r: ProfileRecord) {
+    setEditingRecord(r);
+    setRecTitle(r.title); setRecValue(r.value); setRecUnit(r.unit); setRecError('');
+    setRecordModalOpen(true);
+  }
+
+  async function handleSaveRecord() {
+    if (!profile) return;
+    if (!recTitle.trim()) { setRecError('Le titre est requis.'); return; }
+    if (!recValue.trim()) { setRecError('La valeur est requise.'); return; }
+    setSavingRecord(true); setRecError('');
+    try {
+      if (editingRecord) {
+        const updated = await profileRecordsService.updateRecord(editingRecord.id, recTitle.trim(), recValue.trim(), recUnit.trim());
+        setRecords(prev => prev.map(r => r.id === updated.id ? updated : r));
+      } else {
+        const created = await profileRecordsService.createRecord(profile.id, recTitle.trim(), recValue.trim(), recUnit.trim());
+        setRecords(prev => [...prev, created]);
+      }
+      setRecordModalOpen(false);
+    } catch {
+      setRecError('Erreur lors de la sauvegarde.');
+    } finally {
+      setSavingRecord(false);
+    }
+  }
+
+  async function handleDeleteRecord(id: string) {
+    try {
+      await profileRecordsService.deleteRecord(id);
+      setRecords(prev => prev.filter(r => r.id !== id));
+    } catch { /* ignore */ }
   }
 
   // ─── loading guard ───────────────────────────────────────────────────────
@@ -326,6 +382,64 @@ export function ProfilePage() {
         )}
       </motion.div>
 
+      {/* ── PERFORMANCES MANUELLES ──────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Meilleures performances</h2>
+          <button
+            onClick={openAddRecord}
+            className="flex items-center gap-1 text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors"
+            aria-label="Ajouter une performance"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Ajouter
+          </button>
+        </div>
+
+        {dataLoading ? (
+          <Loader size="sm" />
+        ) : records.length === 0 ? (
+          <Card className="p-6 text-center">
+            <Trophy className="w-8 h-8 text-[#4a4a4a] mx-auto mb-2" />
+            <p className="text-[#6b6b6b] text-sm">Aucune performance enregistrée</p>
+            <button onClick={openAddRecord} className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] mt-1 transition-colors">
+              + Ajouter ma première performance
+            </button>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {records.map((r, i) => (
+              <motion.div
+                key={r.id}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.27 + i * 0.04 }}
+                className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
+              >
+                <Trophy className="w-3.5 h-3.5 text-[#c9a870] flex-shrink-0" />
+                <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                <span className="text-[#6b6b6b] text-xs">•</span>
+                <span className="text-sm font-bold text-[#c9a870]">
+                  {r.value}{r.unit ? <span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span> : null}
+                </span>
+                <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                  <button onClick={() => openEditRecord(r)} className="p-1 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors" aria-label="Modifier">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => handleDeleteRecord(r.id)} className="p-1 text-[#6b6b6b] hover:text-red-400 transition-colors" aria-label="Supprimer">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       {/* ── BADGES ──────────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -377,6 +491,50 @@ export function ProfilePage() {
           </div>
         )}
       </motion.div>
+
+      {/* ── RECORD MODAL ────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={recordModalOpen}
+        onClose={() => setRecordModalOpen(false)}
+        title={editingRecord ? 'Modifier la performance' : 'Ajouter une performance'}
+        size="sm"
+      >
+        <div className="p-5 space-y-4">
+          <Input
+            label="Titre"
+            value={recTitle}
+            onChange={e => { setRecTitle(e.target.value); setRecError(''); }}
+            placeholder="ex: Squat, 5 km, Développé couché…"
+            maxLength={60}
+            autoFocus
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Valeur"
+              value={recValue}
+              onChange={e => { setRecValue(e.target.value); setRecError(''); }}
+              placeholder="ex: 120 ou 22:30"
+              maxLength={20}
+            />
+            <Input
+              label="Unité"
+              value={recUnit}
+              onChange={e => setRecUnit(e.target.value)}
+              placeholder="ex: kg, min, km"
+              maxLength={10}
+            />
+          </div>
+          {recError && <p className="text-xs text-red-400">{recError}</p>}
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" className="flex-1" onClick={() => setRecordModalOpen(false)} disabled={savingRecord}>
+              Annuler
+            </Button>
+            <Button className="flex-1" loading={savingRecord} onClick={handleSaveRecord}>
+              Enregistrer
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* ── EDIT MODAL ──────────────────────────────────────────────────── */}
       <Modal isOpen={editOpen} onClose={closeEdit} title="Modifier le profil" size="sm">

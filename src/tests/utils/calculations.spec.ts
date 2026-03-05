@@ -41,12 +41,19 @@ describe('getXPForLevel', () => {
     expect(getXPForLevel(3)).toBe(150);
   });
 
-  it('augmente exponentiellement (facteur ×1.5)', () => {
+  it('augmente exponentiellement (facteur ×1.5) jusqu\'au niveau 15', () => {
     const lvl2 = getXPForLevel(2); // 100
     const lvl3 = getXPForLevel(3); // 150
     const lvl4 = getXPForLevel(4); // 225
     expect(lvl3 / lvl2).toBeCloseTo(1.5);
     expect(lvl4 / lvl3).toBeCloseTo(1.5);
+  });
+
+  it('est plafonné à 700 XP à partir du niveau 15', () => {
+    expect(getXPForLevel(15)).toBe(700);
+    expect(getXPForLevel(16)).toBe(700);
+    expect(getXPForLevel(20)).toBe(700);
+    expect(getXPForLevel(30)).toBe(700);
   });
 
   it('retourne un entier (floor appliqué)', () => {

@@ -13,6 +13,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
@@ -210,23 +211,20 @@ function ParticipantList({ participants }: { participants: EventParticipant[] })
       </div>
       <div className="flex flex-wrap gap-1.5">
         {participants.map(p => (
-          <span
+          <Link
             key={p.user_id}
-            className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/3 border border-white/8 text-xs text-[#a3a3a3]"
+            to={`/profil/${p.user_id}`}
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/3 border border-white/8 text-xs text-[#a3a3a3] hover:text-[#c9a870] hover:border-[#c9a870]/30 transition-colors"
           >
             {p.user?.avatar_url ? (
-              <img
-                src={p.user.avatar_url}
-                alt=""
-                className="w-4 h-4 rounded-full object-cover"
-              />
+              <img src={p.user.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
             ) : (
               <span className="w-4 h-4 rounded-full bg-[#2a2a2a] flex items-center justify-center text-xs text-[#6b6b6b] font-bold leading-none">
                 {(p.user?.username ?? '?')[0].toUpperCase()}
               </span>
             )}
             <span className="max-w-[100px] truncate">{p.user?.username ?? '—'}</span>
-          </span>
+          </Link>
         ))}
       </div>
     </div>

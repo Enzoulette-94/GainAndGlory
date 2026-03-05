@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Users, Plus, Zap, Target, Trophy, Calendar, Heart, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/common/Card';
@@ -415,16 +416,16 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
     >
       {/* Header : avatar + nom + niveau + temps */}
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-8 h-8 border border-[#c9a870]/30 overflow-hidden bg-[#1c1c1c] flex items-center justify-center">
+        <Link to={`/profil/${item.user_id}`} className="flex-shrink-0 w-8 h-8 border border-[#c9a870]/30 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-[#c9a870]/70 transition-colors">
           {item.user?.avatar_url ? (
             <img src={item.user.avatar_url} alt={username} className="w-full h-full object-cover" />
           ) : (
             <span className="text-xs font-bold font-rajdhani text-[#c9a870]">{initials}</span>
           )}
-        </div>
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="font-rajdhani font-bold text-[#f5f5f5] tracking-wide uppercase text-sm">{username}</span>
+            <Link to={`/profil/${item.user_id}`} className="font-rajdhani font-bold text-[#f5f5f5] tracking-wide uppercase text-sm hover:text-[#c9a870] transition-colors">{username}</Link>
             <span className="text-xs text-[#4a4a4a]">Niv. {level}</span>
           </div>
           <p className="text-xs text-[#4a4a4a]">{formatRelativeTime(item.created_at)}</p>

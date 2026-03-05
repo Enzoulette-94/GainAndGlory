@@ -35,7 +35,7 @@ interface ChartPoint {
 }
 
 export function WeightPage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,6 +134,7 @@ export function WeightPage() {
         newNotes.trim() || undefined
       );
       await xpService.awardXP(profile.id, 'WEIGHT_ENTRY');
+      await refreshProfile();
 
       setShowModal(false);
       setNewWeight('');

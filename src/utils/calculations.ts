@@ -5,9 +5,12 @@ import type { LevelTitle } from '../types/enums';
 // XP ET NIVEAUX
 // ============================================================
 
-/** XP requis pour passer DU niveau N au niveau N+1 */
+/** XP requis pour passer DU niveau N au niveau N+1.
+ *  Croissance exponentielle (×1.5) jusqu'au niveau 14,
+ *  puis palier fixe à 700 XP (~2 semaines d'activité régulière). */
 export function getXPForLevel(level: number): number {
   if (level <= 1) return 0;
+  if (level >= 15) return 700;
   return Math.floor(100 * Math.pow(1.5, level - 2));
 }
 

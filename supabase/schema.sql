@@ -196,6 +196,15 @@ CREATE TABLE user_badges (
   UNIQUE(user_id, badge_id)
 );
 
+CREATE TABLE profile_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  value TEXT NOT NULL,
+  unit TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 CREATE TABLE activity_feed (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -289,6 +298,7 @@ ALTER TABLE activity_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profile_records ENABLE ROW LEVEL SECURITY;
 
 -- Profiles
 CREATE POLICY "profiles_select" ON profiles FOR SELECT USING (true);
@@ -367,6 +377,12 @@ CREATE POLICY "notif_update" ON notifications FOR UPDATE USING (auth.uid() = use
 CREATE POLICY "notif_prefs_select" ON notification_preferences FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "notif_prefs_insert" ON notification_preferences FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "notif_prefs_update" ON notification_preferences FOR UPDATE USING (auth.uid() = user_id);
+
+-- Profile records
+CREATE POLICY "records_select" ON profile_records FOR SELECT USING (true);
+CREATE POLICY "records_insert" ON profile_records FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "records_update" ON profile_records FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "records_delete" ON profile_records FOR DELETE USING (auth.uid() = user_id);
 
 -- Exercises et badges (lecture publique)
 CREATE POLICY "exercises_select" ON exercises FOR SELECT USING (true);

@@ -260,7 +260,7 @@ const INITIAL_CREATE_FORM: CreateGoalForm = {
 };
 
 export function GoalsPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
 
   // State données
   const [goals, setGoals] = useState<PersonalGoal[]>([]);
@@ -390,6 +390,7 @@ export function GoalsPage() {
 
       // Attribuer XP
       const result = await xpService.awardXP(user.id, 'PERSONAL_GOAL_COMPLETED');
+      await refreshProfile();
       const msg = result.leveledUp
         ? `Objectif accompli ! +${result.xpGained} XP - Niveau ${result.newLevel} !`
         : `Objectif accompli ! +${result.xpGained} XP`;

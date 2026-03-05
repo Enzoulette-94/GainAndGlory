@@ -256,6 +256,7 @@
   - 🟢 Vert = pesée
   - 🟡 Or = échéance d'objectif
   - 🩷 Rose = défi équipe (début/fin/en cours)
+  - 🟣 Violet = événement sportif
 - Clic sur un jour → modal détail
 
 ### Modal détail d'un jour
@@ -264,10 +265,12 @@
 - Toutes les pesées
 - Échéances d'objectifs personnels
 - Début/fin de défis équipe
+- Événements sportifs (titre, type, description)
 
 ### Aperçu mensuel
 - Objectifs personnels avec échéance ce mois (barre de progression, jours restants)
 - Défis d'équipe actifs ce mois (titre, plage de dates, jours restants)
+- Événements sportifs ce mois (titre, type, countdown J-X, lien → `/events`)
 
 ### Statistiques du mois
 - Nombre de séances muscu
@@ -276,7 +279,7 @@
 - Tonnage total
 
 ### Légende
-- Code couleur de tous les types d'activité
+- Code couleur de tous les types d'activité (6 entrées dont Événement violet)
 
 ---
 
@@ -362,18 +365,32 @@
 
 ## 12. Hall of Fame (`/hall-of-fame`)
 
-### Layout 3 colonnes
+### Layout 3 colonnes (classements globaux)
 - **Top XP Global** : classement 5 premiers par XP total
 - **Top Course** : classement 5 premiers par distance totale
 - **Top Musculation** : classement 5 premiers par tonnage total
 
-### Carte joueur
+### Carte joueur (classements globaux)
 - Rang (#1 🥇, #2 🥈, #3 🥉, #4/#5 avec couleur dégradée)
 - Avatar (photo ou initiale)
-- Username + badge "VOUS" pour l'utilisateur courant
+- Username cliquable → `/profil/:userId` (sauf utilisateur courant)
+- Badge "VOUS" pour l'utilisateur courant
 - Niveau
 - Valeur + unité (XP / km / kg)
 - Surbrillance anneau doré pour l'utilisateur courant
+
+### Section Records Personnels (classements par exercice)
+- Regroupement automatique des `profile_records` par titre d'exercice
+- **Un seul utilisateur suffit** pour qu'un classement apparaisse
+- **Confidentialité** : seuls les profils ayant `share_performances = true` sont inclus
+- **Tri intelligent par unité** :
+  - Unités poids (kg, lbs…) → décroissant (meilleure charge ↑)
+  - Unités temps (min, s…) → croissant (meilleur temps ↓)
+- Valeur temporelle au format `MM:SS` correctement parsée en secondes pour comparaison
+- Une seule entrée par utilisateur par exercice (meilleure performance conservée)
+- Top 5 par exercice
+- Username cliquable → `/profil/:userId`
+- Grille responsive : 1 col mobile, 2 cols sm, 3 cols lg, 4 cols xl
 
 ---
 
@@ -554,11 +571,11 @@
 | Musculation | CRUD séances + exercices, graphiques, records | ✅ |
 | Running | CRUD courses, graphiques, records par distance | ✅ |
 | Poids | CRUD pesées, graphique 30j, variations | ✅ |
-| Calendrier | Vue mensuelle interactive, détail par jour | ✅ |
+| Calendrier | Vue mensuelle interactive, détail par jour, événements intégrés | ✅ |
 | Objectifs | CRUD objectifs, progression, complétion avec XP | ✅ |
 | Feed social | Activités, likes, commentaires, modal détail | ✅ |
 | Équipes | Défis collectifs, participation, contribution | ✅ |
-| Hall of Fame | 3 classements (XP, distance, tonnage) | ✅ |
+| Hall of Fame | 3 classements globaux + classements par exercice (Records Personnels) | ✅ |
 | Événements | CRUD événements, participation, liste participants | ✅ |
 | Profil | Avatar, stats, badges, édition | ✅ |
 | Paramètres | Préférences, confidentialité, déconnexion | ✅ |
