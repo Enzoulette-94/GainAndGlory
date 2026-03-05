@@ -219,8 +219,8 @@ function ChallengeCard({
         )}
 
         {/* Meta */}
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#6b6b6b]">
-          <div className="flex items-center gap-3">
+        <div className="space-y-2 text-xs text-[#6b6b6b]">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5" />
               {participants} participant{participants !== 1 ? 's' : ''}
@@ -234,6 +234,16 @@ function ChallengeCard({
               : <span className="text-red-400 font-medium">Terminé</span>
             }
           </div>
+          {participants > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {(challenge.participations ?? []).map(p => (
+                <span key={p.user_id}
+                  className="inline-flex items-center px-2 py-0.5 border border-white/8 text-[#a3a3a3] font-medium bg-white/3">
+                  {p.user?.username ?? '—'}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Ma contribution */}
