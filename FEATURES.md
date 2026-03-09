@@ -562,6 +562,37 @@
 
 ---
 
+## Migrations de base de données
+
+### Migration #1 — Suppression de `running_sessions.pace_km_per_h`
+- **Fichier** : `supabase/migrations/20260306_drop_pace_km_per_h.sql`
+- `pace_km_per_h` supprimée (redondante : `60 / pace_min_per_km`)
+- Le service `running.service.ts` n'écrit plus cette colonne
+- `calcSpeedKmH()` plus importé dans le service
+
+### Migration #2 — `profile_records.value` : TEXT → DECIMAL
+- **Fichier** : `supabase/migrations/20260306_profile_records_value_decimal.sql`
+- Les valeurs muscu (`"125"`) sont castées directement en `125.0`
+- Les durées course (`"1:42:00"`) sont converties en secondes (`6120.0`)
+- Permet le tri et les comparaisons numériques (Hall of Fame)
+- **Impact app** : le frontend doit reformater les secondes en `MM:SS` ou `H:MM:SS` pour l'affichage
+
+### Migration #3 — `workout_sessions.total_tonnage` remplacé par une VIEW
+- **Fichier** : `supabase/migrations/20260306_workout_sessions_tonnage_view.sql`
+- Vue `workout_sessions_with_tonnage` : calcule `SUM(reps × weight)` depuis `workout_sets`
+- `total_tonnage` supprimée de la table (plus de désynchronisation possible)
+- `security_invoker = on` : la VIEW hérite du RLS de `workout_sessions`
+- `workout.service.ts` interroge maintenant `workout_sessions_with_tonnage`
+
+### Migration #4 — `shoes.total_km` remplacé par une VIEW
+- **Fichier** : `supabase/migrations/20260306_shoes_km_view.sql`
+- Vue `shoes_with_km` : calcule `SUM(distance) / 1000` depuis `running_sessions`
+- `total_km` supprimée de la table (plus de désynchronisation via RPC)
+- La RPC `increment_shoe_km()` est devenue obsolète
+- `running.service.ts` interroge maintenant `shoes_with_km`
+
+---
+
 ## Résumé des fonctionnalités
 
 | Module | Fonctionnalités principales | Statut |
@@ -584,3 +615,4 @@
 | Notifications | Realtime, 7 types, centre de notifs | ✅ |
 | Navigation | SideNav desktop, BottomNav mobile + drawer "Plus" | ✅ |
 | Mot de passe oublié | Envoi email de reset, page réinitialisation | ✅ |
+| Migrations DB | 4 migrations SQL avec BEGIN/COMMIT, DO blocks, vérifications | ✅ |

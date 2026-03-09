@@ -111,7 +111,7 @@ describe('runningService', () => {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         order: vi.fn().mockResolvedValue({
-          data: [{ id: '1', model: 'Pegasus 40', brand: 'Nike', total_km: 200, is_active: true }],
+          data: [{ id: '1', model: 'Pegasus 40', brand: 'Nike', total_km: 245.3, is_active: true }],
           error: null,
         }),
       };
@@ -119,6 +119,58 @@ describe('runningService', () => {
 
       const result = await runningService.getShoes('user-1');
       expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('interroge la VIEW shoes_with_km (migration #4)', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+      (supabase.from as any).mockReturnValue(mockChain);
+
+      await runningService.getShoes('user-1');
+      expect(supabase.from).toHaveBeenCalledWith('shoes_with_km');
+    });
+
+    it('retourne total_km calculé dynamiquement par la VIEW', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const mockChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [{ id: '1', model: 'Pegasus 40', brand: 'Nike', total_km: 245.3, is_active: true }],
+          error: null,
+        }),
+      };
+      (supabase.from as any).mockReturnValue(mockChain);
+
+      const result = await runningService.getShoes('user-1');
+      expect(result[0]).toHaveProperty('total_km');
+      expect(result[0].total_km).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('Migration #1 — pace_km_per_h supprimée', () => {
+    it('createSession ne tente pas d\'écrire pace_km_per_h dans Supabase', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      let capturedPayload: any = null;
+      const insertMock = vi.fn((payload: any) => { capturedPayload = payload; return { select: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 's-1', user_id: 'user-1', distance: 10000, duration: 3000, pace_min_per_km: 5, created_at: '2026-01-01T00:00:00Z' }, error: null }) }; });
+      (supabase.from as any).mockReturnValue({ insert: insertMock });
+
+      await runningService.createSession({ user_id: 'user-1', distance: 10000, duration: 3000 });
+      expect(capturedPayload).not.toHaveProperty('pace_km_per_h');
+    });
+
+    it('le payload createSession contient pace_min_per_km', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      let capturedPayload: any = null;
+      const insertMock = vi.fn((payload: any) => { capturedPayload = payload; return { select: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 's-1', user_id: 'user-1', distance: 10000, duration: 3000, pace_min_per_km: 5, created_at: '2026-01-01T00:00:00Z' }, error: null }) }; });
+      (supabase.from as any).mockReturnValue({ insert: insertMock });
+
+      await runningService.createSession({ user_id: 'user-1', distance: 10000, duration: 3000 });
+      expect(capturedPayload).toHaveProperty('pace_min_per_km');
     });
   });
 

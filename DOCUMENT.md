@@ -118,9 +118,9 @@ src/
 |---|---|
 | `profiles` | Profil utilisateur (XP, niveaux, streak, avatar, is_admin) |
 | `exercises` | Exercices de musculation (défauts + créés par user) |
-| `workout_sessions` | Séances de musculation |
+| `workout_sessions` | Séances de musculation (sans `total_tonnage` → voir VIEW) |
 | `workout_sets` | Séries d'une séance (exercice, reps, poids, repos) |
-| `running_sessions` | Courses (distance, durée, allure, type, dénivelé…) |
+| `running_sessions` | Courses (distance, durée, allure min/km, type, dénivelé…) |
 | `weight_entries` | Pesées (poids, date, notes) |
 | `personal_goals` | Objectifs personnels |
 | `community_challenges` | Objectifs par équipes |
@@ -133,6 +133,20 @@ src/
 | `activity_likes` | Likes sur les entrées du feed |
 | `activity_comments` | Commentaires sur les entrées du feed |
 | `notifications` | Notifications in-app |
+| `profile_records` | Records personnels (muscu + course) — `value` en DECIMAL |
+
+### VIEWs calculées (migrations 2026-03-06)
+
+| VIEW | Source | Colonne calculée | Formule |
+|---|---|---|---|
+| `workout_sessions_with_tonnage` | `workout_sessions` + `workout_sets` | `total_tonnage` | `SUM(reps × weight)` |
+| `shoes_with_km` | `shoes` + `running_sessions` | `total_km` | `SUM(distance) / 1000` |
+
+Les VIEWs utilisent `WITH (security_invoker = on)` pour hériter du RLS des tables sous-jacentes.
+
+**Services mis à jour :**
+- `workout.service.ts` → interroge `workout_sessions_with_tonnage` (getSessions, getSession, getTotalTonnage) ; ne stocke plus `total_tonnage`
+- `running.service.ts` → interroge `shoes_with_km` (getShoes) ; ne stocke plus `pace_km_per_h`
 
 ### Particularités Supabase
 
@@ -263,6 +277,8 @@ npm run lint     # Linter ESLint
 
 | Commit | Description |
 |---|---|
+| récent | feat(db): 4 migrations SQL + tests + MàJ docs (pace_km_per_h, total_tonnage, shoes.total_km, profile_records.value DECIMAL) |
+| récent | feat(seed): seed complète 6 utilisateurs × 3 mois (supabase/seed.sql) |
 | récent | feat(nav): drawer "Plus" dans BottomNav + tests Navigation |
 | récent | feat(auth): pages ForgotPassword et ResetPassword |
 | récent | feat(dashboard): motivation du jour (365 citations, getDailyQuote) |

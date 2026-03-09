@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase-client';
-import { calcTonnage } from '../utils/calculations';
 import type { WorkoutSession, WorkoutSet, Exercise } from '../types/models';
 
 interface CreateWorkoutSetInput {
@@ -21,14 +20,12 @@ interface CreateWorkoutSessionInput {
 
 export const workoutService = {
   async createSession(input: CreateWorkoutSessionInput): Promise<WorkoutSession> {
-    const total_tonnage = calcTonnage(input.sets);
-
+    // total_tonnage supprimé — calculé dynamiquement par la VIEW workout_sessions_with_tonnage
     const basePayload = {
       user_id: input.user_id,
       date: input.date ?? new Date().toISOString(),
       feedback: input.feedback ?? null,
       notes: input.notes ?? null,
-      total_tonnage,
     };
 
     let sessionResult = await supabase
@@ -72,8 +69,9 @@ export const workoutService = {
   },
 
   async getSessions(userId: string, limit = 20, offset = 0): Promise<WorkoutSession[]> {
+    // Utilise la VIEW — total_tonnage est calculé dynamiquement depuis workout_sets
     const { data, error } = await supabase
-      .from('workout_sessions')
+      .from('workout_sessions_with_tonnage')
       .select(`
         *,
         sets:workout_sets(
@@ -91,7 +89,7 @@ export const workoutService = {
 
   async getSession(sessionId: string): Promise<WorkoutSession | null> {
     const { data, error } = await supabase
-      .from('workout_sessions')
+      .from('workout_sessions_with_tonnage')
       .select(`
         *,
         sets:workout_sets(
@@ -111,7 +109,7 @@ export const workoutService = {
     if (error) throw error;
   },
 
-  async updateSession(sessionId: string, updates: { name?: string | null; date?: string; feedback?: string | null; notes?: string | null; total_tonnage?: number }) {
+  async updateSession(sessionId: string, updates: { name?: string | null; date?: string; feedback?: string | null; notes?: string | null }) {
     const { error } = await supabase.from('workout_sessions').update(updates).eq('id', sessionId);
     if (error) throw error;
   },
@@ -136,10 +134,7 @@ export const workoutService = {
       if (insertError) throw insertError;
     }
 
-    // Mettre à jour le tonnage
-    const total_tonnage = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
-    const { error: updateError } = await supabase.from('workout_sessions').update({ total_tonnage }).eq('id', sessionId);
-    if (updateError) throw updateError;
+    // total_tonnage supprimé — la VIEW workout_sessions_with_tonnage le recalcule automatiquement
   },
 
   async getExercises(): Promise<Exercise[]> {
@@ -201,8 +196,9 @@ export const workoutService = {
   },
 
   async getTotalTonnage(userId: string): Promise<number> {
+    // Utilise la VIEW — total_tonnage est calculé dynamiquement
     const { data, error } = await supabase
-      .from('workout_sessions')
+      .from('workout_sessions_with_tonnage')
       .select('total_tonnage')
       .eq('user_id', userId);
 

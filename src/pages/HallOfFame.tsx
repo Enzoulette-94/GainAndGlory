@@ -251,7 +251,7 @@ function useMusculationRanking() {
     (async () => {
       try {
         const { data: sessions, error: err } = await supabase
-          .from('workout_sessions').select('user_id, total_tonnage');
+          .from('workout_sessions_with_tonnage').select('user_id, total_tonnage');
         if (err) throw err;
 
         const totals: Record<string, number> = {};

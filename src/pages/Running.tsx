@@ -718,7 +718,6 @@ function RunSessionCard({
       return;
     }
     const pace_min_per_km = dur / dist;
-    const pace_km_per_h = (dist / dur) * 60;
     setSaving(true);
     setSaveError(null);
     try {
@@ -731,7 +730,6 @@ function RunSessionCard({
         feedback: editFeedback || null,
         notes: editNotes.trim() || null,
         pace_min_per_km,
-        pace_km_per_h,
       });
       setShowEdit(false);
       onUpdated();

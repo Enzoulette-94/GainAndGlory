@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase-client';
-import { calcPaceMinPerKm, calcSpeedKmH } from '../utils/calculations';
+import { calcPaceMinPerKm } from '../utils/calculations';
 import type { RunningSession, Shoe } from '../types/models';
 
 interface CreateRunningSessionInput {
@@ -23,7 +23,6 @@ interface CreateRunningSessionInput {
 export const runningService = {
   async createSession(input: CreateRunningSessionInput): Promise<RunningSession> {
     const pace_min_per_km = calcPaceMinPerKm(input.distance, input.duration);
-    const pace_km_per_h = calcSpeedKmH(input.distance, input.duration);
 
     const basePayload = {
       user_id: input.user_id,
@@ -31,7 +30,6 @@ export const runningService = {
       distance: input.distance,
       duration: input.duration,
       pace_min_per_km,
-      pace_km_per_h,
       run_type: input.run_type ?? null,
       elevation_gain: input.elevation_gain ?? null,
       elevation_loss: input.elevation_loss ?? null,
@@ -96,7 +94,7 @@ export const runningService = {
     elevation_gain?: number | null; elevation_loss?: number | null;
     avg_heart_rate?: number | null; max_heart_rate?: number | null;
     weather_temp?: number | null; weather_condition?: string | null;
-    shoe_id?: string | null; pace_min_per_km?: number | null; pace_km_per_h?: number | null;
+    shoe_id?: string | null; pace_min_per_km?: number | null;
   }) {
     const { error } = await supabase.from('running_sessions').update(updates).eq('id', sessionId);
     if (error) throw error;
@@ -151,8 +149,9 @@ export const runningService = {
 
   // Chaussures
   async getShoes(userId: string): Promise<Shoe[]> {
+    // Utilise la VIEW shoes_with_km — total_km est calculé dynamiquement
     const { data, error } = await supabase
-      .from('shoes')
+      .from('shoes_with_km')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
