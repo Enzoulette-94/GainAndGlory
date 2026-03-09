@@ -10,11 +10,11 @@ export const feedService = {
       .from('activity_feed')
       .select(`
         *,
-        user:profiles(id, username, global_level, avatar_url),
+        user:profiles!left(id, username, global_level, avatar_url),
         likes:activity_likes(id, user_id),
         comments:activity_comments(
           id, content, created_at,
-          user:profiles(id, username)
+          user:profiles!left(id, username)
         )
       `)
       .order('created_at', { ascending: false })

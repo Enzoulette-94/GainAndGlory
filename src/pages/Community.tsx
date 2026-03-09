@@ -356,7 +356,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   // Config par type d'activité
   const typeConfig = (() => {
     const c = item.content;
-    switch (c.type) {
+    switch (c.type ?? item.type) {
       case 'workout': return {
         label: (c as any).name ? (c as any).name.toUpperCase() : 'SÉANCE MUSCU',
         borderColor: 'border-l-red-800/70',
