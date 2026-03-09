@@ -327,25 +327,8 @@ function useRecordsRanking() {
     let cancelled = false;
     (async () => {
       try {
-        const { data: profiles, error: err1 } = await (supabase as any)
-          .from('profiles')
-          .select('id, username, global_level, avatar_url, share_performances')
-          .eq('share_performances', true);
-        if (err1) throw err1;
-
-        const profileMap: Record<string, any> = {};
-        for (const p of (profiles ?? []) as any[]) profileMap[p.id] = p;
-
-        const userIds = Object.keys(profileMap);
-        if (userIds.length === 0) {
-          if (!cancelled) { setGroups([]); setLoading(false); }
-          return;
-        }
-
         const { data: records, error: err2 } = await (supabase as any)
-          .from('profile_records')
-          .select('id, user_id, title, value, unit')
-          .in('user_id', userIds);
+          .rpc('get_hall_of_fame_records');
         if (err2) throw err2;
 
         const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course'; entries: RecordEntry[] }> = {};
@@ -355,8 +338,8 @@ function useRecordsRanking() {
           if (!groupMap[key]) {
             groupMap[key] = { title: rec.title.trim(), unit: rec.unit, category: cat, entries: [] };
           }
-          const profile = profileMap[rec.user_id];
-          if (!profile) continue;
+          const profile = { username: rec.username, global_level: rec.global_level, avatar_url: rec.avatar_url };
+          if (!profile.username) continue;
 
           const numericValue = parseRecordValue(rec.value);
           const ascending = cat === 'course';
@@ -371,9 +354,9 @@ function useRecordsRanking() {
             groupMap[key].entries.push({
               recordId: rec.id,
               user_id: rec.user_id,
-              username: profile.username,
-              level: profile.global_level,
-              avatar_url: profile.avatar_url ?? null,
+              username: rec.username,
+              level: rec.global_level,
+              avatar_url: rec.avatar_url ?? null,
               value: rec.value,
               numericValue,
             });

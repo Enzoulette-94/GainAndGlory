@@ -48,6 +48,34 @@ export const profileRecordsService = {
     return data;
   },
 
+  // Crée ou met à jour un record si la nouvelle valeur est meilleure
+  async upsertRecord(
+    userId: string,
+    title: string,
+    newValue: number,
+    unit: string,
+    category: 'musculation' | 'course',
+    ascending: boolean, // true = plus bas est meilleur (allure), false = plus haut est meilleur (poids, distance)
+  ): Promise<void> {
+    const { data: existing } = await db
+      .from('profile_records')
+      .select('id, value')
+      .eq('user_id', userId)
+      .eq('title', title)
+      .eq('category', category)
+      .maybeSingle();
+
+    if (existing) {
+      const current = parseFloat(existing.value) || 0;
+      const isBetter = ascending ? newValue < current : newValue > current;
+      if (isBetter) {
+        await db.from('profile_records').update({ value: newValue, unit }).eq('id', existing.id);
+      }
+    } else {
+      await db.from('profile_records').insert({ user_id: userId, title, value: newValue, unit, category });
+    }
+  },
+
   async deleteRecord(id: string): Promise<void> {
     const { error } = await db
       .from('profile_records')

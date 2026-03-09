@@ -12,24 +12,24 @@ vi.mock('../../contexts/AuthContext', () => ({
 }));
 
 const mockProfiles = [
-  { id: 'user-1', username: 'Enzoulette', total_xp: 5000, global_level: 15, avatar_url: null, share_performances: true },
-  { id: 'user-2', username: 'Atlas', total_xp: 4500, global_level: 14, avatar_url: null, share_performances: true },
+  { id: 'user-1', username: 'Enzoulette', total_xp: 5000, global_level: 15, avatar_url: null },
+  { id: 'user-2', username: 'Atlas', total_xp: 4500, global_level: 14, avatar_url: null },
 ];
 
-const mockRunningSessions = [
-  { user_id: 'user-2', distance: 80000 },
-  { user_id: 'user-1', distance: 50000 },
+const mockRunningLeaderboard = [
+  { user_id: 'user-2', username: 'Atlas',      global_level: 14, avatar_url: null, total_distance: 80000 },
+  { user_id: 'user-1', username: 'Enzoulette', global_level: 15, avatar_url: null, total_distance: 50000 },
 ];
 
-const mockWorkoutSessions = [
-  { user_id: 'user-2', total_tonnage: 12000 },
-  { user_id: 'user-1', total_tonnage: 9000 },
+const mockWorkoutLeaderboard = [
+  { user_id: 'user-2', username: 'Atlas',      global_level: 14, avatar_url: null, total_tonnage: 12000 },
+  { user_id: 'user-1', username: 'Enzoulette', global_level: 15, avatar_url: null, total_tonnage: 9000 },
 ];
 
-const mockRecords = [
-  { id: 'r-1', user_id: 'user-1', title: 'Deadlift', value: '180', unit: 'kg', category: 'musculation' },
-  { id: 'r-2', user_id: 'user-2', title: 'Deadlift', value: '200', unit: 'kg', category: 'musculation' },
-  { id: 'r-3', user_id: 'user-1', title: 'Trail des Vosges', value: '2:15:00', unit: '21 km', category: 'course' },
+const mockHofRecords = [
+  { id: 'r-1', user_id: 'user-1', title: 'Deadlift', value: '180', unit: 'kg', category: 'musculation', username: 'Enzoulette', global_level: 15, avatar_url: null },
+  { id: 'r-2', user_id: 'user-2', title: 'Deadlift', value: '200', unit: 'kg', category: 'musculation', username: 'Atlas',      global_level: 14, avatar_url: null },
+  { id: 'r-3', user_id: 'user-1', title: 'Trail des Vosges', value: '2:15:00', unit: '21 km', category: 'course', username: 'Enzoulette', global_level: 15, avatar_url: null },
 ];
 
 vi.mock('../../lib/supabase-client', () => {
@@ -48,11 +48,14 @@ vi.mock('../../lib/supabase-client', () => {
   return {
     supabase: {
       from: vi.fn((table: string) => {
-        if (table === 'running_sessions') return makeChain(mockRunningSessions);
-        if (table === 'workout_sessions') return makeChain(mockWorkoutSessions);
-        if (table === 'profile_records') return makeChain(mockRecords);
-        // profiles: used for XP ranking (limit), records ranking (eq), running/muscu (in)
-        return makeChain(mockProfiles);
+        if (table === 'profiles') return makeChain(mockProfiles);
+        return makeChain([]);
+      }),
+      rpc: vi.fn((name: string) => {
+        if (name === 'get_running_leaderboard') return Promise.resolve({ data: mockRunningLeaderboard, error: null });
+        if (name === 'get_workout_leaderboard') return Promise.resolve({ data: mockWorkoutLeaderboard, error: null });
+        if (name === 'get_hall_of_fame_records') return Promise.resolve({ data: mockHofRecords, error: null });
+        return Promise.resolve({ data: [], error: null });
       }),
     },
   };
@@ -106,25 +109,40 @@ describe('HallOfFamePage', () => {
     });
   });
 
-  describe('Records Personnels', () => {
+  describe('Classements Course et Muscu (RPC)', () => {
+    it('appelle get_running_leaderboard via rpc', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      renderHoF();
+      await waitFor(() => expect((supabase as any).rpc).toHaveBeenCalledWith('get_running_leaderboard'), { timeout: 3000 });
+    });
+
+    it('appelle get_workout_leaderboard via rpc', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      renderHoF();
+      await waitFor(() => expect((supabase as any).rpc).toHaveBeenCalledWith('get_workout_leaderboard'), { timeout: 3000 });
+    });
+
+    it('affiche Atlas en tête du classement course', async () => {
+      renderHoF();
+      await q(/atlas/i);
+    });
+  });
+
+  describe('Records Personnels (RPC)', () => {
     it('affiche la section "Records Personnels"', async () => {
       renderHoF();
       await q(/records personnels/i);
     });
 
+    it('appelle get_hall_of_fame_records via rpc', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      renderHoF();
+      await waitFor(() => expect((supabase as any).rpc).toHaveBeenCalledWith('get_hall_of_fame_records'), { timeout: 3000 });
+    });
+
     it('affiche le sous-titre "profils publics uniquement"', async () => {
       renderHoF();
       await q(/profils publics/i);
-    });
-
-    it('affiche la sous-section "Musculation"', async () => {
-      renderHoF();
-      await q(/musculation/i);
-    });
-
-    it('affiche la sous-section "Course"', async () => {
-      renderHoF();
-      await q(/course/i);
     });
 
     it('affiche le titre de l\'exercice muscu "Deadlift"', async () => {

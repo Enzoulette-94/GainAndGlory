@@ -22,6 +22,7 @@ import {
 } from '../utils/constants';
 import type { Shoe } from '../types/models';
 import type { Feedback, RunType, WeatherCondition } from '../types/enums';
+import { profileRecordsService } from '../services/profile-records.service';
 
 function toLocalDatetimeValue(): string {
   const now = new Date();
@@ -120,6 +121,16 @@ export function RunSessionPage() {
         feedback: feedback || undefined,
         notes: notes.trim() || undefined,
       });
+
+      // Auto-détection des records de course
+      await profileRecordsService.upsertRecord(
+        profile.id, 'Distance maximale', distanceNum, 'km', 'course', false,
+      );
+      if (pace > 0) {
+        await profileRecordsService.upsertRecord(
+          profile.id, 'Meilleure allure', Math.round(pace * 100) / 100, 'min/km', 'course', true,
+        );
+      }
 
       await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
       await refreshProfile();

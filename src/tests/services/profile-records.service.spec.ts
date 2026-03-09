@@ -248,6 +248,76 @@ describe('profileRecordsService', () => {
     });
   });
 
+  // ── upsertRecord ───────────────────────────────────────────────────────────
+
+  describe('upsertRecord', () => {
+    it('est une fonction définie', () => {
+      expect(typeof profileRecordsService.upsertRecord).toBe('function');
+    });
+
+    it('crée un nouveau record si aucun existant', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const insertMock = vi.fn().mockResolvedValue({ error: null });
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        insert: insertMock,
+      });
+
+      await profileRecordsService.upsertRecord('user-1', 'Squat', 100, 'kg', 'musculation', false);
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ user_id: 'user-1', title: 'Squat', value: 100, unit: 'kg', category: 'musculation' })
+      );
+    });
+
+    it('met à jour si la nouvelle valeur est meilleure (muscu : plus haut)', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const updateMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockResolvedValue({ error: null });
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-1', value: 80 }, error: null }),
+        update: updateMock,
+      });
+      updateMock.mockReturnValue({ eq: eqMock });
+
+      await profileRecordsService.upsertRecord('user-1', 'Squat', 100, 'kg', 'musculation', false);
+      expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ value: 100 }));
+    });
+
+    it('ne met pas à jour si la nouvelle valeur est moins bonne (muscu)', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const updateMock = vi.fn();
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-1', value: 120 }, error: null }),
+        update: updateMock,
+      });
+
+      await profileRecordsService.upsertRecord('user-1', 'Squat', 100, 'kg', 'musculation', false);
+      expect(updateMock).not.toHaveBeenCalled();
+    });
+
+    it('met à jour si la nouvelle allure est meilleure (course : plus bas)', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const updateMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockResolvedValue({ error: null });
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-2', value: 5.5 }, error: null }),
+        update: updateMock,
+      });
+      updateMock.mockReturnValue({ eq: eqMock });
+
+      await profileRecordsService.upsertRecord('user-1', 'Meilleure allure', 5.2, 'min/km', 'course', true);
+      expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ value: 5.2 }));
+    });
+  });
+
   // ── Compatibilité migration ────────────────────────────────────────────────
 
   describe('Compatibilité migration (value DECIMAL)', () => {

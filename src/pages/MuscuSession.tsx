@@ -22,6 +22,7 @@ import { calcTonnage, formatNumber } from '../utils/calculations';
 import { FEEDBACK_LABELS, MUSCLE_GROUP_LABELS, XP_REWARDS } from '../utils/constants';
 import type { Exercise } from '../types/models';
 import type { Feedback } from '../types/enums';
+import { profileRecordsService } from '../services/profile-records.service';
 
 interface SetRow {
   reps: number;
@@ -185,6 +186,17 @@ export function MuscuSessionPage() {
         notes: notes.trim() || undefined,
         sets,
       });
+
+      // Auto-détection des records par exercice (max poids)
+      for (const ex of validExercises) {
+        if (!ex.exercise) continue;
+        const maxWeight = Math.max(...ex.sets.map(s => s.weight || 0));
+        if (maxWeight > 0) {
+          await profileRecordsService.upsertRecord(
+            profile.id, ex.exercise.name, maxWeight, 'kg', 'musculation', false,
+          );
+        }
+      }
 
       await xpService.awardXP(profile.id, 'WORKOUT_SESSION', 'musculation');
       await refreshProfile();
