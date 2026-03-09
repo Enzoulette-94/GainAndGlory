@@ -207,34 +207,17 @@ function useRunningRanking() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const { data: sessions, error: err } = await supabase
-          .from('running_sessions').select('user_id, distance');
-        if (err) throw err;
-
-        const totals: Record<string, number> = {};
-        for (const r of (sessions ?? []) as { user_id: string; distance: number }[])
-          totals[r.user_id] = (totals[r.user_id] ?? 0) + (r.distance ?? 0);
-
-        const sorted = Object.entries(totals).sort(([, a], [, b]) => b - a).slice(0, 5);
-        if (sorted.length === 0) { if (!cancelled) { setEntries([]); setLoading(false); } return; }
-
-        const { data: profiles, error: err2 } = await supabase
-          .from('profiles').select('id, username, global_level, avatar_url').in('id', sorted.map(([id]) => id));
-        if (err2) throw err2;
-
-        const map: Record<string, any> = {};
-        for (const p of (profiles ?? []) as any[]) map[p.id] = p;
-
-        if (!cancelled) {
-          setEntries(sorted.filter(([id]) => map[id]).map(([id, v]) => ({
-            id, username: map[id].username, level: map[id].global_level, value: v, avatar_url: map[id].avatar_url ?? null,
-          })));
-          setLoading(false);
-        }
-      } catch { if (!cancelled) { setError('Erreur chargement course'); setLoading(false); } }
-    })();
+    (supabase as any).rpc('get_running_leaderboard').then(({ data, error: err }: any) => {
+      if (cancelled) return;
+      if (err) { setError('Erreur chargement course'); }
+      else {
+        setEntries((data ?? []).map((r: any) => ({
+          id: r.user_id, username: r.username, level: r.global_level,
+          value: r.total_distance, avatar_url: r.avatar_url ?? null,
+        })));
+      }
+      setLoading(false);
+    });
     return () => { cancelled = true; };
   }, []);
 
@@ -248,34 +231,17 @@ function useMusculationRanking() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const { data: sessions, error: err } = await supabase
-          .from('workout_sessions_with_tonnage').select('user_id, total_tonnage');
-        if (err) throw err;
-
-        const totals: Record<string, number> = {};
-        for (const r of (sessions ?? []) as { user_id: string; total_tonnage: number | null }[])
-          totals[r.user_id] = (totals[r.user_id] ?? 0) + (r.total_tonnage ?? 0);
-
-        const sorted = Object.entries(totals).sort(([, a], [, b]) => b - a).slice(0, 5);
-        if (sorted.length === 0) { if (!cancelled) { setEntries([]); setLoading(false); } return; }
-
-        const { data: profiles, error: err2 } = await supabase
-          .from('profiles').select('id, username, global_level, avatar_url').in('id', sorted.map(([id]) => id));
-        if (err2) throw err2;
-
-        const map: Record<string, any> = {};
-        for (const p of (profiles ?? []) as any[]) map[p.id] = p;
-
-        if (!cancelled) {
-          setEntries(sorted.filter(([id]) => map[id]).map(([id, v]) => ({
-            id, username: map[id].username, level: map[id].global_level, value: v, avatar_url: map[id].avatar_url ?? null,
-          })));
-          setLoading(false);
-        }
-      } catch { if (!cancelled) { setError('Erreur chargement muscu'); setLoading(false); } }
-    })();
+    (supabase as any).rpc('get_workout_leaderboard').then(({ data, error: err }: any) => {
+      if (cancelled) return;
+      if (err) { setError('Erreur chargement muscu'); }
+      else {
+        setEntries((data ?? []).map((r: any) => ({
+          id: r.user_id, username: r.username, level: r.global_level,
+          value: r.total_tonnage, avatar_url: r.avatar_url ?? null,
+        })));
+      }
+      setLoading(false);
+    });
     return () => { cancelled = true; };
   }, []);
 
