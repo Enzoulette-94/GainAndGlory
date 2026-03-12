@@ -242,7 +242,9 @@ export function ProfilePage() {
     try {
       await profileRecordsService.deleteRecord(id);
       setRecords(prev => prev.filter(r => r.id !== id));
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Erreur suppression record:', err);
+    }
   }
 
   // ─── loading guard ───────────────────────────────────────────────────────

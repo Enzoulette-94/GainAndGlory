@@ -61,13 +61,6 @@ export const runningService = {
     if (result.error) throw result.error;
     const data = result.data;
 
-    // Mettre à jour le kilométrage des chaussures
-    if (input.shoe_id) {
-      try {
-        await supabase.rpc('increment_shoe_km', { shoe_id: input.shoe_id, km: input.distance });
-      } catch { /* ignore */ }
-    }
-
     return data as RunningSession;
   },
 

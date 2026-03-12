@@ -69,10 +69,12 @@ export const profileRecordsService = {
       const current = parseFloat(existing.value) || 0;
       const isBetter = ascending ? newValue < current : newValue > current;
       if (isBetter) {
-        await db.from('profile_records').update({ value: newValue, unit }).eq('id', existing.id);
+        const { error } = await db.from('profile_records').update({ value: newValue, unit }).eq('id', existing.id);
+        if (error) throw error;
       }
     } else {
-      await db.from('profile_records').insert({ user_id: userId, title, value: newValue, unit, category });
+      const { error } = await db.from('profile_records').insert({ user_id: userId, title, value: newValue, unit, category });
+      if (error) throw error;
     }
   },
 

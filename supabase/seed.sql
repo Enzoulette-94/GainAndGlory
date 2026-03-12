@@ -448,82 +448,82 @@ INSERT INTO running_sessions (user_id, date, distance, duration, pace_min_per_km
 
 -- ADMIN (coureur régulier, ~90 km dans la seed)
 ('a0000000-0000-0000-0000-000000000001','2025-12-06T06:30:00Z',
- 10000, 3120, 5.20, 'endurance', 85, 155, 172, 5, 'nuageux', 'difficile', 'Sortie matinale froide'),
+ 10, 3120, 5.20, 'endurance', 85, 155, 172, 5, 'nuageux', 'difficile', 'Sortie matinale froide'),
 ('a0000000-0000-0000-0000-000000000001','2025-12-14T07:00:00Z',
- 15000, 4860, 5.40, 'endurance', 180, 162, 178, 2, 'nuageux', 'difficile', 'Trail en forêt'),
+ 15, 4860, 5.40, 'endurance', 180, 162, 178, 2, 'nuageux', 'difficile', 'Trail en forêt'),
 ('a0000000-0000-0000-0000-000000000001','2025-12-28T08:00:00Z',
- 5000, 1440, 4.80, 'tempo', 20, 168, 185, 3, 'ensoleille', 'difficile', NULL),
+ 5, 1440, 4.80, 'tempo', 20, 168, 185, 3, 'ensoleille', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000001','2026-01-12T07:00:00Z',
- 12000, 3840, 5.20, 'endurance', 120, 158, 175, 1, 'neige', 'difficile', 'Course dans la neige'),
+ 12, 3840, 5.20, 'endurance', 120, 158, 175, 1, 'neige', 'difficile', 'Course dans la neige'),
 ('a0000000-0000-0000-0000-000000000001','2026-02-01T07:30:00Z',
- 10000, 3000, 5.00, 'tempo', 80, 165, 182, 8, 'nuageux', 'difficile', NULL),
+ 10, 3000, 5.00, 'tempo', 80, 165, 182, 8, 'nuageux', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000001','2026-02-22T08:00:00Z',
- 20000, 6600, 5.50, 'endurance', 250, 158, 174, 10, 'ensoleille', 'difficile', 'Sortie longue'),
+ 20, 6600, 5.50, 'endurance', 250, 158, 174, 10, 'ensoleille', 'difficile', 'Sortie longue'),
 ('a0000000-0000-0000-0000-000000000001','2026-03-05T07:00:00Z',
- 18000, 5760, 5.33, 'endurance', 200, 160, 176, 12, 'ensoleille', 'facile', NULL),
+ 18, 5760, 5.33, 'endurance', 200, 160, 176, 12, 'ensoleille', 'facile', NULL),
 
 -- ATLAS (peu de course)
 ('a0000000-0000-0000-0000-000000000002','2025-12-22T09:00:00Z',
- 5000, 1650, 5.50, 'endurance', 30, 162, 178, 4, 'nuageux', 'difficile', NULL),
+ 5, 1650, 5.50, 'endurance', 30, 162, 178, 4, 'nuageux', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000002','2026-02-08T09:00:00Z',
- 10000, 3300, 5.50, 'endurance', 60, 165, 180, 9, 'ensoleille', 'difficile', NULL),
+ 10, 3300, 5.50, 'endurance', 60, 165, 180, 9, 'ensoleille', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000002','2026-03-05T09:00:00Z',
- 4000, 1320, 5.50, 'endurance', 20, 160, 175, 13, 'ensoleille', 'facile', NULL),
+ 4, 1320, 5.50, 'endurance', 20, 160, 175, 13, 'ensoleille', 'facile', NULL),
 
 -- SPARTACUS (runner principal, ~213 km dans la seed)
 ('a0000000-0000-0000-0000-000000000003','2025-12-01T06:00:00Z',
- 15000, 4350, 4.83, 'endurance', 120, 155, 170, 6, 'nuageux', 'facile', 'Sortie fond'),
+ 15, 4350, 4.83, 'endurance', 120, 155, 170, 6, 'nuageux', 'facile', 'Sortie fond'),
 ('a0000000-0000-0000-0000-000000000003','2025-12-05T06:30:00Z',
- 10000, 2640, 4.40, 'tempo', 80, 170, 188, 5, 'ensoleille', 'difficile', 'Sortie tempo'),
+ 10, 2640, 4.40, 'tempo', 80, 170, 188, 5, 'ensoleille', 'difficile', 'Sortie tempo'),
 ('a0000000-0000-0000-0000-000000000003','2025-12-10T06:00:00Z',
- 21097, 5820, 4.62, 'endurance', 210, 160, 178, 4, 'nuageux', 'difficile', 'Semi-marathon'),
+ 21.097, 5820, 4.62, 'endurance', 210, 160, 178, 4, 'nuageux', 'difficile', 'Semi-marathon'),
 ('a0000000-0000-0000-0000-000000000003','2025-12-17T06:00:00Z',
- 12000, 3360, 4.67, 'endurance', 130, 158, 174, 3, 'nuageux', 'facile', NULL),
+ 12, 3360, 4.67, 'endurance', 130, 158, 174, 3, 'nuageux', 'facile', NULL),
 ('a0000000-0000-0000-0000-000000000003','2025-12-22T07:00:00Z',
- 8000, 2160, 4.50, 'tempo', 50, 168, 185, 2, 'nuageux', 'difficile', NULL),
+ 8, 2160, 4.50, 'tempo', 50, 168, 185, 2, 'nuageux', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000003','2026-01-04T06:00:00Z',
- 20000, 5700, 4.75, 'endurance', 200, 158, 176, 0, 'neige', 'difficile', 'Première sortie 2026'),
+ 20, 5700, 4.75, 'endurance', 200, 158, 176, 0, 'neige', 'difficile', 'Première sortie 2026'),
 ('a0000000-0000-0000-0000-000000000003','2026-01-11T07:00:00Z',
- 10000, 2700, 4.50, 'tempo', 80, 170, 190, 3, 'nuageux', 'difficile', NULL),
+ 10, 2700, 4.50, 'tempo', 80, 170, 190, 3, 'nuageux', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000003','2026-01-18T06:30:00Z',
- 25000, 7200, 4.80, 'endurance', 280, 155, 172, 5, 'ensoleille', 'difficile', 'Sortie longue'),
+ 25, 7200, 4.80, 'endurance', 280, 155, 172, 5, 'ensoleille', 'difficile', 'Sortie longue'),
 ('a0000000-0000-0000-0000-000000000003','2026-01-25T07:00:00Z',
- 8000, 2160, 4.50, 'fractionne', 40, 178, 195, 6, 'ensoleille', 'difficile', 'Séance fractionné'),
+ 8, 2160, 4.50, 'fractionne', 40, 178, 195, 6, 'ensoleille', 'difficile', 'Séance fractionné'),
 ('a0000000-0000-0000-0000-000000000003','2026-02-01T06:00:00Z',
- 15000, 4200, 4.67, 'endurance', 150, 158, 175, 7, 'nuageux', 'facile', NULL),
+ 15, 4200, 4.67, 'endurance', 150, 158, 175, 7, 'nuageux', 'facile', NULL),
 ('a0000000-0000-0000-0000-000000000003','2026-02-08T06:00:00Z',
- 21097, 5700, 4.53, 'endurance', 220, 162, 180, 8, 'ensoleille', 'difficile', 'Semi objectif'),
+ 21.097, 5700, 4.53, 'endurance', 220, 162, 180, 8, 'ensoleille', 'difficile', 'Semi objectif'),
 ('a0000000-0000-0000-0000-000000000003','2026-02-15T07:00:00Z',
- 10000, 2640, 4.40, 'tempo', 90, 172, 190, 10, 'ensoleille', 'difficile', NULL),
+ 10, 2640, 4.40, 'tempo', 90, 172, 190, 10, 'ensoleille', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000003','2026-03-01T06:00:00Z',
- 18000, 5040, 4.67, 'endurance', 180, 160, 176, 11, 'ensoleille', 'facile', NULL),
+ 18, 5040, 4.67, 'endurance', 180, 160, 176, 11, 'ensoleille', 'facile', NULL),
 ('a0000000-0000-0000-0000-000000000003','2026-03-04T07:00:00Z',
- 10000, 2700, 4.50, 'tempo', 80, 168, 185, 12, 'ensoleille', 'difficile', NULL),
+ 10, 2700, 4.50, 'tempo', 80, 168, 185, 12, 'ensoleille', 'difficile', NULL),
 
 -- VALKYRIE (progression régulière)
 ('a0000000-0000-0000-0000-000000000004','2025-12-08T08:00:00Z',
- 5000, 1650, 5.50, 'endurance', 30, 168, 182, 5, 'nuageux', 'difficile', 'Première course'),
+ 5, 1650, 5.50, 'endurance', 30, 168, 182, 5, 'nuageux', 'difficile', 'Première course'),
 ('a0000000-0000-0000-0000-000000000004','2025-12-20T09:00:00Z',
- 8000, 2640, 5.50, 'endurance', 50, 165, 180, 3, 'nuageux', 'difficile', NULL),
+ 8, 2640, 5.50, 'endurance', 50, 165, 180, 3, 'nuageux', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000004','2026-01-10T09:00:00Z',
- 8000, 2520, 5.25, 'endurance', 55, 162, 178, 4, 'ensoleille', 'difficile', NULL),
+ 8, 2520, 5.25, 'endurance', 55, 162, 178, 4, 'ensoleille', 'difficile', NULL),
 ('a0000000-0000-0000-0000-000000000004','2026-01-25T09:00:00Z',
- 10000, 3150, 5.25, 'endurance', 70, 160, 176, 7, 'ensoleille', 'facile', '10 km !'),
+ 10, 3150, 5.25, 'endurance', 70, 160, 176, 7, 'ensoleille', 'facile', '10 km !'),
 ('a0000000-0000-0000-0000-000000000004','2026-02-15T09:00:00Z',
- 10000, 3060, 5.10, 'endurance', 75, 158, 175, 10, 'ensoleille', 'facile', NULL),
+ 10, 3060, 5.10, 'endurance', 75, 158, 175, 10, 'ensoleille', 'facile', NULL),
 ('a0000000-0000-0000-0000-000000000004','2026-03-03T09:00:00Z',
- 5000, 1500, 5.00, 'tempo', 25, 165, 182, 12, 'ensoleille', 'difficile', NULL),
+ 5, 1500, 5.00, 'tempo', 25, 165, 182, 12, 'ensoleille', 'difficile', NULL),
 
 -- TITAN (1 run)
 ('a0000000-0000-0000-0000-000000000005','2026-02-20T17:30:00Z',
- 5000, 1800, 6.00, 'endurance', 20, 175, 188, 9, 'nuageux', 'mort', 'Première course tentée'),
+ 5, 1800, 6.00, 'endurance', 20, 175, 188, 9, 'nuageux', 'mort', 'Première course tentée'),
 
 -- ROOKIE (0 course)
 -- Pas de running sessions pour Rookie
 
 -- Admin jan 1 run bonus
 ('a0000000-0000-0000-0000-000000000001','2026-01-01T16:00:00Z',
- 5000, 1500, 5.00, 'endurance', 30, 160, 175, 2, 'ensoleille', 'facile', 'Foulée du Nouvel An');
+ 5, 1500, 5.00, 'endurance', 30, 160, 175, 2, 'ensoleille', 'facile', 'Foulée du Nouvel An');
 
 -- ============================================================
 -- 6. WEIGHT ENTRIES
@@ -896,7 +896,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 15km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":15000,"duration":4350,"pace":"4:50","run_type":"endurance","feedback":"facile"}',
+ '{"distance":15,"duration":4350,"pace":"4:50","run_type":"endurance","feedback":"facile"}',
  '2026-03-01T06:00:00Z'),
 
 -- Atlas — Workout Push
@@ -911,7 +911,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10000,"duration":2640,"pace":"4:24","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":10,"duration":2640,"pace":"4:24","run_type":"tempo","feedback":"difficile"}',
  '2025-12-05T06:30:00Z'),
 
 -- Atlas — Workout Legs
@@ -921,7 +921,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Run 10km endurance
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":10000,"duration":3120,"pace":"5:12","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":10,"duration":3120,"pace":"5:12","run_type":"endurance","feedback":"difficile"}',
  '2025-12-06T06:30:00Z'),
 
 -- Admin — Workout Push
@@ -936,7 +936,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Run 5km (première course)
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":5000,"duration":1650,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":5,"duration":1650,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
  '2025-12-08T08:00:00Z'),
 
 -- Atlas — Workout Push
@@ -946,7 +946,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run semi-marathon
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":21097,"duration":5820,"pace":"4:37","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":21.097,"duration":5820,"pace":"4:37","run_type":"endurance","feedback":"difficile"}',
  '2025-12-10T06:00:00Z'),
 
 -- Valkyrie — Workout
@@ -961,7 +961,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Run 15km trail
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":15000,"duration":4860,"pace":"5:24","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":15,"duration":4860,"pace":"5:24","run_type":"endurance","feedback":"difficile"}',
  '2025-12-14T07:00:00Z'),
 
 -- Admin — Workout Push
@@ -976,7 +976,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 12km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":12000,"duration":3360,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
+ '{"distance":12,"duration":3360,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
  '2025-12-17T06:00:00Z'),
 
 -- Spartacus — Workout
@@ -996,7 +996,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Run 8km
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":8000,"duration":2640,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":8,"duration":2640,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
  '2025-12-20T09:00:00Z'),
 
 -- Titan — Workout Push/Legs
@@ -1006,17 +1006,17 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Run 5km
 ('a0000000-0000-0000-0000-000000000002','run',
- '{"distance":5000,"duration":1650,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":5,"duration":1650,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
  '2025-12-22T09:00:00Z'),
 
 -- Spartacus — Run 8km tempo
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":8000,"duration":2160,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":8,"duration":2160,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
  '2025-12-22T07:00:00Z'),
 
 -- Admin — Run 5km tempo (fin d''année)
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":5000,"duration":1440,"pace":"4:48","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":5,"duration":1440,"pace":"4:48","run_type":"tempo","feedback":"difficile"}',
  '2025-12-28T08:00:00Z'),
 
 -- ── JANVIER 2026 ─────────────────────────────────────────────
@@ -1028,7 +1028,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Run Foulée du Nouvel An
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":5000,"duration":1500,"pace":"5:00","run_type":"endurance","feedback":"facile"}',
+ '{"distance":5,"duration":1500,"pace":"5:00","run_type":"endurance","feedback":"facile"}',
  '2026-01-01T16:00:00Z'),
 
 -- Admin — badge Nouvel An Sportif
@@ -1038,7 +1038,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 20km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":20000,"duration":5700,"pace":"4:45","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":20,"duration":5700,"pace":"4:45","run_type":"endurance","feedback":"difficile"}',
  '2026-01-04T06:00:00Z'),
 
 -- Atlas — Workout Pull
@@ -1058,12 +1058,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10000,"duration":2700,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":10,"duration":2700,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
  '2026-01-11T07:00:00Z'),
 
 -- Admin — Run 12km (neige)
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":12000,"duration":3840,"pace":"5:12","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":12,"duration":3840,"pace":"5:12","run_type":"endurance","feedback":"difficile"}',
  '2026-01-12T07:00:00Z'),
 
 -- Spartacus — Workout
@@ -1078,7 +1078,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 25km sortie longue
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":25000,"duration":7200,"pace":"4:48","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":25,"duration":7200,"pace":"4:48","run_type":"endurance","feedback":"difficile"}',
  '2026-01-18T06:30:00Z'),
 
 -- Rookie — Workout (début)
@@ -1093,7 +1093,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Run 10km (objectif atteint !)
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":10000,"duration":3150,"pace":"5:15","run_type":"endurance","feedback":"facile"}',
+ '{"distance":10,"duration":3150,"pace":"5:15","run_type":"endurance","feedback":"facile"}',
  '2026-01-25T09:00:00Z'),
 
 -- Valkyrie — goal_completed
@@ -1103,19 +1103,19 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 8km fractionné
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":8000,"duration":2160,"pace":"4:30","run_type":"fractionne","feedback":"difficile"}',
+ '{"distance":8,"duration":2160,"pace":"4:30","run_type":"fractionne","feedback":"difficile"}',
  '2026-01-25T07:00:00Z'),
 
 -- ── FÉVRIER 2026 ─────────────────────────────────────────────
 
 -- Spartacus — Run 15km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":15000,"duration":4200,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
+ '{"distance":15,"duration":4200,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
  '2026-02-01T06:00:00Z'),
 
 -- Admin — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":10000,"duration":3000,"pace":"5:00","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":10,"duration":3000,"pace":"5:00","run_type":"tempo","feedback":"difficile"}',
  '2026-02-01T07:30:00Z'),
 
 -- Spartacus — badge Ultra runner
@@ -1130,12 +1130,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Run 10km
 ('a0000000-0000-0000-0000-000000000002','run',
- '{"distance":10000,"duration":3300,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":10,"duration":3300,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
  '2026-02-08T09:00:00Z'),
 
 -- Spartacus — Run semi objectif
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":21097,"duration":5700,"pace":"4:32","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":21.097,"duration":5700,"pace":"4:32","run_type":"endurance","feedback":"difficile"}',
  '2026-02-08T06:00:00Z'),
 
 -- Atlas — Workout Push
@@ -1160,22 +1160,22 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Run 10km
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":10000,"duration":3060,"pace":"5:06","run_type":"endurance","feedback":"facile"}',
+ '{"distance":10,"duration":3060,"pace":"5:06","run_type":"endurance","feedback":"facile"}',
  '2026-02-15T09:00:00Z'),
 
 -- Spartacus — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10000,"duration":2640,"pace":"4:24","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":10,"duration":2640,"pace":"4:24","run_type":"tempo","feedback":"difficile"}',
  '2026-02-15T07:00:00Z'),
 
 -- Titan — Run 5km (première course)
 ('a0000000-0000-0000-0000-000000000005','run',
- '{"distance":5000,"duration":1800,"pace":"6:00","run_type":"endurance","feedback":"mort"}',
+ '{"distance":5,"duration":1800,"pace":"6:00","run_type":"endurance","feedback":"mort"}',
  '2026-02-20T17:30:00Z'),
 
 -- Admin — Run 20km sortie longue
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":20000,"duration":6600,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"distance":20,"duration":6600,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
  '2026-02-22T08:00:00Z'),
 
 -- Valkyrie — Workout
@@ -1192,7 +1192,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Run 18km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":18000,"duration":5040,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
+ '{"distance":18,"duration":5040,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
  '2026-03-01T06:00:00Z'),
 
 -- Titan — Workout Push/Legs
@@ -1207,12 +1207,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Run 5km tempo
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":5000,"duration":1500,"pace":"5:00","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":5,"duration":1500,"pace":"5:00","run_type":"tempo","feedback":"difficile"}',
  '2026-03-03T09:00:00Z'),
 
 -- Spartacus — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10000,"duration":2700,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
+ '{"distance":10,"duration":2700,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
  '2026-03-04T07:00:00Z'),
 
 -- Atlas — Workout Pull
@@ -1222,12 +1222,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Run 18km endurance
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":18000,"duration":5760,"pace":"5:20","run_type":"endurance","feedback":"facile"}',
+ '{"distance":18,"duration":5760,"pace":"5:20","run_type":"endurance","feedback":"facile"}',
  '2026-03-05T07:00:00Z'),
 
 -- Atlas — Run 4km récup
 ('a0000000-0000-0000-0000-000000000002','run',
- '{"distance":4000,"duration":1320,"pace":"5:30","run_type":"endurance","feedback":"facile"}',
+ '{"distance":4,"duration":1320,"pace":"5:30","run_type":"endurance","feedback":"facile"}',
  '2026-03-05T09:00:00Z')
 
 ON CONFLICT DO NOTHING;

@@ -309,6 +309,7 @@ CREATE POLICY "profiles_update" ON profiles FOR UPDATE USING (auth.uid() = id);
 -- Workout sessions
 CREATE POLICY "workout_select" ON workout_sessions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "workout_insert" ON workout_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "workout_update" ON workout_sessions FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "workout_delete" ON workout_sessions FOR DELETE USING (auth.uid() = user_id);
 
 -- Workout sets
@@ -322,6 +323,7 @@ CREATE POLICY "sets_delete" ON workout_sets FOR DELETE
 -- Running sessions
 CREATE POLICY "running_select" ON running_sessions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "running_insert" ON running_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "running_update" ON running_sessions FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "running_delete" ON running_sessions FOR DELETE USING (auth.uid() = user_id);
 
 -- Weight entries
@@ -393,6 +395,8 @@ CREATE POLICY "badges_select" ON badges FOR SELECT USING (true);
 -- Community challenges (lecture publique)
 CREATE POLICY "challenges_select" ON community_challenges FOR SELECT USING (true);
 CREATE POLICY "challenges_insert" ON community_challenges FOR INSERT WITH CHECK (auth.uid() = created_by);
+CREATE POLICY "challenges_update" ON community_challenges FOR UPDATE USING (auth.uid() = created_by);
+CREATE POLICY "challenges_delete" ON community_challenges FOR DELETE USING (auth.uid() = created_by);
 
 -- Activity feed (respect de la confidentialité via share_performances)
 CREATE POLICY "feed_select" ON activity_feed FOR SELECT
@@ -537,3 +541,79 @@ INSERT INTO badges (code, name, description, category, rarity, is_secret) VALUES
   ('active_commenter', 'Commentateur actif', '100 commentaires postés', 'participation', 'rare', false),
   ('motivator', 'Motivateur', 'Recevoir 50 likes sur une performance', 'secret', 'epic', true),
   ('creator', 'Créateur', 'Créer le 1er objectif commun validé', 'secret', 'rare', true);
+
+-- ============================================================
+-- RPCs HALL OF FAME (SECURITY DEFINER — bypassent RLS)
+-- ============================================================
+
+-- Classement Course (distance totale)
+CREATE OR REPLACE FUNCTION get_running_leaderboard()
+RETURNS TABLE (
+  user_id UUID,
+  username TEXT,
+  global_level INTEGER,
+  avatar_url TEXT,
+  total_distance DECIMAL
+) AS $$
+  SELECT
+    p.id AS user_id,
+    p.username,
+    p.global_level,
+    p.avatar_url,
+    COALESCE(SUM(rs.distance), 0) AS total_distance
+  FROM profiles p
+  LEFT JOIN running_sessions rs ON rs.user_id = p.id
+  GROUP BY p.id, p.username, p.global_level, p.avatar_url
+  ORDER BY total_distance DESC;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Classement Musculation (tonnage total calculé depuis workout_sets)
+CREATE OR REPLACE FUNCTION get_workout_leaderboard()
+RETURNS TABLE (
+  user_id UUID,
+  username TEXT,
+  global_level INTEGER,
+  avatar_url TEXT,
+  total_tonnage DECIMAL
+) AS $$
+  SELECT
+    p.id AS user_id,
+    p.username,
+    p.global_level,
+    p.avatar_url,
+    COALESCE(SUM(wset.reps * wset.weight), 0) AS total_tonnage
+  FROM profiles p
+  LEFT JOIN workout_sessions ws ON ws.user_id = p.id
+  LEFT JOIN workout_sets wset ON wset.session_id = ws.id
+  GROUP BY p.id, p.username, p.global_level, p.avatar_url
+  ORDER BY total_tonnage DESC;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Records personnels Hall of Fame (profils publics)
+CREATE OR REPLACE FUNCTION get_hall_of_fame_records()
+RETURNS TABLE (
+  id UUID,
+  user_id UUID,
+  title TEXT,
+  value DECIMAL,
+  unit TEXT,
+  category TEXT,
+  username TEXT,
+  global_level INTEGER,
+  avatar_url TEXT
+) AS $$
+  SELECT
+    pr.id,
+    pr.user_id,
+    pr.title,
+    pr.value,
+    pr.unit,
+    pr.category,
+    p.username,
+    p.global_level,
+    p.avatar_url
+  FROM profile_records pr
+  JOIN profiles p ON p.id = pr.user_id
+  WHERE p.share_performances = true
+  ORDER BY pr.category, pr.title, pr.value DESC;
+$$ LANGUAGE sql SECURITY DEFINER;

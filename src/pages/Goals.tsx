@@ -83,7 +83,11 @@ function calcProgress(goal: PersonalGoal): number {
 
 function isOverdue(deadline: string | null): boolean {
   if (!deadline) return false;
-  return new Date(deadline) < new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(deadline);
+  d.setHours(0, 0, 0, 0);
+  return d < today;
 }
 
 // ============================================================

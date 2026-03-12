@@ -115,7 +115,7 @@ export function RunSessionPage() {
         elevation_loss: elevationLoss ? parseInt(elevationLoss) : undefined,
         avg_heart_rate: avgHeartRate ? parseInt(avgHeartRate) : undefined,
         max_heart_rate: maxHeartRate ? parseInt(maxHeartRate) : undefined,
-        weather_temp: weatherTemp ? parseFloat(weatherTemp) : undefined,
+        weather_temp: weatherTemp ? parseInt(weatherTemp) : undefined,
         weather_condition: weatherCondition || undefined,
         shoe_id: shoeId || undefined,
         feedback: feedback || undefined,
