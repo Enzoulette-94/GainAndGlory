@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, Trash2, Pencil, Flag, Target, Swords, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/common/Button';
@@ -72,16 +71,9 @@ const CHALLENGE_STATUS_OPTIONS = [
 
 export function AdminPage() {
   const { profile } = useAuth();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('events');
 
-  // Redirect non-admins
-  useEffect(() => {
-    if (profile && !profile.is_admin) navigate('/dashboard', { replace: true });
-  }, [profile, navigate]);
-
   if (!profile) return <Loader fullScreen text="Chargement..." />;
-  if (!profile.is_admin) return null;
 
   return (
     <div className="space-y-6 pb-8">

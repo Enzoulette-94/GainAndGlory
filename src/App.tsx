@@ -1,8 +1,16 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { Loader } from './components/common/Loader';
+
+function RequireAdmin() {
+  const { profile, loading } = useAuth();
+  if (loading) return <Loader fullScreen text="Chargement..." />;
+  if (!profile?.is_admin) return <Navigate to="/dashboard" replace />;
+  return <Outlet />;
+}
 
 // Pages auth
 import { LoginPage } from './pages/Login';
@@ -61,7 +69,9 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profil/:userId" element={<UserProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/admin" element={<AdminPage />} />
+              <Route element={<RequireAdmin />}>
+                <Route path="/admin" element={<AdminPage />} />
+              </Route>
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
