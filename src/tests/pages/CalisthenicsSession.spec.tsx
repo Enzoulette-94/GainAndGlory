@@ -24,6 +24,18 @@ vi.mock('../../services/xp.service', () => ({
   },
 }));
 
+vi.mock('../../services/feed.service', () => ({
+  feedService: {
+    publishCalisthenics: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('../../services/profile-records.service', () => ({
+  profileRecordsService: {
+    upsertRecord: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return { ...actual as object, useNavigate: () => vi.fn() };

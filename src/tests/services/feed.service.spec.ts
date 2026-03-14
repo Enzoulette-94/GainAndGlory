@@ -146,7 +146,6 @@ describe('feedService', () => {
     });
 
     it('accepte le paramètre feedback', () => {
-      // Vérifie que la signature accepte 8 paramètres dont feedback en 8ème position
       expect(feedService.publishRun.length).toBeGreaterThanOrEqual(4);
     });
 
@@ -157,6 +156,35 @@ describe('feedService', () => {
       });
 
       await expect(feedService.publishRun('user-1', 10, 3000, 5.0)).resolves.not.toThrow();
+    });
+  });
+
+  describe('publishCalisthenics', () => {
+    it('est une fonction définie', () => {
+      expect(typeof feedService.publishCalisthenics).toBe('function');
+    });
+
+    it('ne lève pas d\'erreur même si Supabase échoue (catch silencieux)', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      (supabase.from as any).mockReturnValue({
+        insert: vi.fn().mockRejectedValue(new Error('Network error')),
+      });
+
+      await expect(
+        feedService.publishCalisthenics('user-1', 4, 80, 'difficile')
+      ).resolves.not.toThrow();
+    });
+
+    it('accepte le tableau exercises optionnel', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      (supabase.from as any).mockReturnValue({
+        insert: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      const exercises = [{ name: 'Tractions', sets: 4, reps: 32 }];
+      await expect(
+        feedService.publishCalisthenics('user-1', 1, 32, undefined, undefined, undefined, [], exercises)
+      ).resolves.not.toThrow();
     });
   });
 });

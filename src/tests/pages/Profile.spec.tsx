@@ -10,6 +10,7 @@ vi.mock('../../contexts/AuthContext', () => ({
       id: 'user-1', username: 'TestUser', avatar_url: null,
       total_xp: 500, global_level: 3, musculation_xp: 200,
       musculation_level: 2, running_xp: 100, running_level: 1,
+      calisthenics_xp: 50, calisthenics_level: 1,
       current_streak: 5, longest_streak: 12,
       created_at: '2025-01-01T00:00:00Z',
       is_admin: false, fc_max: null,
@@ -109,6 +110,18 @@ describe('ProfilePage', () => {
     it('affiche la sous-section "Course"', async () => {
       renderProfile();
       await q(/course/i);
+    });
+
+    it('affiche l\'allure calculée pour un record course avec titre reconnu', async () => {
+      const { profileRecordsService } = await import('../../services/profile-records.service');
+      (profileRecordsService.getRecords as any).mockResolvedValueOnce([
+        { id: 'r-20', user_id: 'user-1', title: '10 km', value: '3000', unit: 's', category: 'course', created_at: '2025-01-07T00:00:00Z' },
+      ]);
+      renderProfile();
+      // 3000s / 60 / 10km = 5 min/km → "5:00 /km"
+      await waitFor(() => {
+        expect(screen.queryAllByText(/\/km/).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
     });
 
     it('affiche le séparateur "•" entre titre et valeur (format inline)', async () => {

@@ -8,7 +8,10 @@ vi.mock('../../contexts/AuthContext', () => ({
     user: { id: 'user-1' },
     profile: {
       id: 'user-1', username: 'Enzoulette', global_level: 2, total_xp: 90,
-      musculation_level: 1, musculation_xp: 0, running_level: 1, running_xp: 50, current_streak: 3,
+      musculation_level: 1, musculation_xp: 0,
+      running_level: 1, running_xp: 50,
+      calisthenics_level: 1, calisthenics_xp: 0,
+      current_streak: 3,
     },
     loading: false,
   }),
@@ -127,6 +130,22 @@ describe('DashboardPage', () => {
       renderDashboard();
       await waitFor(() => {
         expect(screen.queryAllByText(/course/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche la section Calisthénie XP', async () => {
+      renderDashboard();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/calisthénie/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
+
+  describe('Actions rapides', () => {
+    it('affiche le bouton Calisthénie', async () => {
+      renderDashboard();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/calisthénie/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });

@@ -1,7 +1,7 @@
 # Gain & Glory — Fonctionnalités
 
 > Document exhaustif de toutes les fonctionnalités de l'application.
-> Dernière mise à jour : commit `282920a`
+> Dernière mise à jour : commit `1bcbac1`
 
 ---
 
@@ -71,8 +71,9 @@
 - Compteur de streak (jours consécutifs d'activité)
 
 ### Barres de progression XP
-- 3 barres : Global, Musculation, Course
+- 4 barres : Global, Musculation, Course, Calisthénie (violet)
 - Affichage du niveau actuel, XP courant / XP requis, pourcentage
+- Grille responsive : 2 colonnes → 4 colonnes sur grands écrans
 
 ### Motivation du jour
 - Citation motivationnelle différente chaque jour
@@ -89,6 +90,7 @@
 - Bouton "Nouvelle séance muscu" → `/musculation/new`
 - Bouton "Nouvelle course" → `/running/new`
 - Bouton "Peser" → `/weight`
+- Bouton "Calisthénie" → `/calisthenics/new` (violet)
 
 ### Événements à venir
 - Affiche les 3 prochains événements de l'utilisateur
@@ -316,15 +318,18 @@
 ### Feed d'activité
 - Timeline des activités partagées (tous utilisateurs dont `share_performances = true`)
 - Pagination (chargement infini)
-- Carte **Séance muscu** : avatar, username, niveau, date relative, nom séance, tonnage, nb séries, badge ressenti
-- Carte **Course** : distance, durée, allure, type, badge ressenti
+- Carte **Séance muscu** : liste des exercices (nom · sets × reps · poids max), bouton "Voir la séance"
+- Carte **Course** : Distance / Temps / Allure moy. en 3 colonnes labellisées, bouton "Voir la séance"
+- Carte **Calisthénie** : liste des exercices (nom · sets × reps, ou sets × Xs pour les chronométrés)
 - Carte **Level-up** : ancien niveau → nouveau niveau, titre de statut
 - Carte **Badge** : nom badge, rareté, description
+- Bandeau vertical coloré par type (rouge muscu, bleu course, violet calisthénie)
 - **Liker** une activité (toggle, compteur mis à jour en temps réel)
 - **Commenter** une activité (champ + envoi)
 - Affichage des commentaires (username, contenu, date)
 - **Supprimer** son propre commentaire
-- **Modal détail** : clic sur une carte → détail complet de la session
+- **Modal détail** : clic sur une carte muscu/course → détail complet de la session
+- **Enregistrer une séance** : bouton bookmark sur chaque carte → sauvegarde dans `/seances`
 
 ---
 
@@ -426,8 +431,13 @@
 - Membre depuis (date)
 
 ### XP & Niveaux
-- 3 lignes : Global, Musculation, Course
+- 4 lignes : Global, Musculation, Course, Calisthénie
 - Niveau, XP courant / XP requis, barre de progression colorée
+
+### Meilleures performances — Records de course
+- **Allure moyenne calculée automatiquement** depuis le titre (ex : "10 km") et la durée
+- Format affiché : `10 km · 52:00 temps · 5:12 /km`
+- Fonctionne pour les 5 distances standard : 1 km, 5 km, 10 km, Semi-marathon, Marathon
 
 ### Statistiques
 - Séances muscu totales
@@ -474,12 +484,14 @@
 |--------|----------|
 | Séance de musculation | 50 XP |
 | Course à pied | 50 XP |
+| Séance de calisthénie | 50 XP |
+| Skill calisthénie débloqué | 200 XP |
 | Pesée | 10 XP |
 | Compléter un objectif personnel | Variable |
 
 ### Calcul des niveaux
 - Formule exponentielle : `XP niveau N → N+1 = floor(100 × 1.5^(N-2))`
-- 3 compteurs indépendants : Global, Musculation, Course
+- 4 compteurs indépendants : Global, Musculation, Course, Calisthénie
 - Détection automatique de montée de niveau
 
 ### Titres de statut (niveaux 1–30+)

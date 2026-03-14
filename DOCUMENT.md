@@ -1,6 +1,6 @@
 # Gain & Glory — Documentation Technique
 
-> Dernière mise à jour : feat(nav): drawer "Plus" dans BottomNav mobile + fix accessibilité responsive
+> Dernière mise à jour : feat(feed): affichage calisthénie détaillé + XP cali dashboard/profile
 
 ---
 
@@ -77,7 +77,7 @@ src/
 │   ├── Weight.tsx              # Suivi du poids + graphique (édition/suppression)
 │   ├── Calendar.tsx            # Calendrier d'activité (muscu, course, pesée, objectifs, défis, événements)
 │   ├── Goals.tsx               # Objectifs personnels
-│   ├── Community.tsx           # Feed social (likes, commentaires)
+│   ├── Community.tsx           # Feed social (muscu/course/cali/badge/level-up, likes, commentaires, bookmark)
 │   ├── TeamGoals.tsx           # Objectifs par équipes
 │   ├── HallOfFame.tsx          # Classements globaux (XP, distance, tonnage) + Records Personnels par exercice
 │   ├── Events.tsx              # Événements sportifs (participation)
@@ -93,7 +93,9 @@ src/
 │   ├── weight.service.ts       # Pesées
 │   ├── xp.service.ts           # Calcul et attribution d'XP
 │   ├── badges.service.ts       # Vérification et attribution de badges
-│   ├── feed.service.ts         # Feed d'activité, likes, commentaires
+│   ├── feed.service.ts         # Feed d'activité, likes, commentaires (publishWorkout/Run/Calisthenics)
+│   ├── calisthenics.service.ts # Sessions calisthénie (JSONB exercises + profile_skills)
+│   ├── saved-sessions.service.ts # Séances bookmarkées depuis le feed (snapshot JSONB)
 │   └── goals.service.ts        # Objectifs
 │
 ├── types/
@@ -173,7 +175,9 @@ Chaque action rapporte de l'XP (défini dans `src/utils/constants.ts`) :
 | Course | 50 XP |
 | Pesée | 10 XP |
 
-L'XP est réparti sur 3 compteurs : Global, Musculation, Course. Chacun a son propre niveau.
+L'XP est réparti sur 4 compteurs : Global, Musculation, Course, Calisthénie. Chacun a son propre niveau.
+
+**XPBar** (`src/components/xp-system/XPBar.tsx`) supporte les disciplines `global | musculation | running | calisthenics`, chacune avec sa couleur de barre dédiée (or, rouge, bleu, violet).
 
 ### Niveaux
 Les seuils de niveaux sont calculés dans `src/utils/calculations.ts` (`getXPForLevel`). Chaque niveau a un **titre de statut** thématique (inspiré LOTR/DBZ) avec une couleur dédiée.
@@ -237,7 +241,7 @@ Le feed (`/community`) affiche les activités partagées de tous les utilisateur
 - Likes et commentaires en temps réel
 - Lien vers le détail de la session (modal)
 
-La publication dans le feed se fait via `feed.service.ts` depuis `MuscuSession.tsx` (publishWorkout) et `RunSession.tsx` (publishRun).
+La publication dans le feed se fait via `feed.service.ts` depuis `MuscuSession.tsx` (publishWorkout), `RunSession.tsx` (publishRun) et `CalisthenicsSession.tsx` (publishCalisthenics avec tableau exercises détaillé).
 
 ---
 
