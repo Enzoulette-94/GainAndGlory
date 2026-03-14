@@ -896,7 +896,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Workout Push (ce matin)
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":7240,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":7240,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40,"maxWeight":100},{"name":"Développé incliné","sets":3,"reps":30,"maxWeight":85},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":70}]}',
  '2026-03-13T07:30:00Z'),
 
 -- Spartacus — Run 12km tempo (ce matin)
@@ -906,7 +906,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Workout Legs (ce matin)
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":9840,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":9840,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32,"maxWeight":150},{"name":"Presse à cuisses","sets":4,"reps":48,"maxWeight":220},{"name":"Fentes","sets":3,"reps":30,"maxWeight":70}]}',
  '2026-03-13T08:00:00Z'),
 
 -- ── HIER 12 MARS 2026 ────────────────────────────────────────
@@ -918,12 +918,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Titan — Workout Pull
 ('a0000000-0000-0000-0000-000000000005','workout',
- '{"type":"workout","tonnage":6120,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":6120,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":120},{"name":"Rowing barre","sets":4,"reps":32,"maxWeight":70},{"name":"Tirage vertical","sets":3,"reps":30,"maxWeight":65}]}',
  '2026-03-12T17:30:00Z'),
 
 -- Rookie — Workout (progression)
 ('a0000000-0000-0000-0000-000000000006','workout',
- '{"type":"workout","tonnage":2880,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Rowing barre","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":2880,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24,"maxWeight":40},{"name":"Squat","sets":3,"reps":24,"maxWeight":50},{"name":"Rowing barre","sets":3,"reps":24,"maxWeight":30}]}',
  '2026-03-12T20:00:00Z'),
 
 -- ── 11 MARS 2026 ────────────────────────────────────────────
@@ -935,7 +935,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Workout Legs
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":12200,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":12200,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32,"maxWeight":140},{"name":"Presse à cuisses","sets":4,"reps":48,"maxWeight":200},{"name":"Fentes","sets":3,"reps":30,"maxWeight":60}]}',
  '2026-03-11T18:00:00Z'),
 
 -- ── MARS 2026 (début de mois) ────────────────────────────────
@@ -947,12 +947,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Titan — Workout Push/Legs
 ('a0000000-0000-0000-0000-000000000005','workout',
- '{"type":"workout","tonnage":6768,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":6768,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30,"maxWeight":80},{"name":"Squat","sets":3,"reps":24,"maxWeight":100},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":60}]}',
  '2026-03-01T17:00:00Z'),
 
 -- Admin — Workout Pull
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":7296,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":7296,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":160},{"name":"Rowing barre","sets":4,"reps":32,"maxWeight":80},{"name":"Tirage vertical","sets":3,"reps":30,"maxWeight":70}]}',
  '2026-03-03T07:30:00Z'),
 
 -- Valkyrie — Run 5km tempo
@@ -967,7 +967,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Workout Pull
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":9210,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":9210,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":180},{"name":"Rowing barre","sets":4,"reps":32,"maxWeight":90},{"name":"Tirage vertical","sets":3,"reps":30,"maxWeight":75}]}',
  '2026-03-04T18:00:00Z'),
 
 -- Admin — Run 18km endurance
@@ -999,7 +999,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Workout Push
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":5251,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":5251,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40,"maxWeight":110},{"name":"Développé incliné","sets":3,"reps":30,"maxWeight":85},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":70}]}',
  '2026-02-03T07:30:00Z'),
 
 -- Atlas — Run 10km
@@ -1014,17 +1014,17 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Workout Push
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":7140,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":7140,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40,"maxWeight":100},{"name":"Développé incliné","sets":3,"reps":30,"maxWeight":85},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":70}]}',
  '2026-02-10T18:00:00Z'),
 
 -- Rookie — Workout
 ('a0000000-0000-0000-0000-000000000006','workout',
- '{"type":"workout","tonnage":2616,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":18}]}',
+ '{"type":"workout","tonnage":2616,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24,"maxWeight":40},{"name":"Squat","sets":3,"reps":24,"maxWeight":50},{"name":"Développé militaire","sets":3,"reps":18,"maxWeight":25}]}',
  '2026-02-10T20:00:00Z'),
 
 -- Admin — Workout Bras (Saint-Valentin solo)
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":3612,"sets_count":10,"feedback":"facile","exercises":[{"name":"Curl barre","sets":4,"reps":48},{"name":"Extensions poulie haute","sets":3,"reps":36},{"name":"Élévations latérales","sets":3,"reps":36}]}',
+ '{"type":"workout","tonnage":3612,"sets_count":10,"feedback":"facile","exercises":[{"name":"Curl barre","sets":4,"reps":48,"maxWeight":25},{"name":"Extensions poulie haute","sets":3,"reps":36,"maxWeight":30},{"name":"Élévations latérales","sets":3,"reps":36,"maxWeight":15}]}',
  '2026-02-14T06:30:00Z'),
 
 -- Admin — badge Saint-Valentin solo
@@ -1054,19 +1054,19 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Workout
 ('a0000000-0000-0000-0000-000000000004','workout',
- '{"type":"workout","tonnage":3180,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé militaire","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Curl barre","sets":3,"reps":36}]}',
+ '{"type":"workout","tonnage":3180,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":35},{"name":"Squat","sets":3,"reps":24,"maxWeight":70},{"name":"Curl barre","sets":3,"reps":36,"maxWeight":15}]}',
  '2026-02-25T12:00:00Z'),
 
 -- Spartacus — Workout
 ('a0000000-0000-0000-0000-000000000003','workout',
- '{"type":"workout","tonnage":4960,"sets_count":10,"feedback":"facile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Squat","sets":3,"reps":24},{"name":"Rowing barre","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":4960,"sets_count":10,"feedback":"facile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":120},{"name":"Squat","sets":3,"reps":24,"maxWeight":90},{"name":"Rowing barre","sets":3,"reps":24,"maxWeight":65}]}',
  '2026-02-18T19:00:00Z'),
 
 -- ── JANVIER 2026 ─────────────────────────────────────────────
 
 -- Admin — Workout Push (Nouvel An)
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":5250,"sets_count":10,"feedback":"facile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé militaire","sets":3,"reps":24},{"name":"Curl barre","sets":3,"reps":36}]}',
+ '{"type":"workout","tonnage":5250,"sets_count":10,"feedback":"facile","exercises":[{"name":"Développé couché","sets":4,"reps":40,"maxWeight":110},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":70},{"name":"Curl barre","sets":3,"reps":36,"maxWeight":25}]}',
  '2026-01-01T08:00:00Z'),
 
 -- Admin — Run Foulée du Nouvel An
@@ -1086,17 +1086,17 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Workout Pull
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":9116,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":9116,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":180},{"name":"Rowing barre","sets":4,"reps":32,"maxWeight":90},{"name":"Tirage vertical","sets":3,"reps":30,"maxWeight":75}]}',
  '2026-01-05T18:00:00Z'),
 
 -- Admin — Workout Legs
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":8820,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":8820,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32,"maxWeight":150},{"name":"Presse à cuisses","sets":4,"reps":48,"maxWeight":220},{"name":"Fentes","sets":3,"reps":30,"maxWeight":70}]}',
  '2026-01-06T07:30:00Z'),
 
 -- Atlas — Workout Legs
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":11955,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":11955,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32,"maxWeight":140},{"name":"Presse à cuisses","sets":4,"reps":48,"maxWeight":200},{"name":"Fentes","sets":3,"reps":30,"maxWeight":60}]}',
  '2026-01-08T18:00:00Z'),
 
 -- Spartacus — Run 10km tempo
@@ -1111,12 +1111,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Spartacus — Workout
 ('a0000000-0000-0000-0000-000000000003','workout',
- '{"type":"workout","tonnage":5096,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":30},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":5096,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":30,"maxWeight":80},{"name":"Squat","sets":3,"reps":24,"maxWeight":90},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":55}]}',
  '2026-01-14T19:00:00Z'),
 
 -- Titan — Workout Pull
 ('a0000000-0000-0000-0000-000000000005','workout',
- '{"type":"workout","tonnage":5830,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":5830,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":120},{"name":"Rowing barre","sets":4,"reps":32,"maxWeight":70},{"name":"Tirage vertical","sets":3,"reps":30,"maxWeight":65}]}',
  '2026-01-15T17:00:00Z'),
 
 -- Spartacus — Run 25km sortie longue
@@ -1126,12 +1126,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Rookie — Workout (début)
 ('a0000000-0000-0000-0000-000000000006','workout',
- '{"type":"workout","tonnage":2480,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":18}]}',
+ '{"type":"workout","tonnage":2480,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24,"maxWeight":40},{"name":"Squat","sets":3,"reps":24,"maxWeight":50},{"name":"Développé militaire","sets":3,"reps":18,"maxWeight":25}]}',
  '2026-01-20T20:00:00Z'),
 
 -- Valkyrie — Workout
 ('a0000000-0000-0000-0000-000000000004','workout',
- '{"type":"workout","tonnage":4228,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30},{"name":"Squat","sets":3,"reps":24},{"name":"Rowing barre","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":4228,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30,"maxWeight":50},{"name":"Squat","sets":3,"reps":24,"maxWeight":70},{"name":"Rowing barre","sets":3,"reps":24,"maxWeight":40}]}',
  '2026-01-20T12:00:00Z'),
 
 -- Valkyrie — Run 10km (objectif atteint !)
@@ -1153,12 +1153,12 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Atlas — Workout Push
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":6848,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":6848,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40,"maxWeight":100},{"name":"Développé incliné","sets":3,"reps":30,"maxWeight":85},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":70}]}',
  '2025-12-01T18:00:00Z'),
 
 -- Atlas — Workout Pull
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"type":"workout","tonnage":8800,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '{"type":"workout","tonnage":8800,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20,"maxWeight":180},{"name":"Rowing barre","sets":4,"reps":32,"maxWeight":90},{"name":"Tirage vertical","sets":3,"reps":30,"maxWeight":75}]}',
  '2025-12-03T18:00:00Z'),
 
 -- Spartacus — Run 10km tempo
@@ -1168,7 +1168,7 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Workout Push
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"type":"workout","tonnage":5016,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '{"type":"workout","tonnage":5016,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40,"maxWeight":110},{"name":"Développé incliné","sets":3,"reps":30,"maxWeight":85},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":70}]}',
  '2025-12-02T07:30:00Z'),
 
 -- Spartacus — Run semi-marathon
