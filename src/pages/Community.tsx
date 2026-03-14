@@ -366,7 +366,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         bgGradient: 'bg-gradient-to-br from-red-950/30 via-[#111] to-[#111]',
         bannerBg: 'bg-red-900/50 border-y border-red-700/50',
         icon: '🏋️',
-        stats: `${c.tonnage.toLocaleString('fr-FR')} kg · ${c.sets_count} sér.`,
+        stats: `${c.sets_count} séries`,
         feedback: c.feedback ?? null,
       };
       case 'run': return {
@@ -502,24 +502,33 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       <div className="space-y-1">
         {/* Liste d'exercices (workout) */}
         {(item.type === 'workout') && (() => {
-          const exList = (c_content.exercises ?? []) as { name: string; sets: number; reps: number }[];
+          const exList = (c_content.exercises ?? []) as { name: string; sets: number; reps: number; maxWeight?: number }[];
           if (exList.length === 0) {
             return typeConfig.stats ? (
               <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
             ) : null;
           }
+          const repsPerSet = (ex: { sets: number; reps: number }) =>
+            ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
           return (
-            <div>
+            <div className="space-y-0.5">
               {exList.map((ex, i) => (
-                <div key={i} className="flex items-baseline justify-between gap-2 py-0.5">
-                  <span className="text-xs text-[#d4d4d4] font-medium truncate">{ex.name}</span>
-                  <span className="text-xs text-[#6b6b6b] flex-shrink-0 font-rajdhani">{ex.sets}×{Math.round(ex.reps / ex.sets)}</span>
+                <div key={i} className="flex items-center gap-1.5 py-0.5">
+                  <span className="text-xs text-[#d4d4d4] font-medium truncate flex-1">{ex.name}</span>
+                  <span className="text-[#4a4a4a] text-[10px]">×</span>
+                  {ex.maxWeight != null && ex.maxWeight > 0 ? (
+                    <span className="text-xs font-rajdhani font-bold text-[#c9a870] flex-shrink-0">
+                      {ex.maxWeight} kg
+                    </span>
+                  ) : null}
+                  <span className="text-[#4a4a4a] text-[10px]">×</span>
+                  <span className="text-xs text-[#a3a3a3] flex-shrink-0 font-rajdhani">
+                    {ex.sets > 1
+                      ? `${ex.sets} × ${repsPerSet(ex)} reps`
+                      : `${repsPerSet(ex)} reps`}
+                  </span>
                 </div>
               ))}
-              <div className="mt-1 border-t border-white/5 pt-1 flex gap-3 text-[10px] text-[#4a4a4a] font-rajdhani">
-                <span>{c_content.tonnage?.toLocaleString('fr-FR')} kg soulevés</span>
-                <span>{c_content.sets_count} séries</span>
-              </div>
             </div>
           );
         })()}

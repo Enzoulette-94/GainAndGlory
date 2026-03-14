@@ -79,7 +79,7 @@ export const feedService = {
   },
 
   // Publier une séance muscu dans le feed
-  async publishWorkout(userId: string, tonnage: number, setsCount: number, feedback?: string, sessionId?: string, name?: string, exercises?: { name: string; sets: number; reps: number }[]) {
+  async publishWorkout(userId: string, tonnage: number, setsCount: number, feedback?: string, sessionId?: string, name?: string, exercises?: { name: string; sets: number; reps: number; maxWeight?: number }[]) {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,

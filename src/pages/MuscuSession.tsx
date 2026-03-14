@@ -230,6 +230,7 @@ export function MuscuSessionPage() {
           name: ex.exercise!.name,
           sets: ex.sets.length,
           reps: ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0),
+          maxWeight: Math.max(...ex.sets.map(s => s.weight || 0)),
         }));
 
       await feedService.publishWorkout(
