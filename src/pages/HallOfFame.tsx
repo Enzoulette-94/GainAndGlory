@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Crown, Dumbbell, PersonStanding, Star, Flame, Trophy } from 'lucide-react';
+import { Crown, Dumbbell, PersonStanding, Star, Flame, Trophy, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/common/Card';
 import { Loader } from '../components/common/Loader';
-import { formatDistance, formatNumber } from '../utils/calculations';
+import { formatDistance, formatNumber, formatDuration } from '../utils/calculations';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,7 +31,7 @@ interface RecordEntry {
 interface RecordGroup {
   title: string;
   unit: string;
-  category: 'musculation' | 'course';
+  category: 'musculation' | 'course' | 'calisthenics';
   ascending: boolean;
   entries: RecordEntry[];
 }
@@ -56,6 +56,8 @@ function parseRecordValue(value: string): number {
   const trimmed = value.trim();
   if (trimmed.includes(':')) {
     const parts = trimmed.split(':');
+    if (parts.length === 3)
+      return (parseFloat(parts[0]) || 0) * 3600 + (parseFloat(parts[1]) || 0) * 60 + (parseFloat(parts[2]) || 0);
     if (parts.length === 2)
       return (parseFloat(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
   }
@@ -259,7 +261,7 @@ function RecordGroupCard({ group, currentUserId }: { group: RecordGroup; current
             {group.title}
           </h3>
           <p className="text-xs text-[#6b6b6b]">
-            {group.unit} · {group.ascending ? '↓ meilleur temps' : '↑ meilleure charge'}
+            {group.category === 'course' ? '↓ meilleur temps' : '↑ meilleur record'}
           </p>
         </div>
         <Trophy className="w-4 h-4 text-[#c9a870]/30" />
@@ -304,9 +306,13 @@ function RecordGroupCard({ group, currentUserId }: { group: RecordGroup; current
 
               <div className="text-right flex-shrink-0">
                 <p className={`text-sm font-bold ${rank === 1 ? colors.text : 'text-[#d4d4d4]'}`}>
-                  {entry.value}
+                  {group.category === 'course'
+                    ? formatDuration(entry.numericValue, true)
+                    : entry.value}
                 </p>
-                <p className="text-xs text-[#6b6b6b]">{group.unit}</p>
+                <p className="text-xs text-[#6b6b6b]">
+                  {group.category === 'course' ? 'temps' : group.unit}
+                </p>
               </div>
             </div>
           );
@@ -327,37 +333,44 @@ function useRecordsRanking() {
     let cancelled = false;
     (async () => {
       try {
-        const { data: records, error: err2 } = await (supabase as any)
-          .rpc('get_hall_of_fame_records');
-        if (err2) throw err2;
+        const { data: records, error: err } = await (supabase as any)
+          .from('profile_records')
+          .select('id, user_id, title, value, unit, category, profiles!inner(username, global_level, avatar_url)')
+          .order('title');
+        if (err) throw err;
 
-        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course'; entries: RecordEntry[] }> = {};
+        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course' | 'calisthenics'; entries: RecordEntry[] }> = {};
+
         for (const rec of (records ?? []) as any[]) {
-          const cat: 'musculation' | 'course' = rec.category === 'course' ? 'course' : 'musculation';
+          const cat: 'musculation' | 'course' | 'calisthenics' =
+            rec.category === 'course' ? 'course'
+            : rec.category === 'calisthenics' ? 'calisthenics'
+            : 'musculation';
           const key = `${cat}::${rec.title.trim().toLowerCase()}`;
           if (!groupMap[key]) {
             groupMap[key] = { title: rec.title.trim(), unit: rec.unit, category: cat, entries: [] };
           }
-          const profile = { username: rec.username, global_level: rec.global_level, avatar_url: rec.avatar_url };
-          if (!profile.username) continue;
 
-          const numericValue = parseRecordValue(rec.value);
+          const prof = rec.profiles;
+          if (!prof?.username) continue;
+
+          const numericValue = parseRecordValue(String(rec.value));
           const ascending = cat === 'course';
           const existing = groupMap[key].entries.find(e => e.user_id === rec.user_id);
 
           if (existing) {
             if (ascending ? numericValue < existing.numericValue : numericValue > existing.numericValue) {
-              existing.value = rec.value;
+              existing.value = String(rec.value);
               existing.numericValue = numericValue;
             }
           } else {
             groupMap[key].entries.push({
               recordId: rec.id,
               user_id: rec.user_id,
-              username: rec.username,
-              level: rec.global_level,
-              avatar_url: rec.avatar_url ?? null,
-              value: rec.value,
+              username: prof.username,
+              level: prof.global_level,
+              avatar_url: prof.avatar_url ?? null,
+              value: String(rec.value),
               numericValue,
             });
           }
@@ -472,7 +485,7 @@ export function HallOfFamePage() {
                 Records Personnels
               </h2>
               <p className="text-[#a3a3a3] text-xs">
-                Classements par exercice · profils publics uniquement
+                Classements par exercice · tous les joueurs
               </p>
             </div>
           </div>
@@ -502,6 +515,21 @@ export function HallOfFamePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'course').map(group => (
                   <RecordGroupCard key={`course-${group.title}`} group={group} currentUserId={currentUserId} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Calisthénie */}
+          {records.groups.filter(g => g.category === 'calisthenics').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="w-4 h-4 text-violet-400" />
+                <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-violet-400">Calisthénie</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {records.groups.filter(g => g.category === 'calisthenics').map(group => (
+                  <RecordGroupCard key={`cali-${group.title}`} group={group} currentUserId={currentUserId} />
                 ))}
               </div>
             </div>

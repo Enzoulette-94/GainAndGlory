@@ -17,11 +17,11 @@ export type RunType = 'fractionne' | 'endurance' | 'tempo';
 
 export type WeatherCondition = 'ensoleille' | 'nuageux' | 'pluie' | 'vent' | 'neige';
 
-export type GoalType = 'weight' | 'musculation' | 'running';
+export type GoalType = 'weight' | 'musculation' | 'running' | 'calisthenics';
 
 export type GoalStatus = 'active' | 'completed' | 'failed' | 'cancelled';
 
-export type ChallengeType = 'musculation' | 'running' | 'mixed';
+export type ChallengeType = 'musculation' | 'running' | 'mixed' | 'calisthenics';
 
 export type ChallengeStatus = 'pending' | 'active' | 'completed' | 'expired';
 
@@ -39,6 +39,7 @@ export type BadgeRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type ActivityType =
   | 'workout'
   | 'run'
+  | 'calisthenics'
   | 'record'
   | 'badge'
   | 'level_up'

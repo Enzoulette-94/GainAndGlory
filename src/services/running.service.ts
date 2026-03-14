@@ -114,7 +114,7 @@ export const runningService = {
   },
 
   async getPersonalRecords(userId: string): Promise<Record<number, { duration: number; pace: number; date: string }>> {
-    const recordDistances = [5, 10, 21.0975, 42.195];
+    const recordDistances = [1, 5, 10, 21.0975, 42.195];
     const records: Record<number, { duration: number; pace: number; date: string }> = {};
 
     const { data, error } = await supabase

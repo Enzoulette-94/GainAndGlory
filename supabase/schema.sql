@@ -617,3 +617,38 @@ RETURNS TABLE (
   WHERE p.share_performances = true
   ORDER BY pr.category, pr.title, pr.value DESC;
 $$ LANGUAGE sql SECURITY DEFINER;
+
+-- ============================================================
+-- CALISTHÉNIE (migration)
+-- ============================================================
+
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS calisthenics_xp INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS calisthenics_level INTEGER DEFAULT 1;
+
+CREATE TABLE IF NOT EXISTS calisthenics_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  name TEXT,
+  feedback TEXT CHECK (feedback IN ('facile', 'difficile', 'mort')),
+  notes TEXT,
+  exercises JSONB NOT NULL DEFAULT '[]',
+  skills_unlocked TEXT[] DEFAULT '{}',
+  total_reps INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE calisthenics_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "own calisthenics" ON calisthenics_sessions
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE TABLE IF NOT EXISTS profile_skills (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  skill_code TEXT NOT NULL,
+  unlocked_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, skill_code)
+);
+ALTER TABLE profile_skills ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "own skills" ON profile_skills
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

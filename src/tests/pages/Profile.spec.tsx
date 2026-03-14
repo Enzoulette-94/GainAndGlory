@@ -132,6 +132,37 @@ describe('ProfilePage', () => {
       }, { timeout: 3000 });
     });
 
+    it('affiche "22:30" tel quel pour un record course dont la valeur contient ":"', async () => {
+      renderProfile();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/22:30/).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('formate en H:MM:SS un record course dont la valeur est un nombre brut de secondes', async () => {
+      const { profileRecordsService } = await import('../../services/profile-records.service');
+      (profileRecordsService.getRecords as any).mockResolvedValueOnce([
+        { id: 'r-10', user_id: 'user-1', title: '10 km', value: '3120', unit: 's', category: 'course', created_at: '2025-01-05T00:00:00Z' },
+      ]);
+      renderProfile();
+      // 3120 s = 52 min → '52:00'
+      await waitFor(() => {
+        expect(screen.queryAllByText(/52:00/).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('formate en H:MM:SS un record course avec ancienne unité "X km" et valeur brute', async () => {
+      const { profileRecordsService } = await import('../../services/profile-records.service');
+      (profileRecordsService.getRecords as any).mockResolvedValueOnce([
+        { id: 'r-11', user_id: 'user-1', title: '10 km', value: '3600', unit: '10 km', category: 'course', created_at: '2025-01-06T00:00:00Z' },
+      ]);
+      renderProfile();
+      // 3600 s = 1 h → '1:00:00'
+      await waitFor(() => {
+        expect(screen.queryAllByText(/1:00:00/).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
     it('affiche le sélecteur de catégorie dans la modal (Musculation / Course)', async () => {
       renderProfile();
       await waitFor(() => expect(screen.queryAllByText(/ajouter/i).length).toBeGreaterThan(0), { timeout: 3000 });

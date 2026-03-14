@@ -26,21 +26,33 @@ const mockWorkoutLeaderboard = [
   { user_id: 'user-1', username: 'Enzoulette', global_level: 15, avatar_url: null, total_tonnage: 9000 },
 ];
 
+// Records retournés par la requête directe (avec join profiles)
 const mockHofRecords = [
-  { id: 'r-1', user_id: 'user-1', title: 'Deadlift', value: '180', unit: 'kg', category: 'musculation', username: 'Enzoulette', global_level: 15, avatar_url: null },
-  { id: 'r-2', user_id: 'user-2', title: 'Deadlift', value: '200', unit: 'kg', category: 'musculation', username: 'Atlas',      global_level: 14, avatar_url: null },
-  { id: 'r-3', user_id: 'user-1', title: 'Trail des Vosges', value: '2:15:00', unit: '21 km', category: 'course', username: 'Enzoulette', global_level: 15, avatar_url: null },
+  { id: 'r-1', user_id: 'user-1', title: 'Deadlift', value: 180, unit: 'kg', category: 'musculation', profiles: { username: 'Enzoulette', global_level: 15, avatar_url: null } },
+  { id: 'r-2', user_id: 'user-2', title: 'Deadlift', value: 200, unit: 'kg', category: 'musculation', profiles: { username: 'Atlas',      global_level: 14, avatar_url: null } },
+  { id: 'r-3', user_id: 'user-1', title: 'Trail des Vosges', value: 8100, unit: 's', category: 'course', profiles: { username: 'Enzoulette', global_level: 15, avatar_url: null } },
 ];
 
 vi.mock('../../lib/supabase-client', () => {
-  const makeChain = (data: unknown) => {
+  // Chaîne pour profiles : .select().order().limit() → résout
+  const makeProfilesChain = (data: unknown) => {
     const result = { data, error: null };
     const chain: any = {};
     chain.select = vi.fn().mockReturnValue(chain);
     chain.order = vi.fn().mockReturnValue(chain);
     chain.limit = vi.fn().mockResolvedValue(result);
     chain.eq = vi.fn().mockReturnValue(chain);
-    chain.in = vi.fn().mockReturnValue(chain);
+    chain.then = (resolve: any, reject: any) => Promise.resolve(result).then(resolve, reject);
+    return chain;
+  };
+
+  // Chaîne pour profile_records : .select().order() → résout
+  const makeRecordsChain = (data: unknown) => {
+    const result = { data, error: null };
+    const chain: any = {};
+    chain.select = vi.fn().mockReturnValue(chain);
+    chain.order = vi.fn().mockResolvedValue(result);
+    chain.eq = vi.fn().mockReturnValue(chain);
     chain.then = (resolve: any, reject: any) => Promise.resolve(result).then(resolve, reject);
     return chain;
   };
@@ -48,13 +60,13 @@ vi.mock('../../lib/supabase-client', () => {
   return {
     supabase: {
       from: vi.fn((table: string) => {
-        if (table === 'profiles') return makeChain(mockProfiles);
-        return makeChain([]);
+        if (table === 'profiles') return makeProfilesChain(mockProfiles);
+        if (table === 'profile_records') return makeRecordsChain(mockHofRecords);
+        return makeProfilesChain([]);
       }),
       rpc: vi.fn((name: string) => {
         if (name === 'get_running_leaderboard') return Promise.resolve({ data: mockRunningLeaderboard, error: null });
         if (name === 'get_workout_leaderboard') return Promise.resolve({ data: mockWorkoutLeaderboard, error: null });
-        if (name === 'get_hall_of_fame_records') return Promise.resolve({ data: mockHofRecords, error: null });
         return Promise.resolve({ data: [], error: null });
       }),
     },
@@ -134,15 +146,15 @@ describe('HallOfFamePage', () => {
       await q(/records personnels/i);
     });
 
-    it('appelle get_hall_of_fame_records via rpc', async () => {
+    it('interroge profile_records directement (plus de RPC)', async () => {
       const { supabase } = await import('../../lib/supabase-client');
       renderHoF();
-      await waitFor(() => expect((supabase as any).rpc).toHaveBeenCalledWith('get_hall_of_fame_records'), { timeout: 3000 });
+      await waitFor(() => expect(supabase.from).toHaveBeenCalledWith('profile_records'), { timeout: 3000 });
     });
 
-    it('affiche le sous-titre "profils publics uniquement"', async () => {
+    it('affiche le sous-titre de la section records', async () => {
       renderHoF();
-      await q(/profils publics/i);
+      await q(/classements par exercice/i);
     });
 
     it('affiche le titre de l\'exercice muscu "Deadlift"', async () => {
@@ -169,14 +181,27 @@ describe('HallOfFamePage', () => {
       }, { timeout: 3000 });
     });
 
-    it('affiche l\'indication de tri "meilleure charge" pour muscu', async () => {
+    it('affiche l\'indication de tri "meilleur record" pour muscu', async () => {
       renderHoF();
-      await q(/meilleure charge/i);
+      await q(/meilleur record/i);
     });
 
     it('affiche l\'indication de tri "meilleur temps" pour course', async () => {
       renderHoF();
       await q(/meilleur temps/i);
+    });
+
+    it('formate correctement un temps H:MM:SS (2:15:00 = 8100 secondes)', async () => {
+      renderHoF();
+      // "2:15:00" → parseRecordValue → 8100s → formatDuration(8100, true) → "2:15:00"
+      await waitFor(() => {
+        expect(screen.queryAllByText(/2:15:00/).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche "temps" comme unité pour les records de course', async () => {
+      renderHoF();
+      await q(/temps/i);
     });
   });
 });

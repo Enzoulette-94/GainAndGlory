@@ -56,18 +56,21 @@ const GOAL_TYPE_ICONS: Record<GoalType, React.ReactNode> = {
   musculation: <Dumbbell className="w-5 h-5" />,
   running: <PersonStanding className="w-5 h-5" />,
   weight: <Scale className="w-5 h-5" />,
+  calisthenics: <span className="text-base">⚡</span>,
 };
 
 const GOAL_TYPE_COLORS: Record<GoalType, string> = {
   musculation: 'text-red-400 bg-transparent border-red-800/50',
   running: 'text-emerald-600 bg-transparent border-emerald-800/40',
   weight: 'text-orange-600 bg-transparent border-orange-800/40',
+  calisthenics: 'text-violet-400 bg-transparent border-violet-800/50',
 };
 
 const GOAL_TYPE_BAR_COLORS: Record<GoalType, string> = {
   musculation: 'bg-red-500',
   running: 'bg-emerald-800',
   weight: 'bg-orange-800',
+  calisthenics: 'bg-violet-600',
 };
 
 const STATUS_TAB_LABELS: Record<TabType, string> = {

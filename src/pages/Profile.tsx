@@ -6,7 +6,7 @@ import { runningService } from '../services/running.service';
 import { badgesService } from '../services/badges.service';
 import { profileService } from '../services/profile.service';
 import { profileRecordsService } from '../services/profile-records.service';
-import { getLevelProgress, getLevelTitle, formatDate, formatDistance } from '../utils/calculations';
+import { getLevelProgress, getLevelTitle, formatDate, formatDistance, formatDuration } from '../utils/calculations';
 import { BADGE_RARITY_CONFIG } from '../utils/constants';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -77,7 +77,7 @@ export function ProfilePage() {
   // record modal
   const [recordModalOpen, setRecordModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ProfileRecord | null>(null);
-  const [recCategory, setRecCategory] = useState<'musculation' | 'course'>('musculation');
+  const [recCategory, setRecCategory] = useState<'musculation' | 'course' | 'calisthenics'>('musculation');
   const [recTitle, setRecTitle] = useState('');
   const [recValue, setRecValue] = useState('');
   const [recUnit, setRecUnit] = useState<'kg' | 'reps'>('kg');
@@ -191,7 +191,7 @@ export function ProfilePage() {
 
   // ─── record handlers ─────────────────────────────────────────────────────
 
-  function openAddRecord(cat: 'musculation' | 'course' = 'musculation') {
+  function openAddRecord(cat: 'musculation' | 'course' | 'calisthenics' = 'musculation') {
     setEditingRecord(null);
     setRecCategory(cat);
     setRecTitle(''); setRecValue(''); setRecUnit('kg'); setRecDistance(''); setRecError('');
@@ -484,8 +484,12 @@ export function ProfilePage() {
                       <PersonStanding className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                       <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
                       <span className="text-[#6b6b6b] text-xs">•</span>
-                      <span className="text-sm font-bold text-blue-400">{r.value}</span>
-                      <span className="text-xs text-[#6b6b6b]">{r.unit}</span>
+                      <span className="text-sm font-bold text-blue-400">
+                        {!r.value.includes(':') && !isNaN(parseFloat(r.value))
+                          ? formatDuration(parseFloat(r.value), true)
+                          : r.value}
+                      </span>
+                      <span className="text-xs text-[#6b6b6b]">temps</span>
                       <div className="flex items-center gap-1 ml-auto flex-shrink-0">
                         <button onClick={() => openEditRecord(r)} className="p-1 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors" aria-label="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
                         <button onClick={() => handleDeleteRecord(r.id)} className="p-1 text-[#6b6b6b] hover:text-red-400 transition-colors" aria-label="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>

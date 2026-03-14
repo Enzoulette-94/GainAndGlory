@@ -316,6 +316,68 @@ describe('profileRecordsService', () => {
       await profileRecordsService.upsertRecord('user-1', 'Meilleure allure', 5.2, 'min/km', 'course', true);
       expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ value: 5.2 }));
     });
+
+    it('crée un record calisthenics avec unit="reps" et ascending=false', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const insertMock = vi.fn().mockResolvedValue({ error: null });
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        insert: insertMock,
+      });
+
+      await profileRecordsService.upsertRecord('user-1', 'Pull-up', 15, 'reps', 'calisthenics', false);
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ user_id: 'user-1', title: 'Pull-up', value: 15, unit: 'reps', category: 'calisthenics' })
+      );
+    });
+
+    it('met à jour un record calisthenics si le nouveau max de reps est plus élevé', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const updateMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockResolvedValue({ error: null });
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-cali', value: 10 }, error: null }),
+        update: updateMock,
+      });
+      updateMock.mockReturnValue({ eq: eqMock });
+
+      await profileRecordsService.upsertRecord('user-1', 'Pull-up', 15, 'reps', 'calisthenics', false);
+      expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ value: 15 }));
+    });
+
+    it('ne met pas à jour si le nouveau max de reps est inférieur (calisthenics)', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const updateMock = vi.fn();
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-cali', value: 20 }, error: null }),
+        update: updateMock,
+      });
+
+      await profileRecordsService.upsertRecord('user-1', 'Pull-up', 15, 'reps', 'calisthenics', false);
+      expect(updateMock).not.toHaveBeenCalled();
+    });
+
+    it('crée un record course (auto-détection) avec unit="s" et ascending=true', async () => {
+      const { supabase } = await import('../../lib/supabase-client');
+      const insertMock = vi.fn().mockResolvedValue({ error: null });
+      (supabase.from as any).mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        insert: insertMock,
+      });
+
+      await profileRecordsService.upsertRecord('user-1', '10 km', 2700, 's', 'course', true);
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ title: '10 km', value: 2700, unit: 's', category: 'course' })
+      );
+    });
   });
 
   // ── Compatibilité migration ────────────────────────────────────────────────

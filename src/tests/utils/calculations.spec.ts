@@ -304,6 +304,22 @@ describe('formatDuration', () => {
   it('mode compact : formate 3661s → "1:01:01"', () => {
     expect(formatDuration(3661, true)).toBe('1:01:01');
   });
+
+  it('mode compact : formate 8100s → "2:15:00" (2h15)', () => {
+    expect(formatDuration(8100, true)).toBe('2:15:00');
+  });
+
+  it('mode compact : formate 3120s → "52:00" (52 minutes)', () => {
+    expect(formatDuration(3120, true)).toBe('52:00');
+  });
+
+  it('mode compact : formate 3600s → "1:00:00" (1 heure)', () => {
+    expect(formatDuration(3600, true)).toBe('1:00:00');
+  });
+
+  it('mode compact : formate 6720s → "1:52:00" (1h52)', () => {
+    expect(formatDuration(6720, true)).toBe('1:52:00');
+  });
 });
 
 describe('timeStringToSeconds', () => {

@@ -87,6 +87,16 @@ export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
   abdos: 'Abdos',
 };
 
+export const MUSCLE_GROUP_DISPLAY = [
+  { id: 'pectoraux', label: 'Pectoraux'    },
+  { id: 'dos',       label: 'Dos'          },
+  { id: 'epaules',   label: 'Épaules'      },
+  { id: 'biceps',    label: 'Biceps'       },
+  { id: 'triceps',   label: 'Triceps'      },
+  { id: 'jambes',    label: 'Jambes'       },
+  { id: 'abdos',     label: 'Abdos / Core' },
+] as const;
+
 // ============================================================
 // XP BARÈME
 // ============================================================
@@ -94,6 +104,8 @@ export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
 export const XP_REWARDS = {
   WORKOUT_SESSION: 50,
   RUNNING_SESSION: 50,
+  CALISTHENICS_SESSION: 50,
+  SKILL_UNLOCKED: 200,
   WEIGHT_ENTRY: 10,
   PERSONAL_RECORD: 100,
   PERSONAL_GOAL_COMPLETED: 150,
@@ -103,6 +115,33 @@ export const XP_REWARDS = {
   STREAK_30_DAYS: 1000,
   MILESTONE: 300,
 } as const;
+
+// ============================================================
+// CALISTHÉNIE
+// ============================================================
+
+export const CALISTHENICS_EXERCISES = [
+  'Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Diamond Push-up', 'Pike Push-up',
+  'Handstand Push-up', 'Muscle-up', 'L-sit', 'Handstand', 'Front Lever',
+  'Back Lever', 'Planche', 'Dragon Flag', 'Pistol Squat', 'Burpee',
+  'Tuck Planche', 'Inverted Row', 'Ring Dip', 'Ring Row',
+  'Archer Push-up', 'Pseudo Planche Push-up', 'Hollow Body Hold', 'Superman Hold',
+];
+
+export const CALISTHENICS_SKILLS = [
+  { code: 'pullup_10',      label: '10 tractions',   description: '10 pull-ups consécutifs', xp: 100 },
+  { code: 'pullup_20',      label: '20 tractions',   description: '20 pull-ups consécutifs', xp: 200 },
+  { code: 'dip_15',         label: '15 dips',        description: '15 dips consécutifs',     xp: 100 },
+  { code: 'pushup_50',      label: '50 pompes',      description: '50 push-ups consécutifs', xp: 150 },
+  { code: 'lsit_30s',       label: 'L-sit 30s',      description: 'L-sit tenu 30 secondes',  xp: 200 },
+  { code: 'handstand_20s',  label: 'Handstand 20s',  description: 'Handstand tenu 20s',      xp: 200 },
+  { code: 'handstand_60s',  label: 'Handstand 60s',  description: 'Handstand tenu 60s',      xp: 400 },
+  { code: 'muscle_up',      label: 'Muscle-up',      description: '1 muscle-up complet',     xp: 500 },
+  { code: 'front_lever_5s', label: 'Front Lever 5s', description: 'Front lever tenu 5s',     xp: 600 },
+  { code: 'planche_3s',     label: 'Planche 3s',     description: 'Planche tenu 3s',         xp: 800 },
+] as const;
+
+export type SkillCode = typeof CALISTHENICS_SKILLS[number]['code'];
 
 // ============================================================
 // BADGES
@@ -232,6 +271,7 @@ export const FEEDBACK_COLORS = {
 
 // Records distances course
 export const RUNNING_RECORD_DISTANCES = [
+  { label: '1 km', km: 1 },
   { label: '5 km', km: 5 },
   { label: '10 km', km: 10 },
   { label: 'Semi-marathon', km: 21.0975 },

@@ -122,14 +122,20 @@ export function RunSessionPage() {
         notes: notes.trim() || undefined,
       });
 
-      // Auto-détection des records de course
-      await profileRecordsService.upsertRecord(
-        profile.id, 'Distance maximale', distanceNum, 'km', 'course', false,
-      );
-      if (pace > 0) {
-        await profileRecordsService.upsertRecord(
-          profile.id, 'Meilleure allure', Math.round(pace * 100) / 100, 'min/km', 'course', true,
-        );
+      // Auto-détection des records par distance fixe (±3%)
+      const TARGET_DISTANCES = [
+        { label: '1 km', km: 1 },
+        { label: '5 km', km: 5 },
+        { label: '10 km', km: 10 },
+        { label: 'Semi-marathon', km: 21.0975 },
+        { label: 'Marathon', km: 42.195 },
+      ];
+      for (const target of TARGET_DISTANCES) {
+        if (Math.abs(distanceNum - target.km) <= target.km * 0.03) {
+          await profileRecordsService.upsertRecord(
+            profile.id, target.label, durationSeconds, 's', 'course', true,
+          );
+        }
       }
 
       await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');

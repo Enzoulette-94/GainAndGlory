@@ -32,6 +32,8 @@ const HallOfFamePage = lazy(() => import('./pages/HallOfFame').then(m => ({ defa
 const EventsPage = lazy(() => import('./pages/Events').then(m => ({ default: m.EventsPage })));
 const ProfilePage = lazy(() => import('./pages/Profile').then(m => ({ default: m.ProfilePage })));
 const SettingsPage = lazy(() => import('./pages/Settings').then(m => ({ default: m.SettingsPage })));
+const CalisthenicsPage = lazy(() => import('./pages/Calisthenics').then(m => ({ default: m.CalisthenicsPage })));
+const CalisthenicsSessionPage = lazy(() => import('./pages/CalisthenicsSession').then(m => ({ default: m.CalisthenicsSessionPage })));
 const TeamGoalsPage = lazy(() => import('./pages/TeamGoals').then(m => ({ default: m.TeamGoalsPage })));
 const AdminPage = lazy(() => import('./pages/Admin').then(m => ({ default: m.AdminPage })));
 const UserProfilePage = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfilePage })));
@@ -58,6 +60,9 @@ export default function App() {
 
               <Route path="/running" element={<RunningPage />} />
               <Route path="/running/new" element={<RunSessionPage />} />
+
+              <Route path="/calisthenics" element={<CalisthenicsPage />} />
+              <Route path="/calisthenics/new" element={<CalisthenicsSessionPage />} />
 
               <Route path="/weight" element={<WeightPage />} />
               <Route path="/calendar" element={<CalendarPage />} />

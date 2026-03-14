@@ -8,6 +8,7 @@ vi.mock('../../contexts/AuthContext', () => ({
     user: { id: 'user-1' },
     profile: { id: 'user-1', username: 'Test', musculation_level: 1, musculation_xp: 0 },
     loading: false,
+    refreshProfile: vi.fn().mockResolvedValue(undefined),
   }),
 }));
 
@@ -33,6 +34,12 @@ vi.mock('../../services/feed.service', () => ({
   },
 }));
 
+vi.mock('../../services/profile-records.service', () => ({
+  profileRecordsService: {
+    upsertRecord: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 let MuscuSessionPage: any;
 
 beforeEach(async () => {
@@ -49,7 +56,6 @@ const renderMuscuSession = () => render(<MemoryRouter><MuscuSessionPage /></Memo
 describe('MuscuSessionPage', () => {
   describe('Rendu initial', () => {
     it('se monte sans crash (pas de crypto.randomUUID)', async () => {
-      // Vérifie que le remplacement Math.random() ne crash pas
       expect(() => renderMuscuSession()).not.toThrow();
     });
 
@@ -72,11 +78,33 @@ describe('MuscuSessionPage', () => {
         expect(dateInputs.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
+
+    it('affiche le bouton "Ajouter exercice"', async () => {
+      renderMuscuSession();
+      await waitFor(() => {
+        const btns = screen.queryAllByText(/ajouter exercice/i);
+        expect(btns.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche un placeholder de sélection d\'exercice', async () => {
+      renderMuscuSession();
+      await waitFor(() => {
+        const placeholders = screen.queryAllByText(/sélectionner un exercice/i);
+        expect(placeholders.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
+
+  describe('profileRecordsService', () => {
+    it('upsertRecord est défini dans le mock', async () => {
+      const { profileRecordsService } = await import('../../services/profile-records.service');
+      expect(typeof profileRecordsService.upsertRecord).toBe('function');
+    });
   });
 
   describe('Génération d\'ID sans crypto', () => {
     it('génère un id via Math.random() — pas de crypto.randomUUID', () => {
-      // S'assure que le fallback fonctionne dans un contexte HTTP non-sécurisé
       const id = Math.random().toString(36).slice(2);
       expect(typeof id).toBe('string');
       expect(id.length).toBeGreaterThan(0);

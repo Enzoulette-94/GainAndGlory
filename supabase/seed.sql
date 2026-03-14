@@ -892,230 +892,104 @@ ON CONFLICT (user_id, badge_id) DO NOTHING;
 
 INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
--- ── DÉCEMBRE 2025 ────────────────────────────────────────────
+-- ── AUJOURD'HUI 13 MARS 2026 ──────────────────────────────────
 
--- Spartacus — Run 15km endurance
+-- Atlas — Workout Push (ce matin)
+('a0000000-0000-0000-0000-000000000002','workout',
+ '{"type":"workout","tonnage":7240,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '2026-03-13T07:30:00Z'),
+
+-- Spartacus — Run 12km tempo (ce matin)
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":15,"duration":4350,"pace":"4:50","run_type":"endurance","feedback":"facile"}',
- '2026-03-01T06:00:00Z'),
+ '{"type":"run","distance":12,"duration":3168,"pace":4.4,"run_type":"tempo","feedback":"difficile"}',
+ '2026-03-13T06:15:00Z'),
 
--- Atlas — Workout Push
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":6848,"exercises":["Développé couché","Développé incliné","Développé militaire"],"feedback":"difficile"}',
- '2025-12-01T18:00:00Z'),
-
--- Atlas — Workout Pull
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":8800,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2025-12-03T18:00:00Z'),
-
--- Spartacus — Run 10km tempo
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10,"duration":2640,"pace":"4:24","run_type":"tempo","feedback":"difficile"}',
- '2025-12-05T06:30:00Z'),
-
--- Atlas — Workout Legs
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":11560,"exercises":["Squat","Presse à cuisses","Fentes"],"feedback":"mort"}',
- '2025-12-05T18:00:00Z'),
-
--- Admin — Run 10km endurance
-('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":10,"duration":3120,"pace":"5:12","run_type":"endurance","feedback":"difficile"}',
- '2025-12-06T06:30:00Z'),
-
--- Admin — Workout Push
+-- Admin — Workout Legs (ce matin)
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":5016,"exercises":["Développé couché","Développé incliné","Développé militaire"],"feedback":"difficile"}',
- '2025-12-02T07:30:00Z'),
+ '{"type":"workout","tonnage":9840,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '2026-03-13T08:00:00Z'),
 
--- Admin — Workout Pull
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":6960,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2025-12-04T07:30:00Z'),
+-- ── HIER 12 MARS 2026 ────────────────────────────────────────
 
--- Valkyrie — Run 5km (première course)
+-- Valkyrie — Run 8km endurance
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":5,"duration":1650,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
- '2025-12-08T08:00:00Z'),
-
--- Atlas — Workout Push
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":6984,"exercises":["Développé couché","Développé incliné","Développé militaire"],"feedback":"difficile"}',
- '2025-12-08T18:00:00Z'),
-
--- Spartacus — Run semi-marathon
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":21.097,"duration":5820,"pace":"4:37","run_type":"endurance","feedback":"difficile"}',
- '2025-12-10T06:00:00Z'),
-
--- Valkyrie — Workout
-('a0000000-0000-0000-0000-000000000004','workout',
- '{"tonnage":3990,"exercises":["Développé couché","Squat","Développé incliné"],"feedback":"difficile"}',
- '2025-12-10T12:00:00Z'),
-
--- Atlas — Workout Pull
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":8948,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2025-12-11T18:00:00Z'),
-
--- Admin — Run 15km trail
-('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":15,"duration":4860,"pace":"5:24","run_type":"endurance","feedback":"difficile"}',
- '2025-12-14T07:00:00Z'),
-
--- Admin — Workout Push
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":5126,"exercises":["Développé couché","Développé incliné","Développé militaire"],"feedback":"difficile"}',
- '2025-12-12T07:30:00Z'),
-
--- Admin — Workout Pull
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":7098,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"facile"}',
- '2025-12-16T07:30:00Z'),
-
--- Spartacus — Run 12km endurance
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":12,"duration":3360,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
- '2025-12-17T06:00:00Z'),
-
--- Spartacus — Workout
-('a0000000-0000-0000-0000-000000000003','workout',
- '{"tonnage":4800,"exercises":["Soulevé de terre","Squat","Rowing barre"],"feedback":"facile"}',
- '2025-12-17T19:00:00Z'),
-
--- Admin — Workout Legs
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":8320,"exercises":["Squat","Presse à cuisses","Fentes"],"feedback":"mort"}',
- '2025-12-07T07:30:00Z'),
-
--- Admin — Workout Épaules/Bras
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":5340,"exercises":["Développé militaire","Curl barre","Extensions poulie haute"],"feedback":"difficile"}',
- '2025-12-09T07:00:00Z'),
-
--- Valkyrie — Run 8km
-('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":8,"duration":2640,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
- '2025-12-20T09:00:00Z'),
-
--- Titan — Workout Push/Legs
-('a0000000-0000-0000-0000-000000000005','workout',
- '{"tonnage":6640,"exercises":["Développé couché","Squat","Développé militaire"],"feedback":"difficile"}',
- '2025-12-20T17:00:00Z'),
-
--- Atlas — Run 5km
-('a0000000-0000-0000-0000-000000000002','run',
- '{"distance":5,"duration":1650,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
- '2025-12-22T09:00:00Z'),
-
--- Spartacus — Run 8km tempo
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":8,"duration":2160,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
- '2025-12-22T07:00:00Z'),
-
--- Admin — Run 5km tempo (fin d''année)
-('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":5,"duration":1440,"pace":"4:48","run_type":"tempo","feedback":"difficile"}',
- '2025-12-28T08:00:00Z'),
-
--- ── JANVIER 2026 ─────────────────────────────────────────────
-
--- Admin — Workout Push (Nouvel An)
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":5250,"exercises":["Développé couché","Développé militaire","Curl barre"],"feedback":"facile"}',
- '2026-01-01T08:00:00Z'),
-
--- Admin — Run Foulée du Nouvel An
-('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":5,"duration":1500,"pace":"5:00","run_type":"endurance","feedback":"facile"}',
- '2026-01-01T16:00:00Z'),
-
--- Admin — badge Nouvel An Sportif
-('a0000000-0000-0000-0000-000000000001','badge_unlocked',
- '{"badge_name":"Nouvel An Sportif","badge_code":"new_year_athlete","rarity":"rare"}',
- '2026-01-01T08:05:00Z'),
-
--- Spartacus — Run 20km endurance
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":20,"duration":5700,"pace":"4:45","run_type":"endurance","feedback":"difficile"}',
- '2026-01-04T06:00:00Z'),
-
--- Atlas — Workout Pull
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":9116,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2026-01-05T18:00:00Z'),
-
--- Admin — Workout Legs
-('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":8820,"exercises":["Squat","Presse à cuisses","Fentes"],"feedback":"mort"}',
- '2026-01-06T07:30:00Z'),
-
--- Atlas — Workout Legs
-('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":11955,"exercises":["Squat","Presse à cuisses","Fentes"],"feedback":"mort"}',
- '2026-01-08T18:00:00Z'),
-
--- Spartacus — Run 10km tempo
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10,"duration":2700,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
- '2026-01-11T07:00:00Z'),
-
--- Admin — Run 12km (neige)
-('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":12,"duration":3840,"pace":"5:12","run_type":"endurance","feedback":"difficile"}',
- '2026-01-12T07:00:00Z'),
-
--- Spartacus — Workout
-('a0000000-0000-0000-0000-000000000003','workout',
- '{"tonnage":5096,"exercises":["Développé couché","Squat","Développé militaire"],"feedback":"facile"}',
- '2026-01-14T19:00:00Z'),
+ '{"type":"run","distance":8,"duration":2640,"pace":5.5,"run_type":"endurance","feedback":"facile"}',
+ '2026-03-12T09:00:00Z'),
 
 -- Titan — Workout Pull
 ('a0000000-0000-0000-0000-000000000005','workout',
- '{"tonnage":5830,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2026-01-15T17:00:00Z'),
+ '{"type":"workout","tonnage":6120,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '2026-03-12T17:30:00Z'),
 
--- Spartacus — Run 25km sortie longue
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":25,"duration":7200,"pace":"4:48","run_type":"endurance","feedback":"difficile"}',
- '2026-01-18T06:30:00Z'),
-
--- Rookie — Workout (début)
+-- Rookie — Workout (progression)
 ('a0000000-0000-0000-0000-000000000006','workout',
- '{"tonnage":2480,"exercises":["Développé couché","Squat","Développé militaire"],"feedback":"facile"}',
- '2026-01-20T20:00:00Z'),
+ '{"type":"workout","tonnage":2880,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Rowing barre","sets":3,"reps":24}]}',
+ '2026-03-12T20:00:00Z'),
 
--- Valkyrie — Workout
-('a0000000-0000-0000-0000-000000000004','workout',
- '{"tonnage":4228,"exercises":["Développé couché","Squat","Rowing barre"],"feedback":"difficile"}',
- '2026-01-20T12:00:00Z'),
+-- ── 11 MARS 2026 ────────────────────────────────────────────
 
--- Valkyrie — Run 10km (objectif atteint !)
-('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":10,"duration":3150,"pace":"5:15","run_type":"endurance","feedback":"facile"}',
- '2026-01-25T09:00:00Z'),
-
--- Valkyrie — goal_completed
-('a0000000-0000-0000-0000-000000000004','goal_completed',
- '{"goal_title":"Courir 10 km sans s''arrêter","goal_type":"performance"}',
- '2026-01-25T09:30:00Z'),
-
--- Spartacus — Run 8km fractionné
+-- Spartacus — Run 10km fractionné
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":8,"duration":2160,"pace":"4:30","run_type":"fractionne","feedback":"difficile"}',
- '2026-01-25T07:00:00Z'),
+ '{"type":"run","distance":10,"duration":2700,"pace":4.5,"run_type":"fractionne","feedback":"difficile"}',
+ '2026-03-11T06:30:00Z'),
+
+-- Atlas — Workout Legs
+('a0000000-0000-0000-0000-000000000002','workout',
+ '{"type":"workout","tonnage":12200,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '2026-03-11T18:00:00Z'),
+
+-- ── MARS 2026 (début de mois) ────────────────────────────────
+
+-- Spartacus — Run 18km endurance
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":18,"duration":5040,"pace":4.67,"run_type":"endurance","feedback":"facile"}',
+ '2026-03-01T06:00:00Z'),
+
+-- Titan — Workout Push/Legs
+('a0000000-0000-0000-0000-000000000005','workout',
+ '{"type":"workout","tonnage":6768,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '2026-03-01T17:00:00Z'),
+
+-- Admin — Workout Pull
+('a0000000-0000-0000-0000-000000000001','workout',
+ '{"type":"workout","tonnage":7296,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '2026-03-03T07:30:00Z'),
+
+-- Valkyrie — Run 5km tempo
+('a0000000-0000-0000-0000-000000000004','run',
+ '{"type":"run","distance":5,"duration":1500,"pace":5.0,"run_type":"tempo","feedback":"difficile"}',
+ '2026-03-03T09:00:00Z'),
+
+-- Spartacus — Run 10km tempo
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":10,"duration":2700,"pace":4.5,"run_type":"tempo","feedback":"difficile"}',
+ '2026-03-04T07:00:00Z'),
+
+-- Atlas — Workout Pull
+('a0000000-0000-0000-0000-000000000002','workout',
+ '{"type":"workout","tonnage":9210,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '2026-03-04T18:00:00Z'),
+
+-- Admin — Run 18km endurance
+('a0000000-0000-0000-0000-000000000001','run',
+ '{"type":"run","distance":18,"duration":5760,"pace":5.33,"run_type":"endurance","feedback":"facile"}',
+ '2026-03-05T07:00:00Z'),
+
+-- Atlas — Run 4km récup
+('a0000000-0000-0000-0000-000000000002','run',
+ '{"type":"run","distance":4,"duration":1320,"pace":5.5,"run_type":"endurance","feedback":"facile"}',
+ '2026-03-05T09:00:00Z'),
 
 -- ── FÉVRIER 2026 ─────────────────────────────────────────────
 
 -- Spartacus — Run 15km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":15,"duration":4200,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
+ '{"type":"run","distance":15,"duration":4200,"pace":4.67,"run_type":"endurance","feedback":"facile"}',
  '2026-02-01T06:00:00Z'),
 
 -- Admin — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":10,"duration":3000,"pace":"5:00","run_type":"tempo","feedback":"difficile"}',
+ '{"type":"run","distance":10,"duration":3000,"pace":5.0,"run_type":"tempo","feedback":"difficile"}',
  '2026-02-01T07:30:00Z'),
 
 -- Spartacus — badge Ultra runner
@@ -1125,32 +999,32 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Admin — Workout Push
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":5251,"exercises":["Développé couché","Développé incliné","Développé militaire"],"feedback":"difficile"}',
+ '{"type":"workout","tonnage":5251,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
  '2026-02-03T07:30:00Z'),
 
 -- Atlas — Run 10km
 ('a0000000-0000-0000-0000-000000000002','run',
- '{"distance":10,"duration":3300,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"type":"run","distance":10,"duration":3300,"pace":5.5,"run_type":"endurance","feedback":"difficile"}',
  '2026-02-08T09:00:00Z'),
 
--- Spartacus — Run semi objectif
+-- Spartacus — Run semi-marathon
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":21.097,"duration":5700,"pace":"4:32","run_type":"endurance","feedback":"difficile"}',
+ '{"type":"run","distance":21.097,"duration":5700,"pace":4.53,"run_type":"endurance","feedback":"difficile"}',
  '2026-02-08T06:00:00Z'),
 
 -- Atlas — Workout Push
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":7140,"exercises":["Développé couché","Développé incliné","Développé militaire"],"feedback":"difficile"}',
+ '{"type":"workout","tonnage":7140,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
  '2026-02-10T18:00:00Z'),
 
 -- Rookie — Workout
 ('a0000000-0000-0000-0000-000000000006','workout',
- '{"tonnage":2616,"exercises":["Développé couché","Squat","Développé militaire"],"feedback":"facile"}',
+ '{"type":"workout","tonnage":2616,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":18}]}',
  '2026-02-10T20:00:00Z'),
 
 -- Admin — Workout Bras (Saint-Valentin solo)
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":3612,"exercises":["Curl barre","Extensions poulie haute","Élévations latérales"],"feedback":"facile"}',
+ '{"type":"workout","tonnage":3612,"sets_count":10,"feedback":"facile","exercises":[{"name":"Curl barre","sets":4,"reps":48},{"name":"Extensions poulie haute","sets":3,"reps":36},{"name":"Élévations latérales","sets":3,"reps":36}]}',
  '2026-02-14T06:30:00Z'),
 
 -- Admin — badge Saint-Valentin solo
@@ -1160,75 +1034,157 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 
 -- Valkyrie — Run 10km
 ('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":10,"duration":3060,"pace":"5:06","run_type":"endurance","feedback":"facile"}',
+ '{"type":"run","distance":10,"duration":3060,"pace":5.1,"run_type":"endurance","feedback":"facile"}',
  '2026-02-15T09:00:00Z'),
 
 -- Spartacus — Run 10km tempo
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10,"duration":2640,"pace":"4:24","run_type":"tempo","feedback":"difficile"}',
+ '{"type":"run","distance":10,"duration":2640,"pace":4.4,"run_type":"tempo","feedback":"difficile"}',
  '2026-02-15T07:00:00Z'),
 
 -- Titan — Run 5km (première course)
 ('a0000000-0000-0000-0000-000000000005','run',
- '{"distance":5,"duration":1800,"pace":"6:00","run_type":"endurance","feedback":"mort"}',
+ '{"type":"run","distance":5,"duration":1800,"pace":6.0,"run_type":"endurance","feedback":"mort"}',
  '2026-02-20T17:30:00Z'),
 
 -- Admin — Run 20km sortie longue
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":20,"duration":6600,"pace":"5:30","run_type":"endurance","feedback":"difficile"}',
+ '{"type":"run","distance":20,"duration":6600,"pace":5.5,"run_type":"endurance","feedback":"difficile"}',
  '2026-02-22T08:00:00Z'),
 
 -- Valkyrie — Workout
 ('a0000000-0000-0000-0000-000000000004','workout',
- '{"tonnage":3180,"exercises":["Développé militaire","Squat","Curl barre"],"feedback":"facile"}',
+ '{"type":"workout","tonnage":3180,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé militaire","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Curl barre","sets":3,"reps":36}]}',
  '2026-02-25T12:00:00Z'),
 
 -- Spartacus — Workout
 ('a0000000-0000-0000-0000-000000000003','workout',
- '{"tonnage":4960,"exercises":["Soulevé de terre","Squat","Rowing barre"],"feedback":"facile"}',
+ '{"type":"workout","tonnage":4960,"sets_count":10,"feedback":"facile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Squat","sets":3,"reps":24},{"name":"Rowing barre","sets":3,"reps":24}]}',
  '2026-02-18T19:00:00Z'),
 
--- ── MARS 2026 ────────────────────────────────────────────────
+-- ── JANVIER 2026 ─────────────────────────────────────────────
 
--- Spartacus — Run 18km endurance
-('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":18,"duration":5040,"pace":"4:40","run_type":"endurance","feedback":"facile"}',
- '2026-03-01T06:00:00Z'),
-
--- Titan — Workout Push/Legs
-('a0000000-0000-0000-0000-000000000005','workout',
- '{"tonnage":6768,"exercises":["Développé couché","Squat","Développé militaire"],"feedback":"difficile"}',
- '2026-03-01T17:00:00Z'),
-
--- Admin — Workout Pull
+-- Admin — Workout Push (Nouvel An)
 ('a0000000-0000-0000-0000-000000000001','workout',
- '{"tonnage":7296,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2026-03-03T07:30:00Z'),
+ '{"type":"workout","tonnage":5250,"sets_count":10,"feedback":"facile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé militaire","sets":3,"reps":24},{"name":"Curl barre","sets":3,"reps":36}]}',
+ '2026-01-01T08:00:00Z'),
 
--- Valkyrie — Run 5km tempo
-('a0000000-0000-0000-0000-000000000004','run',
- '{"distance":5,"duration":1500,"pace":"5:00","run_type":"tempo","feedback":"difficile"}',
- '2026-03-03T09:00:00Z'),
+-- Admin — Run Foulée du Nouvel An
+('a0000000-0000-0000-0000-000000000001','run',
+ '{"type":"run","distance":5,"duration":1500,"pace":5.0,"run_type":"endurance","feedback":"facile"}',
+ '2026-01-01T16:00:00Z'),
 
--- Spartacus — Run 10km tempo
+-- Admin — badge Nouvel An Sportif
+('a0000000-0000-0000-0000-000000000001','badge_unlocked',
+ '{"badge_name":"Nouvel An Sportif","badge_code":"new_year_athlete","rarity":"rare"}',
+ '2026-01-01T08:05:00Z'),
+
+-- Spartacus — Run 20km endurance
 ('a0000000-0000-0000-0000-000000000003','run',
- '{"distance":10,"duration":2700,"pace":"4:30","run_type":"tempo","feedback":"difficile"}',
- '2026-03-04T07:00:00Z'),
+ '{"type":"run","distance":20,"duration":5700,"pace":4.75,"run_type":"endurance","feedback":"difficile"}',
+ '2026-01-04T06:00:00Z'),
 
 -- Atlas — Workout Pull
 ('a0000000-0000-0000-0000-000000000002','workout',
- '{"tonnage":9210,"exercises":["Soulevé de terre","Rowing barre","Tirage vertical"],"feedback":"difficile"}',
- '2026-03-04T18:00:00Z'),
+ '{"type":"workout","tonnage":9116,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '2026-01-05T18:00:00Z'),
 
--- Admin — Run 18km endurance
+-- Admin — Workout Legs
+('a0000000-0000-0000-0000-000000000001','workout',
+ '{"type":"workout","tonnage":8820,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '2026-01-06T07:30:00Z'),
+
+-- Atlas — Workout Legs
+('a0000000-0000-0000-0000-000000000002','workout',
+ '{"type":"workout","tonnage":11955,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32},{"name":"Presse à cuisses","sets":4,"reps":48},{"name":"Fentes","sets":3,"reps":30}]}',
+ '2026-01-08T18:00:00Z'),
+
+-- Spartacus — Run 10km tempo
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":10,"duration":2700,"pace":4.5,"run_type":"tempo","feedback":"difficile"}',
+ '2026-01-11T07:00:00Z'),
+
+-- Admin — Run 12km (neige)
 ('a0000000-0000-0000-0000-000000000001','run',
- '{"distance":18,"duration":5760,"pace":"5:20","run_type":"endurance","feedback":"facile"}',
- '2026-03-05T07:00:00Z'),
+ '{"type":"run","distance":12,"duration":3840,"pace":5.2,"run_type":"endurance","feedback":"difficile"}',
+ '2026-01-12T07:00:00Z'),
 
--- Atlas — Run 4km récup
-('a0000000-0000-0000-0000-000000000002','run',
- '{"distance":4,"duration":1320,"pace":"5:30","run_type":"endurance","feedback":"facile"}',
- '2026-03-05T09:00:00Z')
+-- Spartacus — Workout
+('a0000000-0000-0000-0000-000000000003','workout',
+ '{"type":"workout","tonnage":5096,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":30},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '2026-01-14T19:00:00Z'),
+
+-- Titan — Workout Pull
+('a0000000-0000-0000-0000-000000000005','workout',
+ '{"type":"workout","tonnage":5830,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '2026-01-15T17:00:00Z'),
+
+-- Spartacus — Run 25km sortie longue
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":25,"duration":7200,"pace":4.8,"run_type":"endurance","feedback":"difficile"}',
+ '2026-01-18T06:30:00Z'),
+
+-- Rookie — Workout (début)
+('a0000000-0000-0000-0000-000000000006','workout',
+ '{"type":"workout","tonnage":2480,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24},{"name":"Squat","sets":3,"reps":24},{"name":"Développé militaire","sets":3,"reps":18}]}',
+ '2026-01-20T20:00:00Z'),
+
+-- Valkyrie — Workout
+('a0000000-0000-0000-0000-000000000004','workout',
+ '{"type":"workout","tonnage":4228,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30},{"name":"Squat","sets":3,"reps":24},{"name":"Rowing barre","sets":3,"reps":24}]}',
+ '2026-01-20T12:00:00Z'),
+
+-- Valkyrie — Run 10km (objectif atteint !)
+('a0000000-0000-0000-0000-000000000004','run',
+ '{"type":"run","distance":10,"duration":3150,"pace":5.25,"run_type":"endurance","feedback":"facile"}',
+ '2026-01-25T09:00:00Z'),
+
+-- Valkyrie — goal_completed
+('a0000000-0000-0000-0000-000000000004','goal_completed',
+ '{"goal_title":"Courir 10 km sans s''arrêter","goal_type":"performance"}',
+ '2026-01-25T09:30:00Z'),
+
+-- Spartacus — Run 8km fractionné
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":8,"duration":2160,"pace":4.5,"run_type":"fractionne","feedback":"difficile"}',
+ '2026-01-25T07:00:00Z'),
+
+-- ── DÉCEMBRE 2025 ────────────────────────────────────────────
+
+-- Atlas — Workout Push
+('a0000000-0000-0000-0000-000000000002','workout',
+ '{"type":"workout","tonnage":6848,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '2025-12-01T18:00:00Z'),
+
+-- Atlas — Workout Pull
+('a0000000-0000-0000-0000-000000000002','workout',
+ '{"type":"workout","tonnage":8800,"sets_count":11,"feedback":"difficile","exercises":[{"name":"Soulevé de terre","sets":4,"reps":20},{"name":"Rowing barre","sets":4,"reps":32},{"name":"Tirage vertical","sets":3,"reps":30}]}',
+ '2025-12-03T18:00:00Z'),
+
+-- Spartacus — Run 10km tempo
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":10,"duration":2640,"pace":4.4,"run_type":"tempo","feedback":"difficile"}',
+ '2025-12-05T06:30:00Z'),
+
+-- Admin — Workout Push
+('a0000000-0000-0000-0000-000000000001','workout',
+ '{"type":"workout","tonnage":5016,"sets_count":10,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":4,"reps":40},{"name":"Développé incliné","sets":3,"reps":30},{"name":"Développé militaire","sets":3,"reps":24}]}',
+ '2025-12-02T07:30:00Z'),
+
+-- Spartacus — Run semi-marathon
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":21.097,"duration":5820,"pace":4.62,"run_type":"endurance","feedback":"difficile"}',
+ '2025-12-10T06:00:00Z'),
+
+-- Spartacus — Run 12km endurance
+('a0000000-0000-0000-0000-000000000003','run',
+ '{"type":"run","distance":12,"duration":3360,"pace":4.67,"run_type":"endurance","feedback":"facile"}',
+ '2025-12-17T06:00:00Z'),
+
+-- Admin — Run 5km tempo (fin d''année)
+('a0000000-0000-0000-0000-000000000001','run',
+ '{"type":"run","distance":5,"duration":1440,"pace":4.8,"run_type":"tempo","feedback":"difficile"}',
+ '2025-12-28T08:00:00Z')
 
 ON CONFLICT DO NOTHING;
 

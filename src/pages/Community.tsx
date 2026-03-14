@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Plus, Zap, Target, Trophy, Calendar, Heart, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
@@ -312,6 +312,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const [sendingComment, setSendingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { profile } = useAuth();
 
   const username = item.user?.username ?? 'Inconnu';
   const level = item.user?.global_level ?? 1;
@@ -319,6 +320,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const likes = item.likes ?? [];
   const comments = item.comments ?? [];
   const hasLiked = currentUserId ? likes.some(l => l.user_id === currentUserId) : false;
+  const myInitials = profile?.username ? profile.username.slice(0, 2).toUpperCase() : '?';
 
   async function handleSendComment() {
     if (!commentText.trim() || !currentUserId) return;
@@ -361,6 +363,9 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: (c as any).name ? (c as any).name.toUpperCase() : 'SÉANCE MUSCU',
         borderColor: 'border-l-red-800/70',
         labelColor: 'text-red-400',
+        bgGradient: 'bg-gradient-to-br from-red-950/30 via-[#111] to-[#111]',
+        bannerBg: 'bg-red-900/50 border-y border-red-700/50',
+        icon: '🏋️',
         stats: `${c.tonnage.toLocaleString('fr-FR')} kg · ${c.sets_count} sér.`,
         feedback: c.feedback ?? null,
       };
@@ -368,13 +373,29 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: (c as any).name ? (c as any).name.toUpperCase() : 'COURSE',
         borderColor: 'border-l-blue-800/70',
         labelColor: 'text-blue-500',
+        bgGradient: 'bg-gradient-to-br from-blue-950/30 via-[#111] to-[#111]',
+        bannerBg: 'bg-blue-900/50 border-y border-blue-700/50',
+        icon: '🏃',
         stats: `${formatDistance(c.distance)} · ${formatDuration(c.duration)}`,
         feedback: (c as any).feedback ?? null,
+      };
+      case 'calisthenics': return {
+        label: 'CALISTHÉNIE',
+        borderColor: 'border-l-violet-800/70',
+        labelColor: 'text-violet-400',
+        bgGradient: 'bg-gradient-to-br from-violet-950/30 via-[#111] to-[#111]',
+        bannerBg: 'bg-violet-900/50 border-y border-violet-700/50',
+        icon: '⚡',
+        stats: `${c.exercises_count} exercices · ${c.total_reps} reps`,
+        feedback: c.feedback ?? null,
       };
       case 'badge': return {
         label: 'BADGE DÉBLOQUÉ',
         borderColor: 'border-l-yellow-700/70',
         labelColor: 'text-yellow-500',
+        bgGradient: 'bg-gradient-to-br from-yellow-950/25 via-[#111] to-[#111]',
+        bannerBg: 'bg-yellow-900/40 border-y border-yellow-700/40',
+        icon: '🏅',
         stats: c.badge_name,
         feedback: null,
       };
@@ -382,6 +403,9 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: `NIVEAU ${c.level} ATTEINT`,
         borderColor: 'border-l-[#c9a870]/60',
         labelColor: 'text-[#c9a870]',
+        bgGradient: 'bg-gradient-to-br from-[#c9a870]/10 via-[#111] to-[#111]',
+        bannerBg: 'bg-[#c9a870]/20 border-y border-[#c9a870]/40',
+        icon: '⚡',
         stats: null,
         subLabel: `Statut débloqué : ${getStatusTitle(c.level)}`,
         subLabelColor: 'text-[#c9a870]',
@@ -391,6 +415,9 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: 'NOUVEAU RECORD',
         borderColor: 'border-l-orange-800/70',
         labelColor: 'text-orange-600',
+        bgGradient: 'bg-gradient-to-br from-orange-950/30 via-[#111] to-[#111]',
+        bannerBg: 'bg-orange-900/50 border-y border-orange-700/50',
+        icon: '🏆',
         stats: c.discipline,
         feedback: null,
       };
@@ -398,6 +425,9 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         label: 'DÉFI COMPLÉTÉ',
         borderColor: 'border-l-pink-800/70',
         labelColor: 'text-pink-600',
+        bgGradient: 'bg-gradient-to-br from-pink-950/25 via-[#111] to-[#111]',
+        bannerBg: 'bg-pink-900/40 border-y border-pink-700/40',
+        icon: '🎯',
         stats: c.challenge_title,
         feedback: null,
       };
@@ -407,86 +437,223 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
 
   if (!typeConfig) return null;
 
+  const c_content = item.content as any;
+  const isMonster = (c_content.tonnage != null && c_content.tonnage > 10000)
+    || (c_content.distance != null && c_content.distance > 20)
+    || item.type === 'record';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`border border-white/5 border-l-2 ${typeConfig.borderColor} bg-[#111111] p-4 space-y-3`}
+      className={`relative border border-white/5 ${typeConfig.bgGradient} flex overflow-hidden`}
     >
-      {/* Header : avatar + nom + niveau + temps */}
-      <div className="flex items-center gap-3">
-        <Link to={`/profil/${item.user_id}`} className="flex-shrink-0 w-8 h-8 border border-[#c9a870]/30 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-[#c9a870]/70 transition-colors">
+      {/* Bandeau vertical gauche */}
+      <div className={`flex-shrink-0 w-8 flex items-center justify-center ${(typeConfig as any).bannerBg ?? 'bg-[#1a1a1a]'}`}>
+        <span
+          className="font-rajdhani font-black text-[11px] uppercase tracking-widest text-white whitespace-nowrap select-none"
+          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+        >
+          {typeConfig.label}
+        </span>
+      </div>
+
+      {/* Contenu principal */}
+      <div className="flex-1 p-4 space-y-3 min-w-0">
+
+      {/* Badge MONSTRE */}
+      {isMonster && (
+        <motion.div
+          animate={{ scale: [1, 1.06, 1] }}
+          transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+          className="absolute top-2 right-2 flex items-center gap-1 border border-[#c9a870]/60 px-1.5 py-0.5 text-[10px] font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide bg-[#111]/80"
+        >
+          🔥 MONSTRE
+        </motion.div>
+      )}
+
+      {/* Header : une seule ligne — avatar + nom + niveau + temps + feedback + voir */}
+      <div className="flex items-center gap-2">
+        <Link to={`/profil/${item.user_id}`} className="flex-shrink-0 w-7 h-7 border border-[#c9a870]/30 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-[#c9a870]/70 transition-colors">
           {item.user?.avatar_url ? (
             <img src={item.user.avatar_url} alt={username} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-xs font-bold font-rajdhani text-[#c9a870]">{initials}</span>
+            <span className="text-[10px] font-bold font-rajdhani text-[#c9a870]">{initials}</span>
           )}
         </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <Link to={`/profil/${item.user_id}`} className="font-rajdhani font-bold text-[#f5f5f5] tracking-wide uppercase text-sm hover:text-[#c9a870] transition-colors">{username}</Link>
-            <span className="text-xs text-[#4a4a4a]">Niv. {level}</span>
-          </div>
-          <p className="text-xs text-[#4a4a4a]">{formatRelativeTime(item.created_at)}</p>
-        </div>
-      </div>
-
-      {/* Contenu : type à gauche, stats à droite */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className={`font-rajdhani font-semibold tracking-wide text-sm ${typeConfig.labelColor}`}>
-            {typeConfig.label}
-          </p>
-          {(typeConfig as any).subLabel && (
-            <p className={`font-rajdhani font-semibold tracking-wide text-sm mt-0.5 ${(typeConfig as any).subLabelColor ?? 'text-[#a3a3a3]'}`}>
-              {(typeConfig as any).subLabel}
-            </p>
-          )}
+        <Link to={`/profil/${item.user_id}`} className="font-rajdhani font-bold text-[#f5f5f5] tracking-wide uppercase text-sm hover:text-[#c9a870] transition-colors flex-shrink-0">{username}</Link>
+        <span className="text-[10px] font-rajdhani font-bold text-[#c9a870] border border-[#c9a870]/40 px-1.5 py-0.5 leading-none flex-shrink-0">Niv. {level}</span>
+        <span className="text-xs text-[#4a4a4a]">·</span>
+        <span className="text-xs text-[#4a4a4a] flex-shrink-0">{formatRelativeTime(item.created_at)}</span>
+        <div className="flex items-center gap-2 ml-auto flex-shrink-0">
           {typeConfig.feedback && (
-            <span className="inline-block mt-1 text-xs text-[#6b6b6b] border border-white/8 px-2 py-0.5 uppercase tracking-wide font-rajdhani">
-              {typeConfig.feedback}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-          {typeConfig.stats && (
-            <span className="text-xs text-[#a3a3a3] text-right">{typeConfig.stats}</span>
+            <span className="text-[10px] text-[#6b6b6b] border border-white/8 px-1.5 py-0.5 uppercase tracking-wide font-rajdhani">{typeConfig.feedback}</span>
           )}
           {canShowDetail && (
-            <button
-              onClick={() => setShowDetail(true)}
-              className="flex items-center gap-1 text-xs text-[#6b6b6b] hover:text-[#c9a870] transition-colors font-rajdhani font-medium uppercase tracking-wide"
-            >
-              Voir les détails <ChevronRight className="w-3 h-3" />
+            <button onClick={() => setShowDetail(true)} className="flex items-center gap-0.5 text-xs text-[#6b6b6b] hover:text-[#c9a870] transition-colors font-rajdhani font-medium uppercase tracking-wide">
+              Voir <ChevronRight className="w-3 h-3" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Footer : like + commentaires */}
-      <div className="flex items-center gap-4 pt-1 border-t border-white/5">
+      {/* Contenu */}
+      <div className="space-y-1">
+        {/* Liste d'exercices (workout) */}
+        {(item.type === 'workout') && (() => {
+          const exList = (c_content.exercises ?? []) as { name: string; sets: number; reps: number }[];
+          if (exList.length === 0) {
+            return typeConfig.stats ? (
+              <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
+            ) : null;
+          }
+          return (
+            <div>
+              {exList.map((ex, i) => (
+                <div key={i} className="flex items-baseline justify-between gap-2 py-0.5">
+                  <span className="text-xs text-[#d4d4d4] font-medium truncate">{ex.name}</span>
+                  <span className="text-xs text-[#6b6b6b] flex-shrink-0 font-rajdhani">{ex.sets}×{Math.round(ex.reps / ex.sets)}</span>
+                </div>
+              ))}
+              <div className="mt-1 border-t border-white/5 pt-1 flex gap-3 text-[10px] text-[#4a4a4a] font-rajdhani">
+                <span>{c_content.tonnage?.toLocaleString('fr-FR')} kg soulevés</span>
+                <span>{c_content.sets_count} séries</span>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Stats pour les autres types (run, badge, etc.) */}
+        {item.type !== 'workout' && typeConfig.stats && (
+          <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
+        )}
+      </div>
+
+      {/* Barre de progression marathon (run uniquement) */}
+      {(c_content.type === 'run' || item.type === 'run') && c_content.distance != null && (
+        <div className="space-y-1 pt-1">
+          <div className="h-0.5 bg-blue-900 w-full relative overflow-hidden">
+            <div
+              className="h-full bg-blue-500 transition-all"
+              style={{ width: `${Math.min((c_content.distance / 42.195) * 100, 100)}%` }}
+            />
+          </div>
+          <div className="flex justify-end">
+            <span className="text-[10px] text-[#4a4a4a]">{c_content.distance} km / marathon</span>
+          </div>
+        </div>
+      )}
+
+      {/* Dernier commentaire inline */}
+      {comments.length > 0 && !showComments && (
         <button
-          onClick={() => onLike(item.id)}
-          className={`flex items-center gap-1.5 text-xs transition-colors ${
-            hasLiked ? 'text-red-400' : 'text-[#4a4a4a] hover:text-[#a3a3a3]'
-          }`}
+          onClick={() => setShowComments(true)}
+          className="w-full text-left flex items-center gap-2 py-1 hover:bg-white/3 transition-colors"
         >
-          <Heart className={`w-3.5 h-3.5 ${hasLiked ? 'fill-red-400' : ''}`} />
-          <span>{likes.length}</span>
+          <div className="flex-shrink-0 w-6 h-6 bg-slate-700/80 border border-white/10 flex items-center justify-center">
+            <span className="text-xs font-bold text-[#d4d4d4]">
+              {(comments[comments.length - 1].user?.username ?? '?').slice(0, 2).toUpperCase()}
+            </span>
+          </div>
+          <div className="min-w-0 flex-1 flex items-baseline gap-1.5">
+            <span className="text-xs font-semibold text-[#a3a3a3] flex-shrink-0">
+              {comments[comments.length - 1].user?.username ?? 'Inconnu'}
+            </span>
+            <span className="text-xs text-[#6b6b6b] truncate">
+              {comments[comments.length - 1].content.slice(0, 80)}
+            </span>
+          </div>
+          {comments.length > 1 && (
+            <span className="text-[10px] text-[#4a4a4a] flex-shrink-0">+{comments.length - 1}</span>
+          )}
         </button>
+      )}
+
+      {/* Footer : réactions + commentaires */}
+      <div className="flex items-center gap-3 pt-1 border-t border-white/5 flex-wrap">
+        {/* 4 réactions */}
+        {(() => {
+          const REACTIONS = [
+            { emoji: '🔥', label: 'Feu', bg: 'bg-red-900/40' },
+            { emoji: '💪', label: 'Force', bg: 'bg-orange-900/40' },
+            { emoji: '🫡', label: 'Respect', bg: 'bg-blue-900/40' },
+            { emoji: '😤', label: 'Motivé', bg: 'bg-purple-900/40' },
+          ];
+          const storageKey = `reaction_${item.id}_${currentUserId}`;
+          const lsGet = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
+          const lsSet = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
+          const lsRemove = (k: string) => { try { localStorage.removeItem(k); } catch {} };
+          const savedReaction = currentUserId ? (lsGet(storageKey) ?? '🔥') : '🔥';
+
+          function handleReaction(emoji: string) {
+            if (!currentUserId) return;
+            if (hasLiked && savedReaction === emoji) {
+              // Toggle off
+              lsRemove(storageKey);
+            } else if (!hasLiked) {
+              // Like + save emoji
+              lsSet(storageKey, emoji);
+            } else {
+              // Already liked, just change emoji (no API call)
+              lsSet(storageKey, emoji);
+              return;
+            }
+            onLike(item.id);
+          }
+
+          return (
+            <div className="flex items-center gap-1">
+              {REACTIONS.map(r => {
+                const isActive = hasLiked && savedReaction === r.emoji;
+                return (
+                  <button
+                    key={r.emoji}
+                    onClick={() => handleReaction(r.emoji)}
+                    className={`flex items-center gap-0.5 px-1.5 py-0.5 text-xs transition-colors rounded ${
+                      isActive ? `${r.bg} text-white` : 'text-[#4a4a4a] hover:text-[#a3a3a3]'
+                    }`}
+                    title={r.label}
+                  >
+                    <span>{r.emoji}</span>
+                  </button>
+                );
+              })}
+              <span className="text-xs text-[#4a4a4a] ml-1">{likes.length}</span>
+            </div>
+          );
+        })()}
 
         <button
           onClick={() => {
             setShowComments(prev => !prev);
             if (!showComments) setTimeout(() => inputRef.current?.focus(), 100);
           }}
-          className="flex items-center gap-1.5 text-xs text-[#4a4a4a] hover:text-[#a3a3a3] transition-colors"
+          className="flex items-center gap-1.5 text-xs text-[#4a4a4a] hover:text-[#a3a3a3] transition-colors ml-auto"
         >
           <MessageCircle className="w-3.5 h-3.5" />
           <span>{comments.length}</span>
         </button>
       </div>
+
+      {/* Quick reply bar — toujours visible quand les commentaires sont fermés */}
+      {currentUserId && !showComments && (
+        <button
+          onClick={() => { setShowComments(true); setTimeout(() => inputRef.current?.focus(), 100); }}
+          className="w-full flex items-center gap-2.5 bg-[#1a1a1a] border border-white/8 px-3 py-2 hover:border-[#c9a870]/30 transition-colors group"
+        >
+          <div className="flex-shrink-0 w-7 h-7 bg-[#252525] border border-white/10 flex items-center justify-center">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt={myInitials} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[10px] font-bold font-rajdhani text-[#c9a870]">{myInitials}</span>
+            )}
+          </div>
+          <span className="text-xs text-[#4a4a4a] group-hover:text-[#6b6b6b] transition-colors">
+            Dis quelque chose…
+          </span>
+        </button>
+      )}
 
         {/* Comments section */}
         <AnimatePresence>
@@ -548,7 +715,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                       value={commentText}
                       onChange={e => setCommentText(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="Ajouter un commentaire..."
+                      placeholder="Donne de la force à ton gars ou détruit le…"
                       className="flex-1 bg-[#1c1c1c] border border-white/8/60 rounded px-3 py-2 text-xs text-[#e5e5e5] placeholder-slate-600 focus:outline-none focus:border-[#c9a870]/40 transition-colors"
                     />
                     <button
@@ -569,6 +736,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       {showDetail && canShowDetail && (
         <SessionDetailModal item={item} onClose={() => setShowDetail(false)} />
       )}
+      </div>{/* fin contenu principal */}
     </motion.div>
   );
 }
@@ -656,6 +824,33 @@ function FeedTab({ currentUserId }: FeedTabProps) {
     }));
   }
 
+  const storyUsers = useMemo(() => {
+    const seen = new Set<string>();
+    return items
+      .filter(i => i.user && !seen.has(i.user_id) && !!seen.add(i.user_id))
+      .slice(0, 12);
+  }, [items]);
+
+  const groupedByDay = useMemo(() => {
+    const groups: { dateKey: string; label: string; items: typeof items }[] = [];
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const seen = new Map<string, number>();
+    for (const item of items) {
+      const dateKey = new Date(item.created_at).toDateString();
+      if (!seen.has(dateKey)) {
+        seen.set(dateKey, groups.length);
+        let label: string;
+        if (dateKey === today) label = 'Aujourd\'hui';
+        else if (dateKey === yesterday) label = 'Hier';
+        else label = new Date(item.created_at).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        groups.push({ dateKey, label, items: [] });
+      }
+      groups[seen.get(dateKey)!].items.push(item);
+    }
+    return groups;
+  }, [items]);
+
   if (loading) return <Loader text="Chargement du feed..." />;
 
   if (error) {
@@ -681,15 +876,59 @@ function FeedTab({ currentUserId }: FeedTabProps) {
 
   return (
     <div className="space-y-4">
-      {items.map(item => (
-        <FeedItemCard
-          key={item.id}
-          item={item}
-          currentUserId={currentUserId}
-          onLike={handleLike}
-          onCommentAdded={handleCommentAdded}
-          onCommentDeleted={handleCommentDeleted}
-        />
+      {/* Stories horizontales */}
+      {storyUsers.length > 0 && (
+        <div className="overflow-x-auto pb-1 -mx-1 px-1">
+          <div className="flex gap-3 w-max">
+            {storyUsers.map(item => {
+              const uname = item.user?.username ?? 'Inconnu';
+              const initials = uname.slice(0, 2).toUpperCase();
+              return (
+                <Link
+                  key={item.user_id}
+                  to={`/profil/${item.user_id}`}
+                  className="flex flex-col items-center gap-1 flex-shrink-0 hover:opacity-80 transition-opacity"
+                >
+                  <div className="w-10 h-10 border-2 border-[#c9a870]/50 overflow-hidden bg-[#1c1c1c] flex items-center justify-center">
+                    {item.user?.avatar_url ? (
+                      <img src={item.user.avatar_url} alt={uname} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold font-rajdhani text-[#c9a870]">{initials}</span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-[#6b6b6b] max-w-[40px] truncate text-center">{uname}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {groupedByDay.map(group => (
+        <div key={group.dateKey} className="space-y-3">
+          {/* Séparateur de date */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/8" />
+            <span className="text-xs font-rajdhani font-bold uppercase tracking-widest text-[#c9a870] border border-[#c9a870]/25 bg-[#c9a870]/5 px-3 py-1">
+              {group.label}
+            </span>
+            <div className="flex-1 h-px bg-white/8" />
+          </div>
+
+          {/* Items du jour */}
+          <div className="space-y-3">
+            {group.items.map(item => (
+              <FeedItemCard
+                key={item.id}
+                item={item}
+                currentUserId={currentUserId}
+                onLike={handleLike}
+                onCommentAdded={handleCommentAdded}
+                onCommentDeleted={handleCommentDeleted}
+              />
+            ))}
+          </div>
+        </div>
       ))}
 
       {hasMore && (

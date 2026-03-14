@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, PersonStanding, Scale, Flame, Trophy, ChevronRight, CalendarDays, Swords, Target } from 'lucide-react';
+import { Dumbbell, PersonStanding, Scale, Flame, Trophy, ChevronRight, CalendarDays, Swords, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { workoutService } from '../services/workout.service';
@@ -180,10 +180,11 @@ export function DashboardPage() {
         transition={{ delay: 0.4 }}
       >
         <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Actions rapides</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <QuickAction to="/musculation/new" icon={<Dumbbell className="w-6 h-6" />} label="Séance muscu" color="text-red-500 border-red-900/60 hover:border-red-700/70 hover:bg-red-900/10" />
           <QuickAction to="/running/new" icon={<PersonStanding className="w-6 h-6" />} label="Nouvelle course" color="text-blue-500 border-blue-900/60 hover:border-blue-700/70 hover:bg-blue-900/10" />
           <QuickAction to="/weight" icon={<Scale className="w-6 h-6" />} label="Peser" color="text-green-600 border-green-900/60 hover:border-green-700/70 hover:bg-green-900/10" />
+          <QuickAction to="/calisthenics/new" icon={<Zap className="w-6 h-6" />} label="Calisthénie" color="text-violet-400 border-violet-500/50 hover:border-violet-400/70 hover:bg-violet-900/10" />
         </div>
       </motion.div>
 

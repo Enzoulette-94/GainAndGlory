@@ -79,12 +79,12 @@ export const feedService = {
   },
 
   // Publier une séance muscu dans le feed
-  async publishWorkout(userId: string, tonnage: number, setsCount: number, feedback?: string, sessionId?: string, name?: string) {
+  async publishWorkout(userId: string, tonnage: number, setsCount: number, feedback?: string, sessionId?: string, name?: string, exercises?: { name: string; sets: number; reps: number }[]) {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,
         type: 'workout',
-        content: { type: 'workout', tonnage, sets_count: setsCount, feedback, session_id: sessionId, name },
+        content: { type: 'workout', tonnage, sets_count: setsCount, feedback, session_id: sessionId, name, exercises },
       });
     } catch { /* ignore */ }
   },
@@ -96,6 +96,17 @@ export const feedService = {
         user_id: userId,
         type: 'run',
         content: { type: 'run', distance, duration, pace, run_type: runType, session_id: sessionId, name, feedback },
+      });
+    } catch { /* ignore */ }
+  },
+
+  // Publier une séance calisthénie dans le feed
+  async publishCalisthenics(userId: string, exercisesCount: number, totalReps: number, feedback?: string, sessionId?: string, name?: string, skillsUnlocked?: string[]) {
+    try {
+      await db.from('activity_feed').insert({
+        user_id: userId,
+        type: 'calisthenics',
+        content: { type: 'calisthenics', exercises_count: exercisesCount, total_reps: totalReps, feedback, session_id: sessionId, name, skills_unlocked: skillsUnlocked },
       });
     } catch { /* ignore */ }
   },

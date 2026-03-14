@@ -4,10 +4,9 @@ import {
   Dumbbell,
   Plus,
   Trash2,
-  ChevronDown,
-  ChevronUp,
-  Search,
   X,
+  Pencil,
+  ChevronLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,9 +16,9 @@ import { feedService } from '../services/feed.service';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
 import { Card } from '../components/common/Card';
-import { Loader } from '../components/common/Loader';
+import { Modal } from '../components/common/Modal';
 import { calcTonnage, formatNumber } from '../utils/calculations';
-import { FEEDBACK_LABELS, MUSCLE_GROUP_LABELS, XP_REWARDS } from '../utils/constants';
+import { FEEDBACK_LABELS, MUSCLE_GROUP_LABELS, MUSCLE_GROUP_DISPLAY, XP_REWARDS } from '../utils/constants';
 import type { Exercise } from '../types/models';
 import type { Feedback } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
@@ -33,9 +32,8 @@ interface SetRow {
 interface ExerciseBlock {
   id: string;
   exercise: Exercise | null;
+  customName: string;
   sets: SetRow[];
-  searchQuery: string;
-  showDropdown: boolean;
 }
 
 function defaultSet(): SetRow {
@@ -46,9 +44,8 @@ function defaultExerciseBlock(): ExerciseBlock {
   return {
     id: Math.random().toString(36).slice(2),
     exercise: null,
+    customName: '',
     sets: [defaultSet()],
-    searchQuery: '',
-    showDropdown: false,
   };
 }
 
@@ -72,6 +69,14 @@ export function MuscuSessionPage() {
 
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(true);
+
+  // Picker modal state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
+  const [pickerStep, setPickerStep] = useState<'group' | 'exercises'>('group');
+  const [pickerGroup, setPickerGroup] = useState<string | null>(null);
+  const [customNameInput, setCustomNameInput] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
 
   useEffect(() => {
     workoutService
@@ -99,7 +104,35 @@ export function MuscuSessionPage() {
   }
 
   function addExercise() {
-    setExercises(prev => [...prev, defaultExerciseBlock()]);
+    const block = defaultExerciseBlock();
+    setExercises(prev => [...prev, block]);
+    openPicker(block.id);
+  }
+
+  // --- Picker modal helpers ---
+  function openPicker(targetId: string) {
+    setPickerTargetId(targetId);
+    setPickerStep('group');
+    setPickerGroup(null);
+    setCustomNameInput('');
+    setShowCustomInput(false);
+    setPickerOpen(true);
+  }
+
+  function closePicker() {
+    setPickerOpen(false);
+    setPickerTargetId(null);
+  }
+
+  function selectExercise(targetId: string, exercise: Exercise) {
+    updateExercise(targetId, { exercise, customName: '' });
+    closePicker();
+  }
+
+  function selectCustom(targetId: string, name: string) {
+    if (!name.trim()) return;
+    updateExercise(targetId, { exercise: null, customName: name.trim() });
+    closePicker();
   }
 
   // --- Helpers séries ---
@@ -133,46 +166,28 @@ export function MuscuSessionPage() {
     );
   }
 
-  // --- Autocomplete ---
-  function getFilteredExercises(query: string): Exercise[] {
-    if (!query.trim()) return allExercises.slice(0, 8);
-    const q = query.toLowerCase();
-    return allExercises
-      .filter(e =>
-        e.name.toLowerCase().includes(q) ||
-        MUSCLE_GROUP_LABELS[e.muscle_group]?.toLowerCase().includes(q)
-      )
-      .slice(0, 8);
-  }
-
-  function selectExercise(exId: string, exercise: Exercise) {
-    updateExercise(exId, {
-      exercise,
-      searchQuery: exercise.name,
-      showDropdown: false,
-    });
-  }
-
   // --- Soumission ---
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!profile) return;
 
-    const validExercises = exercises.filter(ex => ex.exercise !== null);
+    const validExercises = exercises.filter(ex => ex.exercise !== null || ex.customName.trim() !== '');
     if (validExercises.length === 0) {
-      setError('Ajoute au moins un exercice avec son exercice sélectionné.');
+      setError('Ajoute au moins un exercice.');
       return;
     }
 
-    const sets = validExercises.flatMap((ex, _exIdx) =>
-      ex.sets.map((s, setIdx) => ({
-        exercise_id: ex.exercise!.id,
-        set_number: setIdx + 1,
-        reps: s.reps,
-        weight: s.weight,
-        rest_time: s.rest_time ?? undefined,
-      }))
-    );
+    const sets = validExercises
+      .filter(ex => ex.exercise !== null)
+      .flatMap((ex, _exIdx) =>
+        ex.sets.map((s, setIdx) => ({
+          exercise_id: ex.exercise!.id,
+          set_number: setIdx + 1,
+          reps: s.reps,
+          weight: s.weight,
+          rest_time: s.rest_time ?? undefined,
+        }))
+      );
 
     setSaving(true);
     setError(null);
@@ -184,10 +199,18 @@ export function MuscuSessionPage() {
         name: sessionName.trim() || undefined,
         feedback: feedback || undefined,
         notes: notes.trim() || undefined,
-        sets,
+        sets: sets.length > 0 ? sets : validExercises.flatMap((ex, _exIdx) =>
+          ex.sets.map((s, setIdx) => ({
+            exercise_id: ex.exercise?.id ?? '',
+            set_number: setIdx + 1,
+            reps: s.reps,
+            weight: s.weight,
+            rest_time: s.rest_time ?? undefined,
+          }))
+        ),
       });
 
-      // Auto-détection des records par exercice (max poids)
+      // Auto-détection des records par exercice (max poids) — skippé pour les "Autre"
       for (const ex of validExercises) {
         if (!ex.exercise) continue;
         const maxWeight = Math.max(...ex.sets.map(s => s.weight || 0));
@@ -201,6 +224,14 @@ export function MuscuSessionPage() {
       await xpService.awardXP(profile.id, 'WORKOUT_SESSION', 'musculation');
       await refreshProfile();
 
+      const exercisesSummary = validExercises
+        .filter(ex => ex.exercise !== null)
+        .map(ex => ({
+          name: ex.exercise!.name,
+          sets: ex.sets.length,
+          reps: ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0),
+        }));
+
       await feedService.publishWorkout(
         profile.id,
         totalTonnage,
@@ -208,6 +239,7 @@ export function MuscuSessionPage() {
         feedback || undefined,
         session.id,
         sessionName.trim() || undefined,
+        exercisesSummary,
       );
 
       navigate('/musculation');
@@ -218,6 +250,10 @@ export function MuscuSessionPage() {
   }
 
   if (!profile) return null;
+
+  const groupExercises = pickerGroup
+    ? allExercises.filter(e => e.muscle_group === pickerGroup)
+    : [];
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -286,95 +322,55 @@ export function MuscuSessionPage() {
                 transition={{ duration: 0.2 }}
               >
                 <Card className="p-4 space-y-4">
-                  {/* Sélecteur exercice */}
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1 relative">
+                  {/* En-tête bloc exercice */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
                       <label className="text-sm font-medium text-[#d4d4d4] mb-1 block">
                         Exercice {exIdx + 1}
                       </label>
-                      <div className="relative">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a3a3a3]">
-                          <Search className="w-4 h-4" />
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="Rechercher un exercice..."
-                          value={ex.searchQuery}
-                          onChange={e => {
-                            updateExercise(ex.id, {
-                              searchQuery: e.target.value,
-                              showDropdown: true,
-                              exercise: e.target.value !== ex.exercise?.name ? null : ex.exercise,
-                            });
-                          }}
-                          onFocus={() =>
-                            updateExercise(ex.id, { showDropdown: true })
-                          }
-                          className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded pl-10 pr-4 py-2.5 text-sm text-[#f5f5f5] placeholder-slate-500 outline-none transition-all focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                        />
-                        {ex.exercise && (
+                      {ex.exercise || ex.customName ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-white">
+                            {ex.exercise ? ex.exercise.name : ex.customName}
+                          </span>
+                          {ex.exercise && (
+                            <span className="text-xs px-2 py-0.5 bg-transparent border border-red-800/40 text-red-300 rounded-lg">
+                              {MUSCLE_GROUP_LABELS[ex.exercise.muscle_group]}
+                            </span>
+                          )}
+                          {!ex.exercise && (
+                            <span className="text-xs px-2 py-0.5 bg-transparent border border-white/10 text-[#6b6b6b] rounded-lg">
+                              Autre
+                            </span>
+                          )}
                           <button
                             type="button"
-                            onClick={() =>
-                              updateExercise(ex.id, {
-                                exercise: null,
-                                searchQuery: '',
-                                showDropdown: true,
-                              })
-                            }
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a3a3a3] hover:text-[#e5e5e5]"
+                            onClick={() => openPicker(ex.id)}
+                            className="p-1 rounded text-[#6b6b6b] hover:text-[#e5e5e5] transition-colors"
+                            title="Changer l'exercice"
                           >
-                            <X className="w-4 h-4" />
+                            <Pencil className="w-3.5 h-3.5" />
                           </button>
-                        )}
-                      </div>
-
-                      {/* Dropdown */}
-                      {ex.showDropdown && !ex.exercise && (
-                        <div className="absolute z-20 w-full mt-1 bg-[#1c1c1c] border border-white/8 rounded shadow-xl overflow-hidden">
-                          {getFilteredExercises(ex.searchQuery).length === 0 ? (
-                            <p className="px-4 py-3 text-sm text-[#a3a3a3]">
-                              Aucun résultat
-                            </p>
-                          ) : (
-                            getFilteredExercises(ex.searchQuery).map(exercise => (
-                              <button
-                                key={exercise.id}
-                                type="button"
-                                onMouseDown={() => selectExercise(ex.id, exercise)}
-                                className="w-full px-4 py-2.5 text-left hover:bg-slate-700 transition-colors flex items-center justify-between group"
-                              >
-                                <span className="text-sm text-[#e5e5e5] group-hover:text-white">
-                                  {exercise.name}
-                                </span>
-                                <span className="text-xs text-[#6b6b6b]">
-                                  {MUSCLE_GROUP_LABELS[exercise.muscle_group]}
-                                </span>
-                              </button>
-                            ))
-                          )}
                         </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openPicker(ex.id)}
+                          className="w-full text-left px-3 py-2.5 bg-[#1c1c1c] border border-dashed border-white/15 rounded text-sm text-[#6b6b6b] hover:border-red-500/50 hover:text-[#a3a3a3] transition-all"
+                        >
+                          Sélectionner un exercice...
+                        </button>
                       )}
                     </div>
-
                     <button
                       type="button"
                       onClick={() => removeExercise(ex.id)}
-                      className="mt-7 p-2 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-transparent transition-all"
+                      className="mt-6 p-2 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-transparent transition-all"
                       title="Supprimer l'exercice"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-
-                  {/* Tag groupe musculaire */}
-                  {ex.exercise && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2.5 py-1 bg-transparent border border-red-800/40 text-red-300 rounded-lg">
-                        {MUSCLE_GROUP_LABELS[ex.exercise.muscle_group]}
-                      </span>
-                    </div>
-                  )}
 
                   {/* Tableau des séries */}
                   <div className="space-y-2">
@@ -575,6 +571,143 @@ export function MuscuSessionPage() {
           </Button>
         </motion.div>
       </form>
+
+      {/* Exercise Picker Modal */}
+      <Modal
+        isOpen={pickerOpen}
+        onClose={closePicker}
+        title={pickerStep === 'group' ? 'Groupe musculaire' : 'Choisir un exercice'}
+        size="md"
+      >
+        <div className="p-4 space-y-3">
+          {pickerStep === 'group' && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                {MUSCLE_GROUP_DISPLAY.map(group => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => {
+                      setPickerGroup(group.id);
+                      setPickerStep('exercises');
+                      setShowCustomInput(false);
+                      setCustomNameInput('');
+                    }}
+                    className="flex items-center gap-3 p-3 bg-[#1c1c1c] border border-white/8 rounded hover:border-red-500/50 hover:bg-[#242424] transition-all text-left"
+                  >
+                    <span className="text-sm font-medium text-[#d4d4d4]">{group.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="pt-2 border-t border-white/8">
+                {showCustomInput ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Nom de l'exercice..."
+                      value={customNameInput}
+                      onChange={e => setCustomNameInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && pickerTargetId) {
+                          e.preventDefault();
+                          selectCustom(pickerTargetId, customNameInput);
+                        }
+                      }}
+                      className="flex-1 bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-sm text-[#f5f5f5] placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => pickerTargetId && selectCustom(pickerTargetId, customNameInput)}
+                    >
+                      Valider
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomInput(true)}
+                    className="w-full flex items-center gap-2 p-3 text-sm text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Autre (saisie libre, sans suivi de PR)
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {pickerStep === 'exercises' && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setPickerStep('group');
+                  setShowCustomInput(false);
+                  setCustomNameInput('');
+                }}
+                className="flex items-center gap-1.5 text-sm text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors mb-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Retour
+              </button>
+              <div className="space-y-1">
+                {groupExercises.length === 0 ? (
+                  <p className="text-sm text-[#6b6b6b] py-4 text-center">Aucun exercice dans ce groupe</p>
+                ) : (
+                  groupExercises.map(exercise => (
+                    <button
+                      key={exercise.id}
+                      type="button"
+                      onClick={() => pickerTargetId && selectExercise(pickerTargetId, exercise)}
+                      className="w-full text-left px-3 py-2.5 rounded hover:bg-[#242424] text-sm text-[#d4d4d4] hover:text-white transition-colors"
+                    >
+                      {exercise.name}
+                    </button>
+                  ))
+                )}
+              </div>
+              <div className="pt-2 border-t border-white/8">
+                {showCustomInput ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Nom de l'exercice..."
+                      value={customNameInput}
+                      onChange={e => setCustomNameInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && pickerTargetId) {
+                          e.preventDefault();
+                          selectCustom(pickerTargetId, customNameInput);
+                        }
+                      }}
+                      className="flex-1 bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-sm text-[#f5f5f5] placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => pickerTargetId && selectCustom(pickerTargetId, customNameInput)}
+                    >
+                      Valider
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomInput(true)}
+                    className="w-full flex items-center gap-2 p-3 text-sm text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Autre (saisie libre, sans suivi de PR)
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

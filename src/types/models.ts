@@ -31,6 +31,8 @@ export interface Profile {
   musculation_level: number;
   running_xp: number;
   running_level: number;
+  calisthenics_xp: number;
+  calisthenics_level: number;
   current_streak: number;
   longest_streak: number;
   last_activity_date: string | null;
@@ -120,6 +122,37 @@ export interface WeightEntry {
   created_at: string;
 }
 
+export interface CaliSet {
+  reps: number | null;
+  hold_seconds: number | null;
+}
+
+export interface CaliExercise {
+  name: string;
+  set_type: 'reps' | 'timed';
+  sets: CaliSet[];
+}
+
+export interface CalisthenicsSession {
+  id: string;
+  user_id: string;
+  date: string;
+  name: string | null;
+  feedback: Feedback | null;
+  notes: string | null;
+  exercises: CaliExercise[];
+  skills_unlocked: string[];
+  total_reps: number;
+  created_at: string;
+}
+
+export interface ProfileSkill {
+  id: string;
+  user_id: string;
+  skill_code: string;
+  unlocked_at: string;
+}
+
 export interface PersonalGoal {
   id: string;
   user_id: string;
@@ -193,7 +226,7 @@ export interface ProfileRecord {
   title: string;
   value: string;
   unit: string;
-  category: 'musculation' | 'course';
+  category: 'musculation' | 'course' | 'calisthenics';
   created_at: string;
 }
 
@@ -260,11 +293,12 @@ export interface NotificationPreferences {
 // ============================================================
 
 export type ActivityContent =
-  | { type: 'workout'; tonnage: number; sets_count: number; feedback?: string }
+  | { type: 'workout'; tonnage: number; sets_count: number; feedback?: string; exercises?: { name: string; sets: number; reps: number }[] }
   | { type: 'run'; distance: number; duration: number; pace: number; run_type?: string }
+  | { type: 'calisthenics'; exercises_count: number; total_reps: number; feedback?: string; skills_unlocked?: string[]; name?: string }
   | { type: 'record'; discipline: string; exercise?: string; distance?: number; old_value: number; new_value: number; unit: string }
   | { type: 'badge'; badge_code: string; badge_name: string; badge_rarity: BadgeRarity }
-  | { type: 'level_up'; level: number; discipline: 'global' | 'musculation' | 'running'; title: string }
+  | { type: 'level_up'; level: number; discipline: 'global' | 'musculation' | 'running' | 'calisthenics'; title: string }
   | { type: 'challenge_completed'; challenge_title: string; contribution: number; unit: string };
 
 export type NotificationContent =
