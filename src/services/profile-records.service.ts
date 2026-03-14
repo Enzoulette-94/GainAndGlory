@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase-client';
+import { DEFAULT_EXERCISES } from '../utils/constants';
 import type { ProfileRecord } from '../types/models';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,5 +85,24 @@ export const profileRecordsService = {
       .delete()
       .eq('id', id);
     if (error) throw error;
+  },
+
+  // Supprime les records muscu dont le titre n'est pas dans DEFAULT_EXERCISES
+  async deleteOrphanedMuscuRecords(userId: string): Promise<void> {
+    const knownNames = new Set(DEFAULT_EXERCISES.map(e => e.name));
+
+    const { data } = await db
+      .from('profile_records')
+      .select('id, title')
+      .eq('user_id', userId)
+      .eq('category', 'musculation');
+
+    const orphanIds: string[] = (data ?? [])
+      .filter((r: { id: string; title: string }) => !knownNames.has(r.title))
+      .map((r: { id: string }) => r.id);
+
+    if (orphanIds.length === 0) return;
+
+    await db.from('profile_records').delete().in('id', orphanIds);
   },
 };

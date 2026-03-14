@@ -115,6 +115,9 @@ export function ProfilePage() {
 
   const loadData = useCallback(async (userId: string) => {
     try {
+      // Nettoyage silencieux des records muscu orphelins (exercices hors liste)
+      await profileRecordsService.deleteOrphanedMuscuRecords?.(userId).catch(() => {});
+
       const [muscuCount, runCount, totalDistance, userBadges, userRecords] = await Promise.all([
         workoutService.getSessionsCount(userId),
         runningService.getSessionsCount(userId),
@@ -485,8 +488,8 @@ export function ProfilePage() {
                       <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
                       <span className="text-[#6b6b6b] text-xs">•</span>
                       <span className="text-sm font-bold text-blue-400">
-                        {!r.value.includes(':') && !isNaN(parseFloat(r.value))
-                          ? formatDuration(parseFloat(r.value), true)
+                        {!String(r.value).includes(':') && !isNaN(parseFloat(String(r.value)))
+                          ? formatDuration(parseFloat(String(r.value)), true)
                           : r.value}
                       </span>
                       <span className="text-xs text-[#6b6b6b]">temps</span>

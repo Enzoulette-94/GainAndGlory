@@ -45,6 +45,7 @@ vi.mock('../../services/profile-records.service', () => ({
     createRecord: vi.fn().mockResolvedValue({ id: 'r-3', user_id: 'user-1', title: 'Bench', value: '100', unit: 'kg', category: 'musculation', created_at: '2025-01-03T00:00:00Z' }),
     updateRecord: vi.fn().mockResolvedValue(mockRecords[0]),
     deleteRecord: vi.fn().mockResolvedValue(undefined),
+    deleteOrphanedMuscuRecords: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
