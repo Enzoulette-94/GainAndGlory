@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp } from 'lucide-react';
+import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
@@ -14,6 +14,7 @@ import { ProgressBar } from '../components/common/ProgressBar';
 import { Loader } from '../components/common/Loader';
 import { formatDate, formatRelativeTime, formatDistance, formatDuration, formatPace, getStatusTitle } from '../utils/calculations';
 import { feedService } from '../services/feed.service';
+import { savedSessionsService } from '../services/saved-sessions.service';
 import type { ActivityFeedItem, ActivityComment } from '../types/models';
 
 // ─────────────────────────────────────────────
@@ -100,6 +101,9 @@ function calcTotal(challenge: CommunityChallenge): number {
 function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose: () => void }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfCustomName, setPdfCustomName] = useState('');
   const c = item.content as any;
   const isWorkout = item.type === 'workout';
 
@@ -181,15 +185,144 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
 
   const title = isWorkout ? 'Détails — Séance muscu' : 'Détails — Course';
 
+  const username = item.user?.username ?? 'Utilisateur';
+  const sessionName = data?.name ?? c.name ?? title;
+
+  async function buildPDF() {
+    const { jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const L = 15, R = 195;
+    let y = 20;
+    const nl = (n = 6) => { y += n; if (y > 275) { pdf.addPage(); y = 20; } };
+    const line = () => { pdf.setDrawColor(180, 180, 180); pdf.line(L, y, R, y); nl(5); };
+
+    // En-tête
+    pdf.setFillColor(30, 30, 30);
+    pdf.rect(0, 0, 210, 14, 'F');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(201, 168, 112);
+    pdf.text('GAIN & GLORY', L, 9);
+    pdf.setFontSize(9);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text('Séance de musculation', R, 9, { align: 'right' });
+    y = 22;
+
+    // Titre
+    const sName = pdfCustomName.trim() || data?.name || c.name || '';
+    if (sName) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(16);
+      pdf.setTextColor(20, 20, 20);
+      pdf.text(sName.toUpperCase(), L, y);
+      nl(8);
+    }
+
+    // Méta
+    const dateStr = formatDate(data?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' });
+    const fbMap: Record<string, string> = { facile: 'Facile', difficile: 'Difficile', mort: 'Épuisé' };
+    const fbLabel = fbMap[data?.feedback ?? c.feedback ?? ''] ?? '';
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(`${dateStr}   ·   ${username}`, L, y);
+    if (fbLabel) { pdf.setTextColor(160, 120, 60); pdf.text(fbLabel.toUpperCase(), R, y, { align: 'right' }); }
+    nl(4);
+    if (data?.total_tonnage) {
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(160, 120, 60);
+      pdf.text(`Tonnage total : ${data.total_tonnage.toLocaleString('fr-FR')} kg`, L, y); nl(4);
+    }
+    line();
+
+    // Exercices DB
+    if (groupedSets.length > 0) {
+      for (const group of groupedSets) {
+        pdf.setFillColor(40, 40, 40); pdf.rect(L, y - 4, R - L, 7, 'F');
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(220, 220, 220);
+        pdf.text(group.name.toUpperCase(), L + 2, y);
+        if (group.muscleGroup) {
+          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9); pdf.setTextColor(160, 160, 160);
+          pdf.text(group.muscleGroup, R - 2, y, { align: 'right' });
+        }
+        nl(7);
+        for (const s of group.sets) {
+          pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10);
+          pdf.setTextColor(100, 100, 100); pdf.text(`Série ${s.set_number}`, L + 4, y);
+          pdf.setTextColor(30, 30, 30); pdf.text(`${s.reps} reps`, 80, y);
+          pdf.setFont('helvetica', 'bold'); pdf.setTextColor(160, 120, 60); pdf.text(`${s.weight} kg`, 120, y);
+          pdf.setFont('helvetica', 'normal'); pdf.setTextColor(120, 120, 120);
+          pdf.text(`${(s.reps * s.weight).toLocaleString('fr-FR')} kg total`, 155, y); nl(6);
+        }
+        nl(2);
+      }
+    } else {
+      // Fallback JSONB
+      const exList = (c.exercises ?? []) as { name: string; sets: number; reps: number; maxWeight?: number }[];
+      for (const ex of exList) {
+        pdf.setFillColor(40, 40, 40); pdf.rect(L, y - 4, R - L, 7, 'F');
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(220, 220, 220);
+        pdf.text(ex.name.toUpperCase(), L + 2, y); nl(8);
+        const rps = ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10); pdf.setTextColor(30, 30, 30);
+        pdf.text(`${ex.sets} séries × ${rps} reps`, L + 4, y);
+        if (ex.maxWeight && ex.maxWeight > 0) {
+          pdf.setFont('helvetica', 'bold'); pdf.setTextColor(160, 120, 60);
+          pdf.text(`${ex.maxWeight} kg`, 120, y);
+        }
+        nl(7);
+      }
+    }
+
+    // Notes
+    if (data?.notes) {
+      nl(2); line();
+      pdf.setFont('helvetica', 'italic'); pdf.setFontSize(10); pdf.setTextColor(100, 100, 100);
+      for (const l of pdf.splitTextToSize(data.notes, R - L) as string[]) { pdf.text(l, L, y); nl(5); }
+    }
+
+    // Pied de page
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(150, 150, 150);
+    pdf.text('Généré par Gain & Glory', L, 290);
+    pdf.text(new Date().toLocaleDateString('fr-FR'), R, 290, { align: 'right' });
+
+    return pdf;
+  }
+
+  async function previewPDF() {
+    setExporting(true);
+    try {
+      const pdf = await buildPDF();
+      const blob = pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+      setPdfBlobUrl(url);
+    } catch (err) {
+      console.error('[PDF] erreur:', err);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function savePDF() {
+    setExporting(true);
+    try {
+      const pdf = await buildPDF();
+      const sName = pdfCustomName.trim() || data?.name || c.name || 'seance';
+      const filename = `${username}_${sName}.pdf`.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+      pdf.save(filename);
+      setPdfBlobUrl(null);
+    } catch (err) {
+      console.error('[PDF] erreur:', err);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <Modal isOpen onClose={onClose} title={title} size="md">
       <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
         {loading && <Loader text="Chargement de la séance..." />}
-        {!loading && !data && (
-          <p className="text-sm text-[#6b6b6b] text-center py-4">Détails non disponibles pour cette séance.</p>
-        )}
 
-        {/* ── MUSCU ── */}
+        {/* ── MUSCU — données complètes depuis la DB ── */}
         {!loading && data && isWorkout && (
           <>
             {data.name && (
@@ -197,7 +330,6 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
                 {data.name}
               </h3>
             )}
-            {/* Méta */}
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               {data.total_tonnage != null && (
@@ -211,7 +343,6 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
             </div>
             {data.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-[#c9a870]/30 pl-3">{data.notes}</p>}
 
-            {/* Exercices */}
             {groupedSets.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
             <div className="space-y-4">
               {groupedSets.map((group, gi) => (
@@ -236,6 +367,44 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
             </div>
           </>
         )}
+
+        {/* ── MUSCU — fallback sur le contenu JSONB du feed ── */}
+        {!loading && !data && isWorkout && (() => {
+          const exList = (c.exercises ?? []) as { name: string; sets: number; reps: number; maxWeight?: number }[];
+          const repsPerSet = (ex: { sets: number; reps: number }) => ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+          return (
+            <>
+              {c.name && (
+                <h3 className="font-rajdhani font-bold text-lg text-[#f5f5f5] tracking-wide uppercase border-b border-white/5 pb-2">
+                  {c.name}
+                </h3>
+              )}
+              <div className="flex flex-wrap gap-3 text-sm">
+                <span className="text-[#a3a3a3]">{formatDate(item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                {(() => { const fb = feedbackLabel(c.feedback); return fb ? (
+                  <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
+                ) : null; })()}
+              </div>
+              {exList.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
+              <div className="space-y-2">
+                {exList.map((ex, i) => (
+                  <div key={i} className="border border-white/5">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-white/2">
+                      <Dumbbell className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                      <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{ex.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between px-3 py-2 text-sm">
+                      <span className="text-[#d4d4d4]">{ex.sets} séries × {repsPerSet(ex)} reps</span>
+                      {ex.maxWeight != null && ex.maxWeight > 0 && (
+                        <span className="font-rajdhani font-bold text-[#c9a870]">{ex.maxWeight} kg</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {/* ── COURSE ── */}
         {!loading && data && !isWorkout && (
@@ -288,6 +457,65 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           </>
         )}
       </div>
+
+      {/* Bouton PDF — affiché uniquement pour muscu (DB ou fallback) */}
+      {!loading && isWorkout && (
+        <div className="px-5 pb-5 pt-3 border-t border-white/5 space-y-3">
+          <div>
+            <label className="block text-[10px] text-[#6b6b6b] uppercase tracking-wide font-rajdhani mb-1">Titre du PDF (optionnel)</label>
+            <input
+              type="text"
+              value={pdfCustomName}
+              onChange={e => setPdfCustomName(e.target.value)}
+              placeholder={data?.name ?? c.name ?? 'ex. Push Day — Semaine 12'}
+              className="w-full bg-[#1a1a1a] border border-white/10 text-[#f5f5f5] text-sm px-3 py-2 placeholder-[#4a4a4a] focus:outline-none focus:border-[#c9a870]/50 font-rajdhani"
+            />
+          </div>
+          <button
+            onClick={previewPDF}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-sm font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all disabled:opacity-50"
+          >
+            {exporting ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                Génération...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v13m0 0l-4-4m4 4l4-4M2 17v3a2 2 0 002 2h16a2 2 0 002-2v-3"/></svg>
+                Aperçu PDF
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Modal aperçu PDF */}
+      {pdfBlobUrl && (
+        <div className="fixed inset-0 z-[200] flex flex-col bg-black/90">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#111] border-b border-white/10 flex-shrink-0">
+            <span className="font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide text-sm">Aperçu PDF</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={savePDF}
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-1.5 bg-[#c9a870]/15 border border-[#c9a870]/50 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/25 transition-all disabled:opacity-50"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v13m0 0l-4-4m4 4l4-4M2 17v3a2 2 0 002 2h16a2 2 0 002-2v-3"/></svg>
+                Télécharger
+              </button>
+              <button
+                onClick={() => { URL.revokeObjectURL(pdfBlobUrl); setPdfBlobUrl(null); }}
+                className="text-[#6b6b6b] hover:text-[#f5f5f5] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          <iframe src={pdfBlobUrl} className="flex-1 w-full" title="Aperçu PDF" />
+        </div>
+      )}
     </Modal>
   );
 }
@@ -309,6 +537,11 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const [commentText, setCommentText] = useState('');
   const [showDetail, setShowDetail] = useState(false);
   const canShowDetail = item.type === 'workout' || item.type === 'run';
+  const canSave = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics';
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveCustomName, setSaveCustomName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [sendingComment, setSendingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -321,6 +554,30 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const comments = item.comments ?? [];
   const hasLiked = currentUserId ? likes.some(l => l.user_id === currentUserId) : false;
   const myInitials = profile?.username ? profile.username.slice(0, 2).toUpperCase() : '?';
+
+  async function handleSaveSession() {
+    if (!currentUserId || !profile) return;
+    setSaving(true);
+    try {
+      const c = item.content as any;
+      const exercises = c.exercises ?? (item.type === 'run' ? [{ distance: c.distance, duration: c.duration }] : []);
+      await savedSessionsService.saveSession({
+        userId: currentUserId,
+        sourceUserId: item.user_id,
+        sourceUsername: username,
+        type: item.type as 'workout' | 'run' | 'calisthenics',
+        customName: saveCustomName.trim() || undefined,
+        originalName: c.name ?? undefined,
+        exercises,
+      });
+      setSaved(true);
+      setShowSaveModal(false);
+    } catch {
+      // silently fail
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleSendComment() {
     if (!commentText.trim() || !currentUserId) return;
@@ -460,7 +717,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1 p-4 space-y-3 min-w-0">
+      <div className="flex-1 p-3 space-y-2 min-w-0">
 
       {/* Badge MONSTRE */}
       {isMonster && (
@@ -490,11 +747,6 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           {typeConfig.feedback && (
             <span className="text-[10px] text-[#6b6b6b] border border-white/8 px-1.5 py-0.5 uppercase tracking-wide font-rajdhani">{typeConfig.feedback}</span>
           )}
-          {canShowDetail && (
-            <button onClick={() => setShowDetail(true)} className="flex items-center gap-0.5 text-xs text-[#6b6b6b] hover:text-[#c9a870] transition-colors font-rajdhani font-medium uppercase tracking-wide">
-              Voir <ChevronRight className="w-3 h-3" />
-            </button>
-          )}
         </div>
       </div>
 
@@ -511,10 +763,10 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           const repsPerSet = (ex: { sets: number; reps: number }) =>
             ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
           return (
-            <div className="space-y-0.5">
+            <div>
               {exList.map((ex, i) => (
-                <div key={i} className="flex items-baseline gap-1.5 py-0.5 min-w-0">
-                  <span className="text-xs text-[#d4d4d4] font-medium truncate min-w-0 flex-1">{ex.name}</span>
+                <div key={i} className="flex items-baseline gap-1.5 py-0 min-w-0">
+                  <span className="text-xs text-[#d4d4d4] font-medium truncate min-w-0">{ex.name}</span>
                   <span className="text-xs text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
                     {ex.sets > 1
                       ? `${ex.sets} × ${repsPerSet(ex)} reps`
@@ -530,13 +782,37 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                   )}
                 </div>
               ))}
+              {canShowDetail && (
+                <div className="flex justify-end mt-1.5">
+                  <button
+                    onClick={() => setShowDetail(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                    Voir la séance
+                  </button>
+                </div>
+              )}
             </div>
           );
         })()}
 
         {/* Stats pour les autres types (run, badge, etc.) */}
-        {item.type !== 'workout' && typeConfig.stats && (
-          <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
+        {item.type !== 'workout' && (
+          <div className="flex items-end justify-between gap-2">
+            {typeConfig.stats && (
+              <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
+            )}
+            {canShowDetail && (
+              <button
+                onClick={() => setShowDetail(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all flex-shrink-0"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+                Voir la séance
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -634,6 +910,16 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           );
         })()}
 
+        {canSave && currentUserId && item.user_id !== currentUserId && (
+          <button
+            onClick={() => { setSaveCustomName(''); setShowSaveModal(true); }}
+            title="Enregistrer cette séance"
+            className={`flex items-center gap-1 text-xs transition-colors ${saved ? 'text-[#c9a870]' : 'text-[#4a4a4a] hover:text-[#c9a870]'}`}
+          >
+            <Bookmark className="w-3.5 h-3.5" fill={saved ? 'currentColor' : 'none'} />
+          </button>
+        )}
+
         <button
           onClick={() => {
             setShowComments(prev => !prev);
@@ -645,6 +931,49 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           <span>{comments.length}</span>
         </button>
       </div>
+
+      {/* Modal enregistrer séance */}
+      {showSaveModal && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowSaveModal(false)} />
+          <div className="relative bg-[#111] border border-white/10 w-full max-w-sm p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="font-rajdhani font-bold text-[#f5f5f5] uppercase tracking-wide text-sm">Enregistrer la séance</span>
+              <button onClick={() => setShowSaveModal(false)} className="text-[#6b6b6b] hover:text-[#f5f5f5] transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[10px] text-[#6b6b6b] uppercase tracking-wide font-rajdhani mb-1">Titre (optionnel)</label>
+              <input
+                type="text"
+                autoFocus
+                value={saveCustomName}
+                onChange={e => setSaveCustomName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSaveSession()}
+                placeholder={(item.content as any).name ?? `Séance de ${username}`}
+                className="w-full bg-[#1a1a1a] border border-white/10 text-[#f5f5f5] text-sm px-3 py-2 placeholder-[#4a4a4a] focus:outline-none focus:border-[#c9a870]/50 font-rajdhani"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveSession}
+                disabled={saving}
+                className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-sm font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 transition-all disabled:opacity-50"
+              >
+                <Bookmark className="w-3.5 h-3.5" />
+                {saving ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="px-4 py-2 border border-white/10 text-[#6b6b6b] text-sm font-rajdhani hover:bg-white/5 transition-colors"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick reply bar — toujours visible quand les commentaires sont fermés */}
       {currentUserId && !showComments && (

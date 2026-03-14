@@ -10,6 +10,7 @@ import { Input, Textarea } from '../components/common/Input';
 import { Loader } from '../components/common/Loader';
 import { CALISTHENICS_EXERCISES, CALISTHENICS_SKILLS, FEEDBACK_LABELS } from '../utils/constants';
 import { profileRecordsService } from '../services/profile-records.service';
+import { feedService } from '../services/feed.service';
 import type { CaliExercise, CaliSet, ProfileSkill } from '../types/models';
 import type { Feedback } from '../types/enums';
 
@@ -137,6 +138,17 @@ export function CalisthenicsSessionPage() {
       });
 
       await xpService.awardXP(profile.id, 'CALISTHENICS_SESSION', 'calisthenics');
+
+      const totalReps = caliExercises.reduce((sum, ex) => sum + ex.sets.reduce((s, r) => s + (r.reps ?? 0), 0), 0);
+      await feedService.publishCalisthenics(
+        profile.id,
+        caliExercises.length,
+        totalReps,
+        feedback || undefined,
+        undefined,
+        name.trim() || undefined,
+        selectedSkills,
+      );
 
       // Auto-détection des records : max reps consécutives par exercice
       for (const ex of caliExercises) {

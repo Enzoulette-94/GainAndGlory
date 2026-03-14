@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
-  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, MoreHorizontal, X, Zap,
+  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, MoreHorizontal, X, Zap, Bookmark,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,6 +14,7 @@ const navItems = [
   { path: '/running', icon: PersonStanding, label: 'Course' },
   { path: '/calisthenics', icon: Zap, label: 'Calisthénie' },
   { path: '/weight', icon: Scale, label: 'Poids' },
+  { path: '/seances', icon: Bookmark, label: 'Séances' },
   { path: '/calendar', icon: Calendar, label: 'Calendrier' },
   { path: '/goals', icon: Target, label: 'Objectifs' },
   { path: '/team-goals', icon: Swords, label: 'Objectifs équipe' },

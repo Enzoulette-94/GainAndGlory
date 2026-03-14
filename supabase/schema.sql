@@ -652,3 +652,19 @@ CREATE TABLE IF NOT EXISTS profile_skills (
 ALTER TABLE profile_skills ENABLE ROW LEVEL SECURITY;
 CREATE POLICY IF NOT EXISTS "own skills" ON profile_skills
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- ─── Séances enregistrées (bookmarks) ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS saved_sessions (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id          uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  source_user_id   uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  source_username  text,
+  type             text NOT NULL CHECK (type IN ('workout', 'run', 'calisthenics')),
+  custom_name      text,
+  original_name    text,
+  exercises        jsonb NOT NULL DEFAULT '[]',
+  saved_at         timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE saved_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own saved_sessions" ON saved_sessions
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

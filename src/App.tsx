@@ -37,6 +37,7 @@ const CalisthenicsSessionPage = lazy(() => import('./pages/CalisthenicsSession')
 const TeamGoalsPage = lazy(() => import('./pages/TeamGoals').then(m => ({ default: m.TeamGoalsPage })));
 const AdminPage = lazy(() => import('./pages/Admin').then(m => ({ default: m.AdminPage })));
 const UserProfilePage = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfilePage })));
+const SavedSessionsPage = lazy(() => import('./pages/SavedSessions').then(m => ({ default: m.SavedSessionsPage })));
 
 export default function App() {
   return (
@@ -65,6 +66,7 @@ export default function App() {
               <Route path="/calisthenics/new" element={<CalisthenicsSessionPage />} />
 
               <Route path="/weight" element={<WeightPage />} />
+              <Route path="/seances" element={<SavedSessionsPage />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/goals" element={<GoalsPage />} />
               <Route path="/community" element={<CommunityPage />} />
