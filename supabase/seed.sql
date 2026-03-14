@@ -909,6 +909,11 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
  '{"type":"workout","tonnage":9840,"sets_count":11,"feedback":"mort","exercises":[{"name":"Squat","sets":4,"reps":32,"maxWeight":150},{"name":"Presse à cuisses","sets":4,"reps":48,"maxWeight":220},{"name":"Fentes","sets":3,"reps":30,"maxWeight":70}]}',
  '2026-03-13T08:00:00Z'),
 
+-- Titan — Calisthénie (ce matin)
+('a0000000-0000-0000-0000-000000000005','calisthenics',
+ '{"type":"calisthenics","exercises_count":4,"total_reps":120,"feedback":"difficile","name":"Full body cali","skills_unlocked":[],"exercises":[{"name":"Tractions","sets":4,"reps":32,"set_type":"reps"},{"name":"Dips","sets":4,"reps":40,"set_type":"reps"},{"name":"Pompes","sets":3,"reps":30,"set_type":"reps"},{"name":"Gainage","sets":3,"reps":0,"hold_seconds":180,"set_type":"timed"}]}',
+ '2026-03-13T09:00:00Z'),
+
 -- ── HIER 12 MARS 2026 ────────────────────────────────────────
 
 -- Valkyrie — Run 8km endurance
@@ -925,6 +930,16 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 ('a0000000-0000-0000-0000-000000000006','workout',
  '{"type":"workout","tonnage":2880,"sets_count":9,"feedback":"facile","exercises":[{"name":"Développé couché","sets":3,"reps":24,"maxWeight":40},{"name":"Squat","sets":3,"reps":24,"maxWeight":50},{"name":"Rowing barre","sets":3,"reps":24,"maxWeight":30}]}',
  '2026-03-12T20:00:00Z'),
+
+-- Rookie — Calisthénie débutant
+('a0000000-0000-0000-0000-000000000006','calisthenics',
+ '{"type":"calisthenics","exercises_count":3,"total_reps":60,"feedback":"facile","name":"Intro calisthénie","skills_unlocked":[],"exercises":[{"name":"Pompes","sets":3,"reps":30,"set_type":"reps"},{"name":"Squats bulgares","sets":3,"reps":24,"set_type":"reps"},{"name":"Crunchs","sets":2,"reps":20,"set_type":"reps"}]}',
+ '2026-03-12T10:00:00Z'),
+
+-- Atlas — Calisthénie Upper body
+('a0000000-0000-0000-0000-000000000002','calisthenics',
+ '{"type":"calisthenics","exercises_count":5,"total_reps":200,"feedback":"difficile","name":"Upper body","skills_unlocked":["traction","dips"],"exercises":[{"name":"Tractions","sets":5,"reps":50,"set_type":"reps"},{"name":"Dips","sets":5,"reps":60,"set_type":"reps"},{"name":"Pompes archer","sets":4,"reps":40,"set_type":"reps"},{"name":"Muscle-up","sets":3,"reps":15,"set_type":"reps"},{"name":"Planche (hold)","sets":3,"reps":0,"hold_seconds":45,"set_type":"timed"}]}',
+ '2026-03-12T19:00:00Z'),
 
 -- ── 11 MARS 2026 ────────────────────────────────────────────
 
@@ -949,6 +964,11 @@ INSERT INTO activity_feed (user_id, type, content, created_at) VALUES
 ('a0000000-0000-0000-0000-000000000005','workout',
  '{"type":"workout","tonnage":6768,"sets_count":9,"feedback":"difficile","exercises":[{"name":"Développé couché","sets":3,"reps":30,"maxWeight":80},{"name":"Squat","sets":3,"reps":24,"maxWeight":100},{"name":"Développé militaire","sets":3,"reps":24,"maxWeight":60}]}',
  '2026-03-01T17:00:00Z'),
+
+-- Valkyrie — Calisthénie
+('a0000000-0000-0000-0000-000000000004','calisthenics',
+ '{"type":"calisthenics","exercises_count":4,"total_reps":90,"feedback":"modere","name":"Core & tractions","skills_unlocked":[],"exercises":[{"name":"Tractions","sets":3,"reps":24,"set_type":"reps"},{"name":"Pompes","sets":3,"reps":30,"set_type":"reps"},{"name":"L-sit","sets":3,"reps":0,"hold_seconds":30,"set_type":"timed"},{"name":"Relevés de jambes","sets":3,"reps":36,"set_type":"reps"}]}',
+ '2026-03-02T08:30:00Z'),
 
 -- Admin — Workout Pull
 ('a0000000-0000-0000-0000-000000000001','workout',

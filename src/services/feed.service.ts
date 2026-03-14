@@ -101,12 +101,12 @@ export const feedService = {
   },
 
   // Publier une séance calisthénie dans le feed
-  async publishCalisthenics(userId: string, exercisesCount: number, totalReps: number, feedback?: string, sessionId?: string, name?: string, skillsUnlocked?: string[]) {
+  async publishCalisthenics(userId: string, exercisesCount: number, totalReps: number, feedback?: string, sessionId?: string, name?: string, skillsUnlocked?: string[], exercises?: { name: string; sets: number; reps: number }[]) {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,
         type: 'calisthenics',
-        content: { type: 'calisthenics', exercises_count: exercisesCount, total_reps: totalReps, feedback, session_id: sessionId, name, skills_unlocked: skillsUnlocked },
+        content: { type: 'calisthenics', exercises_count: exercisesCount, total_reps: totalReps, feedback, session_id: sessionId, name, skills_unlocked: skillsUnlocked, exercises: exercises ?? [] },
       });
     } catch { /* ignore */ }
   },

@@ -140,6 +140,17 @@ export function CalisthenicsSessionPage() {
       await xpService.awardXP(profile.id, 'CALISTHENICS_SESSION', 'calisthenics');
 
       const totalReps = caliExercises.reduce((sum, ex) => sum + ex.sets.reduce((s, r) => s + (r.reps ?? 0), 0), 0);
+      const feedExercises = caliExercises.map(ex => ({
+        name: ex.name,
+        sets: ex.sets.length,
+        reps: ex.set_type === 'reps'
+          ? ex.sets.reduce((s, r) => s + (r.reps ?? 0), 0)
+          : 0,
+        hold_seconds: ex.set_type === 'timed'
+          ? ex.sets.reduce((s, r) => s + (r.hold_seconds ?? 0), 0)
+          : undefined,
+        set_type: ex.set_type,
+      }));
       await feedService.publishCalisthenics(
         profile.id,
         caliExercises.length,
@@ -148,6 +159,7 @@ export function CalisthenicsSessionPage() {
         undefined,
         name.trim() || undefined,
         selectedSkills,
+        feedExercises,
       );
 
       // Auto-détection des records : max reps consécutives par exercice

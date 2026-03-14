@@ -765,17 +765,17 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           return (
             <div>
               {exList.map((ex, i) => (
-                <div key={i} className="flex items-baseline gap-1.5 py-0 min-w-0">
-                  <span className="text-xs text-[#d4d4d4] font-medium truncate min-w-0">{ex.name}</span>
-                  <span className="text-xs text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
+                <div key={i} className="flex items-baseline gap-2 py-0 min-w-0">
+                  <span className="text-sm text-[#d4d4d4] font-medium truncate min-w-0">{ex.name}</span>
+                  <span className="text-sm text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
                     {ex.sets > 1
                       ? `${ex.sets} × ${repsPerSet(ex)} reps`
                       : `${repsPerSet(ex)} reps`}
                   </span>
                   {ex.maxWeight != null && ex.maxWeight > 0 && (
                     <>
-                      <span className="text-[#4a4a4a] text-[10px] flex-shrink-0">·</span>
-                      <span className="text-xs font-rajdhani font-bold text-[#c9a870] flex-shrink-0 whitespace-nowrap">
+                      <span className="text-[#4a4a4a] text-xs flex-shrink-0">·</span>
+                      <span className="text-sm font-rajdhani font-bold text-[#c9a870] flex-shrink-0 whitespace-nowrap">
                         {ex.maxWeight} kg
                       </span>
                     </>
@@ -783,7 +783,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                 </div>
               ))}
               {canShowDetail && (
-                <div className="flex justify-end mt-1.5">
+                <div className="flex justify-start mt-1.5">
                   <button
                     onClick={() => setShowDetail(true)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all"
@@ -797,39 +797,83 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           );
         })()}
 
-        {/* Stats pour les autres types (run, badge, etc.) */}
-        {item.type !== 'workout' && (
-          <div className="flex items-end justify-between gap-2">
+        {/* Stats run */}
+        {item.type === 'run' && (() => {
+          const r = item.content as any;
+          return (
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-5">
+                <div>
+                  <p className="text-xs text-[#4a4a4a] uppercase tracking-wide font-rajdhani">Distance</p>
+                  <p className="text-base font-rajdhani font-bold text-[#d4d4d4]">{formatDistance(r.distance)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#4a4a4a] uppercase tracking-wide font-rajdhani">Temps</p>
+                  <p className="text-base font-rajdhani font-bold text-[#d4d4d4]">{formatDuration(r.duration)}</p>
+                </div>
+                {r.pace != null && r.pace > 0 && (
+                  <div>
+                    <p className="text-xs text-[#4a4a4a] uppercase tracking-wide font-rajdhani">Allure moy.</p>
+                    <p className="text-base font-rajdhani font-bold text-blue-400">{formatPace(r.pace)}</p>
+                  </div>
+                )}
+              </div>
+              {canShowDetail && (
+                <button
+                  onClick={() => setShowDetail(true)}
+                  className="self-start flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                  Voir la séance
+                </button>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Stats calisthénie */}
+        {item.type === 'calisthenics' && (() => {
+          const c = item.content as any;
+          const exList: { name: string; sets: number; reps: number; hold_seconds?: number; set_type?: string }[] =
+            Array.isArray(c.exercises) && c.exercises.length > 0 ? c.exercises : [];
+          if (exList.length === 0) {
+            return (
+              <span className="text-sm text-[#a3a3a3]">
+                {c.exercises_count} exercice{c.exercises_count > 1 ? 's' : ''} · {c.total_reps} reps
+              </span>
+            );
+          }
+          const repsPerSet = (ex: { sets: number; reps: number }) =>
+            ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+          return (
+            <div>
+              {exList.map((ex, i) => (
+                <div key={i} className="flex items-baseline gap-2 py-0 min-w-0">
+                  <span className="text-sm text-[#d4d4d4] font-medium truncate min-w-0">{ex.name}</span>
+                  <span className="text-[#4a4a4a] text-xs flex-shrink-0">·</span>
+                  <span className="text-sm text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
+                    {ex.set_type === 'timed' && ex.hold_seconds
+                      ? `${ex.sets} × ${ex.hold_seconds / (ex.sets || 1)}s`
+                      : ex.sets > 1
+                        ? `${ex.sets} × ${repsPerSet(ex)} reps`
+                        : `${repsPerSet(ex)} reps`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* Stats autres types (badge, etc.) */}
+        {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && (
+          <div className="flex items-end gap-2">
             {typeConfig.stats && (
               <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
-            )}
-            {canShowDetail && (
-              <button
-                onClick={() => setShowDetail(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all flex-shrink-0"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-                Voir la séance
-              </button>
             )}
           </div>
         )}
       </div>
 
-      {/* Barre de progression marathon (run uniquement) */}
-      {(c_content.type === 'run' || item.type === 'run') && c_content.distance != null && (
-        <div className="space-y-1 pt-1">
-          <div className="h-0.5 bg-blue-900 w-full relative overflow-hidden">
-            <div
-              className="h-full bg-blue-500 transition-all"
-              style={{ width: `${Math.min((c_content.distance / 42.195) * 100, 100)}%` }}
-            />
-          </div>
-          <div className="flex justify-end">
-            <span className="text-[10px] text-[#4a4a4a]">{c_content.distance} km / marathon</span>
-          </div>
-        </div>
-      )}
 
       {/* Dernier commentaire inline */}
       {comments.length > 0 && !showComments && (
@@ -910,11 +954,11 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           );
         })()}
 
-        {canSave && currentUserId && item.user_id !== currentUserId && (
+        {canSave && currentUserId && (
           <button
             onClick={() => { setSaveCustomName(''); setShowSaveModal(true); }}
             title="Enregistrer cette séance"
-            className={`flex items-center gap-1 text-xs transition-colors ${saved ? 'text-[#c9a870]' : 'text-[#4a4a4a] hover:text-[#c9a870]'}`}
+            className={`flex items-center gap-1 text-xs transition-colors ${saved ? 'text-[#c9a870]' : 'text-[#6b6b6b] hover:text-[#c9a870]'}`}
           >
             <Bookmark className="w-3.5 h-3.5" fill={saved ? 'currentColor' : 'none'} />
           </button>

@@ -6,14 +6,15 @@ import type { Profile } from '../../types/models';
 
 interface XPBarProps {
   profile: Profile;
-  discipline?: 'global' | 'musculation' | 'running';
+  discipline?: 'global' | 'musculation' | 'running' | 'calisthenics';
   compact?: boolean;
 }
 
 const disciplineConfig = {
-  global: { label: 'Global', xpKey: 'total_xp', levelKey: 'global_level', color: 'from-[#8b6f47] to-[#c9a870]', textColor: 'text-[#c9a870]' },
-  musculation: { label: 'Musculation', xpKey: 'musculation_xp', levelKey: 'musculation_level', color: 'from-red-900 to-red-700', textColor: 'text-red-400' },
-  running: { label: 'Course', xpKey: 'running_xp', levelKey: 'running_level', color: 'from-blue-900 to-blue-700', textColor: 'text-blue-500' },
+  global:       { label: 'Global',      xpKey: 'total_xp',         levelKey: 'global_level',        barGradient: null,                          accentColor: null },
+  musculation:  { label: 'Musculation', xpKey: 'musculation_xp',   levelKey: 'musculation_level',   barGradient: 'linear-gradient(to right, #7f1d1d, #ef4444)', accentColor: '#f87171' },
+  running:      { label: 'Course',      xpKey: 'running_xp',       levelKey: 'running_level',       barGradient: 'linear-gradient(to right, #1e3a5f, #3b82f6)', accentColor: '#60a5fa' },
+  calisthenics: { label: 'Calisthénie', xpKey: 'calisthenics_xp',  levelKey: 'calisthenics_level',  barGradient: 'linear-gradient(to right, #3b0764, #a855f7)', accentColor: '#c084fc' },
 };
 
 export function XPBar({ profile, discipline = 'global', compact = false }: XPBarProps) {
@@ -21,7 +22,10 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
   const xp = profile[config.xpKey as keyof Profile] as number;
   const { level, current, needed, progress } = getLevelProgress(xp);
   const statusTitle = discipline === 'global' ? getStatusTitle(level) : getLevelTitle(level);
-  const statusColor = discipline === 'global' ? getStatusColor(level) : undefined;
+  const statusColor = discipline === 'global' ? getStatusColor(level) : config.accentColor;
+  const barBackground = discipline === 'global'
+    ? (statusColor ? `linear-gradient(to right, ${statusColor}99, ${statusColor})` : 'linear-gradient(to right, #8b6f47, #c9a870)')
+    : (config.barGradient ?? 'linear-gradient(to right, #8b6f47, #c9a870)');
 
   if (compact) {
     return (
@@ -75,7 +79,7 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
       <div className="h-2 bg-white/5 overflow-hidden">
         <motion.div
           className="h-full"
-          style={{ background: statusColor ? `linear-gradient(to right, ${statusColor}99, ${statusColor})` : `linear-gradient(to right, #8b6f47, #c9a870)` }}
+          style={{ background: barBackground }}
           initial={{ width: 0 }}
           animate={{ width: `${progress * 100}%` }}
           transition={{ duration: 1, ease: 'easeOut' }}

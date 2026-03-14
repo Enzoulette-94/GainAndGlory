@@ -6,8 +6,8 @@ import { runningService } from '../services/running.service';
 import { badgesService } from '../services/badges.service';
 import { profileService } from '../services/profile.service';
 import { profileRecordsService } from '../services/profile-records.service';
-import { getLevelProgress, getLevelTitle, formatDate, formatDistance, formatDuration } from '../utils/calculations';
-import { BADGE_RARITY_CONFIG } from '../utils/constants';
+import { getLevelProgress, getLevelTitle, formatDate, formatDistance, formatDuration, formatPace } from '../utils/calculations';
+import { BADGE_RARITY_CONFIG, RUNNING_RECORD_DISTANCES } from '../utils/constants';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
@@ -342,6 +342,12 @@ export function ProfilePage() {
             color="bg-blue-700"
             delay={0.24}
           />
+          <XPRow
+            label={`Calisthénie · ${profile.calisthenics_xp.toLocaleString('fr-FR')} XP total`}
+            xp={profile.calisthenics_xp}
+            color="bg-violet-700"
+            delay={0.30}
+          />
         </Card>
       </motion.div>
 
@@ -493,6 +499,19 @@ export function ProfilePage() {
                           : r.value}
                       </span>
                       <span className="text-xs text-[#6b6b6b]">temps</span>
+                      {(() => {
+                        const dist = RUNNING_RECORD_DISTANCES.find(d => d.label === r.title);
+                        if (!dist) return null;
+                        const durationSec = parseFloat(String(r.value));
+                        if (!durationSec || durationSec <= 0) return null;
+                        const pace = (durationSec / 60) / dist.km;
+                        return (
+                          <>
+                            <span className="text-[#4a4a4a] text-xs">·</span>
+                            <span className="text-sm font-bold text-blue-300">{formatPace(pace)}</span>
+                          </>
+                        );
+                      })()}
                       <div className="flex items-center gap-1 ml-auto flex-shrink-0">
                         <button onClick={() => openEditRecord(r)} className="p-1 text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors" aria-label="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
                         <button onClick={() => handleDeleteRecord(r.id)} className="p-1 text-[#6b6b6b] hover:text-red-400 transition-colors" aria-label="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
