@@ -513,20 +513,21 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           return (
             <div className="space-y-0.5">
               {exList.map((ex, i) => (
-                <div key={i} className="flex items-center gap-1.5 py-0.5">
-                  <span className="text-xs text-[#d4d4d4] font-medium truncate flex-1">{ex.name}</span>
-                  <span className="text-[#4a4a4a] text-[10px]">×</span>
-                  {ex.maxWeight != null && ex.maxWeight > 0 ? (
-                    <span className="text-xs font-rajdhani font-bold text-[#c9a870] flex-shrink-0">
-                      {ex.maxWeight} kg
-                    </span>
-                  ) : null}
-                  <span className="text-[#4a4a4a] text-[10px]">×</span>
-                  <span className="text-xs text-[#a3a3a3] flex-shrink-0 font-rajdhani">
+                <div key={i} className="flex items-baseline gap-1.5 py-0.5 min-w-0">
+                  <span className="text-xs text-[#d4d4d4] font-medium truncate min-w-0 flex-1">{ex.name}</span>
+                  <span className="text-xs text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
                     {ex.sets > 1
                       ? `${ex.sets} × ${repsPerSet(ex)} reps`
                       : `${repsPerSet(ex)} reps`}
                   </span>
+                  {ex.maxWeight != null && ex.maxWeight > 0 && (
+                    <>
+                      <span className="text-[#4a4a4a] text-[10px] flex-shrink-0">·</span>
+                      <span className="text-xs font-rajdhani font-bold text-[#c9a870] flex-shrink-0 whitespace-nowrap">
+                        {ex.maxWeight} kg
+                      </span>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
