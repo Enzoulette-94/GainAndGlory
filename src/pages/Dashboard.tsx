@@ -181,11 +181,43 @@ export function DashboardPage() {
         transition={{ delay: 0.4 }}
       >
         <h2 className="font-rajdhani text-sm font-semibold text-[#8b6f47] uppercase tracking-wider mb-3">Actions rapides</h2>
-        <div className="grid grid-cols-4 gap-3">
-          <QuickAction to="/musculation/new" icon={<Dumbbell className="w-6 h-6" />} label="Séance muscu" color="text-red-500 border-red-900/60 hover:border-red-700/70 hover:bg-red-900/10" />
-          <QuickAction to="/running/new" icon={<PersonStanding className="w-6 h-6" />} label="Nouvelle course" color="text-blue-500 border-blue-900/60 hover:border-blue-700/70 hover:bg-blue-900/10" />
-          <QuickAction to="/weight" icon={<Scale className="w-6 h-6" />} label="Peser" color="text-green-600 border-green-900/60 hover:border-green-700/70 hover:bg-green-900/10" />
-          <QuickAction to="/calisthenics/new" icon={<Zap className="w-6 h-6" />} label="Calisthénie" color="text-violet-400 border-violet-500/50 hover:border-violet-400/70 hover:bg-violet-900/10" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <QuickAction
+            to="/musculation/new"
+            label="Musculation"
+            sublabel="Nouvelle séance"
+            accentColor="text-red-400"
+            borderColor="border-red-900/50"
+            bgFrom="bg-red-950/20"
+            bgHover="hover:bg-red-900/30 hover:border-red-700/60"
+          />
+          <QuickAction
+            to="/running/new"
+            label="Course"
+            sublabel="Nouvelle sortie"
+            accentColor="text-blue-400"
+            borderColor="border-blue-900/50"
+            bgFrom="bg-blue-950/20"
+            bgHover="hover:bg-blue-900/30 hover:border-blue-700/60"
+          />
+          <QuickAction
+            to="/calisthenics/new"
+            label="Calisthénie"
+            sublabel="Nouvelle séance"
+            accentColor="text-violet-400"
+            borderColor="border-violet-900/50"
+            bgFrom="bg-violet-950/20"
+            bgHover="hover:bg-violet-900/30 hover:border-violet-700/60"
+          />
+          <QuickAction
+            to="/weight"
+            label="Pesée"
+            sublabel="Enregistrer"
+            accentColor="text-green-400"
+            borderColor="border-green-900/50"
+            bgFrom="bg-green-950/20"
+            bgHover="hover:bg-green-900/30 hover:border-green-700/60"
+          />
         </div>
       </motion.div>
 
@@ -383,16 +415,32 @@ function StatCard({ icon, value, label, color, bg }: {
   );
 }
 
-function QuickAction({ to, icon, label, color }: {
-  to: string; icon: React.ReactNode; label: string; color: string;
+function QuickAction({ to, label, sublabel, accentColor, borderColor, bgFrom, bgHover }: {
+  to: string;
+  label: string;
+  sublabel: string;
+  accentColor: string;
+  borderColor: string;
+  bgFrom: string;
+  bgHover: string;
 }) {
   return (
     <Link
       to={to}
-      className={`flex flex-col items-center gap-1 p-2 sm:p-4 bg-transparent border transition-colors text-center min-h-[44px] justify-center ${color}`}
+      className={`group relative flex flex-col justify-between p-3 sm:p-4 border ${borderColor} ${bgFrom} ${bgHover} transition-all duration-200 min-h-[80px] overflow-hidden`}
     >
-      <div>{icon}</div>
-      <span className="text-xs font-rajdhani font-semibold tracking-wide">{label}</span>
+      {/* Coin + */}
+      <span className={`absolute top-2 right-3 text-lg font-black leading-none ${accentColor} opacity-40 group-hover:opacity-80 transition-opacity`}>+</span>
+      {/* Texte principal */}
+      <span className={`font-rajdhani font-black text-base sm:text-lg uppercase tracking-wide leading-none ${accentColor}`}>
+        {label}
+      </span>
+      {/* Sous-texte */}
+      <span className="text-[10px] font-rajdhani font-semibold uppercase tracking-widest text-[#6b6b6b] group-hover:text-[#a3a3a3] transition-colors mt-1">
+        {sublabel}
+      </span>
+      {/* Barre de couleur en bas */}
+      <span className={`absolute bottom-0 left-0 w-0 h-[2px] ${accentColor.replace('text-', 'bg-')} group-hover:w-full transition-all duration-300`} />
     </Link>
   );
 }

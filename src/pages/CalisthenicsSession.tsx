@@ -26,7 +26,7 @@ interface ExerciseBlock {
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function CalisthenicsSessionPage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -138,6 +138,7 @@ export function CalisthenicsSessionPage() {
       });
 
       await xpService.awardXP(profile.id, 'CALISTHENICS_SESSION', 'calisthenics');
+      await refreshProfile();
 
       const totalReps = caliExercises.reduce((sum, ex) => sum + ex.sets.reduce((s, r) => s + (r.reps ?? 0), 0), 0);
       const feedExercises = caliExercises.map(ex => ({

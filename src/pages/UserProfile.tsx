@@ -128,6 +128,7 @@ export function UserProfilePage() {
           <XPRow label={`Global · ${profile.total_xp.toLocaleString('fr-FR')} XP total`} xp={profile.total_xp} color="bg-red-500" delay={0.12} />
           <XPRow label={`Musculation · ${profile.musculation_xp.toLocaleString('fr-FR')} XP total`} xp={profile.musculation_xp} color="bg-red-800" delay={0.18} />
           <XPRow label={`Course · ${profile.running_xp.toLocaleString('fr-FR')} XP total`} xp={profile.running_xp} color="bg-blue-700" delay={0.24} />
+          <XPRow label={`Calisthénie · ${(profile.calisthenics_xp ?? 0).toLocaleString('fr-FR')} XP total`} xp={profile.calisthenics_xp ?? 0} color="bg-violet-700" delay={0.30} />
         </Card>
       </motion.div>
 

@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase-client';
 import type { CalisthenicsSession, CaliExercise, ProfileSkill } from '../types/models';
-import { feedService } from './feed.service';
 import { xpService } from './xp.service';
 import { CALISTHENICS_SKILLS } from '../utils/constants';
 
@@ -41,17 +40,6 @@ export const calisthenicsService = {
       .single();
     if (error) throw error;
     const session = data as CalisthenicsSession;
-
-    // Publier dans le feed
-    await feedService.publishCalisthenics(
-      input.userId,
-      input.exercises.length,
-      totalReps,
-      input.feedback,
-      session.id,
-      input.name,
-      input.skillsUnlocked,
-    );
 
     // Débloquer les skills cochés
     if (input.skillsUnlocked && input.skillsUnlocked.length > 0) {
