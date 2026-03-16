@@ -72,31 +72,26 @@ describe('DashboardPage', () => {
       await q(/enzoulette/i);
     });
 
-    it('affiche la section "Cette semaine"', async () => {
+    it('affiche la section "Nouvelle session"', async () => {
       renderDashboard();
-      await q(/cette semaine/i);
-    });
-
-    it('affiche la section "Actions rapides"', async () => {
-      renderDashboard();
-      await q(/actions rapides/i);
+      await q(/nouvelle session/i);
     });
   });
 
   describe('Actions rapides', () => {
-    it('affiche le bouton "Séance muscu"', async () => {
+    it('affiche le bouton "Muscu"', async () => {
       renderDashboard();
-      await q(/séance muscu/i);
+      await q(/muscu/i);
     });
 
-    it('affiche le bouton "Nouvelle course"', async () => {
+    it('affiche le bouton "Course"', async () => {
       renderDashboard();
-      await q(/nouvelle course/i);
+      await q(/course/i);
     });
 
-    it('affiche le bouton "Peser"', async () => {
+    it('affiche le bouton "Pesée"', async () => {
       renderDashboard();
-      await q(/peser/i);
+      await q(/pesée/i);
     });
   });
 

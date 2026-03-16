@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, User, LogOut, Settings, ChevronDown, Shield } from 'lucide-react';
+import { Bell, User, LogOut, Settings, ChevronDown, Shield, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -9,7 +9,7 @@ import { XPBar } from '../xp-system/XPBar';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 import { getStatusTitle, getStatusColor, getLevelProgress } from '../../utils/calculations';
 
-export function Header() {
+export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
   const { user, profile } = useAuth();
   const { unreadCount } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -25,11 +25,20 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-[#c9a870]/15">
       <div className="flex items-center justify-between px-4 h-[52px] max-w-7xl mx-auto">
-        {/* Logo mobile */}
-        <Link to="/dashboard" className="lg:hidden flex items-center gap-2 group">
-          <Shield className="w-5 h-5 text-[#c9a870] transition-colors group-hover:text-[#dfc99e]" />
-          <span className="font-rajdhani font-bold text-[#c9a870] text-sm sm:text-base tracking-wide uppercase">G&G</span>
-        </Link>
+        {/* Logo mobile + hamburger */}
+        <div className="lg:hidden flex items-center gap-2">
+          <button
+            onClick={onMenuOpen}
+            className="p-2 text-[#a3a3a3] hover:text-[#c9a870] transition-colors"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <Link to="/dashboard" className="flex items-center gap-1.5 group">
+            <Shield className="w-4 h-4 text-[#c9a870]" />
+            <span className="font-rajdhani font-bold text-[#c9a870] text-sm tracking-wide uppercase">G&G</span>
+          </Link>
+        </div>
 
         {/* XP Bar */}
         {profile && (

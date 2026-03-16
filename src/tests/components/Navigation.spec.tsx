@@ -11,71 +11,48 @@ vi.mock('../../contexts/AuthContext', () => ({
   }),
 }));
 
-let BottomNav: any;
+let MobileDrawer: any;
 let SideNav: any;
 
 beforeEach(async () => {
   vi.clearAllMocks();
   const mod = await import('../../components/layout/Navigation');
-  BottomNav = mod.BottomNav;
+  MobileDrawer = mod.MobileDrawer;
   SideNav = mod.SideNav;
 });
 
-const renderBottomNav = () => render(<MemoryRouter><BottomNav /></MemoryRouter>);
+const renderDrawer = (isOpen = true) =>
+  render(<MemoryRouter><MobileDrawer isOpen={isOpen} onClose={vi.fn()} /></MemoryRouter>);
 const renderSideNav = () => render(<MemoryRouter><SideNav /></MemoryRouter>);
 
-describe('BottomNav', () => {
-  describe('Liens principaux', () => {
-    it('affiche les 4 liens principaux', async () => {
-      renderBottomNav();
-      await waitFor(() => {
-        expect(screen.queryAllByText(/dashboard/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/les monstres/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/muscu/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/course/i).length).toBeGreaterThan(0);
-      }, { timeout: 3000 });
-    });
-
-    it('affiche le bouton "Plus"', async () => {
-      renderBottomNav();
-      await waitFor(() => {
-        expect(screen.queryAllByText(/plus/i).length).toBeGreaterThan(0);
-      }, { timeout: 3000 });
-    });
+describe('MobileDrawer', () => {
+  it('affiche tous les liens quand ouvert', async () => {
+    renderDrawer(true);
+    await waitFor(() => {
+      expect(screen.queryAllByText(/dashboard/i).length).toBeGreaterThan(0);
+      expect(screen.queryAllByText(/muscu/i).length).toBeGreaterThan(0);
+      expect(screen.queryAllByText(/course/i).length).toBeGreaterThan(0);
+      expect(screen.queryAllByText(/objectifs/i).length).toBeGreaterThan(0);
+      expect(screen.queryAllByText(/hall of fame/i).length).toBeGreaterThan(0);
+      expect(screen.queryAllByText(/profil/i).length).toBeGreaterThan(0);
+    }, { timeout: 3000 });
   });
 
-  describe('Drawer "Plus"', () => {
-    it('ouvre le drawer au clic sur "Plus"', async () => {
-      renderBottomNav();
-      await waitFor(() => expect(screen.queryAllByText(/plus/i).length).toBeGreaterThan(0), { timeout: 3000 });
-      fireEvent.click(screen.getAllByText(/plus/i)[0].closest('button')!);
-      await waitFor(() => {
-        expect(screen.queryAllByText(/menu/i).length).toBeGreaterThan(0);
-      }, { timeout: 3000 });
-    });
+  it('n\'affiche rien quand fermé', async () => {
+    renderDrawer(false);
+    await waitFor(() => {
+      expect(screen.queryAllByText(/dashboard/i).length).toBe(0);
+    }, { timeout: 3000 });
+  });
 
-    it('affiche les liens secondaires dans le drawer', async () => {
-      renderBottomNav();
-      await waitFor(() => expect(screen.queryAllByText(/plus/i).length).toBeGreaterThan(0), { timeout: 3000 });
-      fireEvent.click(screen.getAllByText(/plus/i)[0].closest('button')!);
-      await waitFor(() => {
-        expect(screen.queryAllByText(/objectifs/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/hall of fame/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/profil/i).length).toBeGreaterThan(0);
-      }, { timeout: 3000 });
-    });
-
-    it('ferme le drawer au clic sur X', async () => {
-      renderBottomNav();
-      await waitFor(() => expect(screen.queryAllByText(/plus/i).length).toBeGreaterThan(0), { timeout: 3000 });
-      fireEvent.click(screen.getAllByText(/plus/i)[0].closest('button')!);
-      await waitFor(() => expect(screen.queryAllByText(/menu/i).length).toBeGreaterThan(0), { timeout: 3000 });
-      const closeBtn = document.querySelector('button[class*="text-\\[\\#6b6b6b\\]"]');
-      if (closeBtn) fireEvent.click(closeBtn);
-      await waitFor(() => {
-        expect(screen.queryAllByText(/menu/i).length).toBe(0);
-      }, { timeout: 3000 });
-    });
+  it('appelle onClose au clic sur le bouton X', async () => {
+    const onClose = vi.fn();
+    render(<MemoryRouter><MobileDrawer isOpen={true} onClose={onClose} /></MemoryRouter>);
+    await waitFor(() => expect(screen.queryAllByText(/gain & glory/i).length).toBeGreaterThan(0), { timeout: 3000 });
+    const closeBtn = document.querySelector('button[aria-label]') as HTMLElement
+      ?? document.querySelectorAll('button')[0] as HTMLElement;
+    if (closeBtn) fireEvent.click(closeBtn);
+    expect(onClose).toHaveBeenCalled();
   });
 });
 

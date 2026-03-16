@@ -59,8 +59,8 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
   }
 
   return (
-    <div className="bg-[#111111] p-4 border border-white/5">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-[#111111] p-4 border border-white/5 flex flex-col">
+      <div className="flex items-start justify-between mb-3 flex-1">
         <div>
           <p className="text-xs text-[#a3a3a3]">{config.label}</p>
           <p className="font-rajdhani font-bold" style={{ color: statusColor ?? '#c9a870' }}>
@@ -68,7 +68,7 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
             {statusTitle && <span className="font-medium opacity-80"> · {statusTitle}</span>}
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-right flex-shrink-0 ml-2">
           <p className="text-sm font-bold font-rajdhani" style={{ color: statusColor ?? '#c9a870' }}>
             {formatNumber(current)} XP
           </p>
@@ -76,19 +76,20 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
         </div>
       </div>
 
-      <div className="h-2 bg-white/5 overflow-hidden">
-        <motion.div
-          className="h-full"
-          style={{ background: barBackground }}
-          initial={{ width: 0 }}
-          animate={{ width: `${progress * 100}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-        />
-      </div>
-
-      <div className="flex justify-between mt-1.5">
-        <span className="text-xs text-[#6b6b6b]">Niveau {level}</span>
-        <span className="text-xs text-[#6b6b6b]">Niveau {level + 1}</span>
+      <div className="mt-auto">
+        <div className="h-2 bg-white/5 overflow-hidden">
+          <motion.div
+            className="h-full"
+            style={{ background: barBackground }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress * 100}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          />
+        </div>
+        <div className="flex justify-between mt-1.5">
+          <span className="text-xs text-[#6b6b6b]">Niveau {level}</span>
+          <span className="text-xs text-[#6b6b6b]">Niveau {level + 1}</span>
+        </div>
       </div>
     </div>
   );
