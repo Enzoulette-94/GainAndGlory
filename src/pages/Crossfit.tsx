@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Flame, Plus, BarChart2, Trophy, Trash2, ChevronDown, Copy } from 'lucide-react';
+import { Flame, Plus, BarChart2, Trophy, Trash2, ChevronDown, Copy, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
   BarChart, Bar,
@@ -149,7 +149,7 @@ export function CrossfitPage() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 pb-24">
+    <div className="space-y-6">
       {/* Banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-orange-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-orange-900/20 p-6 -mx-4">
         <Flame className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-orange-900/10 pointer-events-none" />
@@ -370,7 +370,7 @@ export function CrossfitPage() {
 
 function SessionCard({ session, onDelete }: { session: CrossfitSession; onDelete: () => void }) {
   const navigate = useNavigate();
-  const [expanded, setExpanded] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   function getResultSummary(): string {
     switch (session.wod_type) {
@@ -386,76 +386,190 @@ function SessionCard({ session, onDelete }: { session: CrossfitSession; onDelete
   const resultSummary = getResultSummary();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-[#111] border border-white/5 rounded-xl overflow-hidden"
-    >
-      <div
-        className="p-4 cursor-pointer"
-        onClick={() => setExpanded(e => !e)}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-rajdhani font-bold text-orange-400 bg-orange-950/40 border border-orange-900/40 px-1.5 py-0.5 rounded">
-                {wodLabel(session.wod_type)}
+    <>
+    <div className={`bg-[#111] border overflow-hidden transition-all ${
+      session.feedback === 'mort' ? 'border-red-900/70' :
+      session.feedback === 'difficile' ? 'border-amber-900/70' :
+      session.feedback === 'facile' ? 'border-emerald-900/70' :
+      'border-orange-900/20'
+    }`}>
+      <div className="flex">
+        <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
+          {/* Ligne 1 */}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide truncate">
+                {session.name
+                  ? session.name.toUpperCase()
+                  : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
               </span>
-              {session.name && (
-                <p className="font-medium text-[#f5f5f5] text-sm">{session.name}</p>
-              )}
               {session.feedback && (
-                <span className={`text-xs font-medium ${FEEDBACK_COLORS[session.feedback]}`}>
+                <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${FEEDBACK_COLORS[session.feedback]}`}>
                   {FEEDBACK_LABELS[session.feedback]}
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#4a4a4a] mt-1">
-              {formatRelativeTime(session.date)} · {session.exercises.length} exercice{session.exercises.length > 1 ? 's' : ''}
-              {resultSummary ? ` · ${resultSummary}` : ''}
-            </p>
+            <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
           </div>
-          <button
-            onClick={e => { e.stopPropagation(); navigate('/crossfit/new', { state: { copyFrom: session } }); }}
-            className="p-1.5 text-[#4a4a4a] hover:text-orange-400 transition-colors flex-shrink-0"
-            title="Réutiliser cette séance"
-          >
-            <Copy className="w-4 h-4" />
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); onDelete(); }}
-            className="p-1.5 text-[#4a4a4a] hover:text-red-400 transition-colors flex-shrink-0"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+
+          {/* Stats */}
+          <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
+            <span className="text-orange-500 bg-orange-950/40 border border-orange-900/40 px-2 py-0.5">{wodLabel(session.wod_type)}</span>
+            <span className="text-[#2a2a2a]">·</span>
+            <span className="text-[#5a5a5a]">{session.exercises.length} EX</span>
+            {resultSummary && (
+              <>
+                <span className="text-[#2a2a2a]">·</span>
+                <span className="text-orange-400">{resultSummary}</span>
+              </>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/5 mb-3" />
+
+          {/* Exercise list */}
+          <div className="space-y-1.5">
+            {session.exercises.map((ex, i) => (
+              <div key={i} className="flex items-start gap-2 min-w-0">
+                <span className="font-rajdhani font-black text-orange-800 w-5 flex-shrink-0 text-xs mt-0.5">{String(i+1).padStart(2,'0')}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-rajdhani font-semibold text-[#d4d4d4] uppercase tracking-wide text-xs">{ex.name}</span>
+                  {(ex.reps != null || ex.duration != null) && (
+                    <span className="text-[#5a5a5a] text-xs font-rajdhani ml-2">
+                      {ex.reps != null ? `${ex.reps} reps` : `${ex.duration}s`}
+                    </span>
+                  )}
+                  {ex.weight != null && (
+                    <span className="font-rajdhani font-bold text-orange-400 text-xs ml-2">{ex.weight} kg</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {session.notes && (
+            <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
+          )}
         </div>
       </div>
 
-      {expanded && (
-        <div className="border-t border-white/5 px-4 pb-4 pt-3 space-y-2">
-          {session.exercises.map((ex, i) => (
-            <div key={i} className="flex items-center gap-2 text-xs">
-              <span className="text-[#d4d4d4] font-medium">{ex.name}</span>
-              {ex.reps != null && <span className="text-[#6b6b6b]">{ex.reps} reps</span>}
-              {ex.duration != null && <span className="text-[#6b6b6b]">{ex.duration}s</span>}
-              {ex.weight != null && <span className="text-orange-400">{ex.weight} kg</span>}
-              {ex.notes && <span className="text-[#4a4a4a] italic">· {ex.notes}</span>}
-            </div>
-          ))}
-          {session.notes && (
-            <p className="text-xs text-[#6b6b6b] italic border-t border-white/5 pt-2">{session.notes}</p>
+      {/* Action bar */}
+      <div className="flex items-center border-t border-white/5">
+        <button
+          onClick={() => setShowDetail(true)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-[#e5e5e5] hover:bg-white/5 transition-all"
+        >
+          <Eye className="w-3.5 h-3.5" /> Voir
+        </button>
+        <div className="w-px h-5 bg-white/5" />
+        <button
+          onClick={() => navigate('/crossfit/new', { state: { copyFrom: session } })}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-orange-400 hover:bg-white/5 transition-all"
+        >
+          <Copy className="w-3.5 h-3.5" /> Copier
+        </button>
+        <div className="w-px h-5 bg-white/5" />
+        <button
+          onClick={onDelete}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-red-400 hover:bg-red-900/10 transition-all"
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Suppr
+        </button>
+      </div>
+    </div>
+
+    {/* Modal détail séance */}
+    <Modal isOpen={showDetail} onClose={() => setShowDetail(false)} title="Détails — Crossfit" size="md">
+      <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+        {session.name && (
+          <h3 className="font-rajdhani font-bold text-lg text-orange-400 tracking-wide uppercase border-b border-white/5 pb-2">
+            {session.name}
+          </h3>
+        )}
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="text-[#a3a3a3]">{formatDate(session.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <span className="text-xs px-2 py-0.5 bg-orange-950/40 border border-orange-900/40 text-orange-400 rounded font-bold font-rajdhani">
+            {wodLabel(session.wod_type)}
+          </span>
+          {session.feedback && (
+            <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${
+              session.feedback === 'facile' ? 'text-green-500 border-green-900/50' :
+              session.feedback === 'difficile' ? 'text-orange-500 border-orange-900/50' :
+              'text-red-500 border-red-900/50'
+            }`}>
+              {FEEDBACK_LABELS[session.feedback]}
+            </span>
           )}
-          <div className="border-t border-white/5 pt-3">
-            <button
-              onClick={e => { e.stopPropagation(); navigate('/crossfit/new', { state: { copyFrom: session } }); }}
-              className="flex items-center gap-1.5 text-xs text-[#6b6b6b] hover:text-orange-400 transition-colors"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              Réutiliser cette séance
-            </button>
-          </div>
         </div>
-      )}
-    </motion.div>
+
+        {/* WOD params */}
+        <div className="grid grid-cols-2 gap-2">
+          {session.total_duration != null && (
+            <div className="border border-white/5 px-3 py-2">
+              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Durée totale</p>
+              <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{session.total_duration} min</p>
+            </div>
+          )}
+          {session.round_duration != null && (
+            <div className="border border-white/5 px-3 py-2">
+              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Durée / round</p>
+              <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{session.round_duration}s</p>
+            </div>
+          )}
+          {session.target_rounds != null && (
+            <div className="border border-white/5 px-3 py-2">
+              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Rounds cibles</p>
+              <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{session.target_rounds}</p>
+            </div>
+          )}
+          {session.result_rounds != null && (
+            <div className="border border-orange-900/30 px-3 py-2">
+              <p className="text-xs text-orange-400 uppercase tracking-wide">Rounds réalisés</p>
+              <p className="text-sm font-rajdhani font-bold text-orange-300">{session.result_rounds}</p>
+            </div>
+          )}
+          {session.result_reps != null && (
+            <div className="border border-orange-900/30 px-3 py-2">
+              <p className="text-xs text-orange-400 uppercase tracking-wide">Reps totales</p>
+              <p className="text-sm font-rajdhani font-bold text-orange-300">{session.result_reps}</p>
+            </div>
+          )}
+          {session.result_time && (
+            <div className="border border-orange-900/30 px-3 py-2">
+              <p className="text-xs text-orange-400 uppercase tracking-wide">Temps</p>
+              <p className="text-sm font-rajdhani font-bold text-orange-300">{session.result_time}</p>
+            </div>
+          )}
+          {session.benchmark_name && (
+            <div className="border border-orange-900/30 px-3 py-2 col-span-2">
+              <p className="text-xs text-orange-400 uppercase tracking-wide">Benchmark</p>
+              <p className="text-sm font-rajdhani font-bold text-orange-300">{session.benchmark_name}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Exercices */}
+        {session.exercises.length > 0 && (
+          <div className="space-y-2">
+            {session.exercises.map((ex, i) => (
+              <div key={i} className="border border-orange-900/20 px-3 py-2 flex items-center justify-between gap-2">
+                <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm uppercase tracking-wide">{ex.name}</span>
+                <div className="flex items-center gap-2 flex-shrink-0 text-xs">
+                  {ex.reps != null && <span className="text-[#d4d4d4]">{ex.reps} reps</span>}
+                  {ex.duration != null && <span className="text-[#d4d4d4]">{ex.duration}s</span>}
+                  {ex.weight != null && <span className="font-bold text-orange-400">{ex.weight} kg</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {session.notes && (
+          <p className="text-sm text-[#a3a3a3] italic border-l-2 border-orange-800/50 pl-3">{session.notes}</p>
+        )}
+      </div>
+    </Modal>
+    </>
   );
 }

@@ -55,6 +55,9 @@ export function XPBar({ profile, discipline = 'global', compact = false }: XPBar
             {statusTitle}
           </span>
         )}
+        <span className="text-xs text-[#4a4a4a] hidden xl:block flex-shrink-0 border-l border-white/5 pl-2 font-rajdhani">
+          {formatNumber(current)}&thinsp;/&thinsp;{formatNumber(needed)} XP
+        </span>
       </div>
     );
   }

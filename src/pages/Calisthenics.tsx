@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Zap, Plus, BarChart2, Trophy, Grid, Trash2, ChevronDown, Copy } from 'lucide-react';
+import { Zap, Plus, BarChart2, Trophy, Grid, Trash2, ChevronDown, Copy, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
   LineChart, Line,
@@ -152,7 +152,7 @@ export function CalisthenicsPage() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 pb-24">
+    <div className="space-y-6">
       {/* Banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-violet-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-violet-900/20 p-6 -mx-4">
         <Zap className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-violet-900/10 pointer-events-none" />
@@ -412,87 +412,164 @@ export function CalisthenicsPage() {
 
 function SessionCard({ session, onDelete }: { session: CalisthenicsSession; onDelete: () => void }) {
   const navigate = useNavigate();
-  const [expanded, setExpanded] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-[#111] border border-white/5 rounded-xl overflow-hidden"
-    >
-      <div
-        className="p-4 cursor-pointer"
-        onClick={() => setExpanded(e => !e)}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-medium text-[#f5f5f5] text-sm">
-                {session.name ?? 'Séance calisthénie'}
-              </p>
+    <>
+    <div className={`bg-[#111] border overflow-hidden transition-all ${
+      session.feedback === 'mort' ? 'border-red-900/70' :
+      session.feedback === 'difficile' ? 'border-amber-900/70' :
+      session.feedback === 'facile' ? 'border-emerald-900/70' :
+      'border-white/5'
+    }`}>
+      <div className="flex">
+        <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
+          {/* Ligne 1 */}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
+                {session.name ?? formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+              </span>
               {session.feedback && (
-                <span className={`text-xs font-medium ${FEEDBACK_COLORS[session.feedback]}`}>
+                <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${FEEDBACK_COLORS[session.feedback]}`}>
                   {FEEDBACK_LABELS[session.feedback]}
                 </span>
               )}
-              {session.skills_unlocked.length > 0 && (
-                <span className="text-xs bg-violet-900/40 text-violet-300 px-1.5 py-0.5 rounded">
-                  {session.skills_unlocked.length} skill{session.skills_unlocked.length > 1 ? 's' : ''}
-                </span>
-              )}
-              <span className="sm:hidden text-xs text-[#4a4a4a] ml-auto">
-                {formatRelativeTime(session.date)}
-              </span>
             </div>
-            <p className="text-xs text-[#4a4a4a] mt-1">
-              <span className="hidden sm:inline">{formatRelativeTime(session.date)} · </span>
-              {session.exercises.length} exercice{session.exercises.length > 1 ? 's' : ''} · {session.total_reps} reps
-            </p>
+            <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
           </div>
-          <button
-            onClick={e => { e.stopPropagation(); navigate('/calisthenics/new', { state: { copyFrom: session } }); }}
-            className="p-1.5 text-[#4a4a4a] hover:text-violet-400 transition-colors flex-shrink-0"
-            title="Réutiliser cette séance"
-          >
-            <Copy className="w-4 h-4" />
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); onDelete(); }}
-            className="p-1.5 text-[#4a4a4a] hover:text-red-400 transition-colors flex-shrink-0"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+
+          {/* Stats */}
+          <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
+            <span className="text-violet-400">{session.total_reps} REPS</span>
+            <span className="text-[#2a2a2a]">·</span>
+            <span className="text-[#5a5a5a]">{session.exercises.length} EX</span>
+            {session.skills_unlocked.length > 0 && (
+              <>
+                <span className="text-[#2a2a2a]">·</span>
+                <span className="text-violet-600">{session.skills_unlocked.length} SKILL{session.skills_unlocked.length > 1 ? 'S' : ''}</span>
+              </>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/5 mb-3" />
+
+          {/* Exercise list */}
+          <div className="space-y-1.5">
+            {session.exercises.map((ex, i) => {
+              const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
+              const avgHold = ex.sets.reduce((sum, s) => sum + (s.hold_seconds ?? 0), 0) / ex.sets.length;
+              const isTimed = ex.set_type === 'timed';
+              return (
+                <div key={i} className="flex items-start gap-2 min-w-0">
+                  <span className="font-rajdhani font-black text-violet-800 w-5 flex-shrink-0 text-xs mt-0.5">{String(i+1).padStart(2,'0')}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-rajdhani font-semibold text-[#d4d4d4] uppercase tracking-wide text-xs">{ex.name}</span>
+                    <span className="text-[#5a5a5a] text-xs font-rajdhani ml-2">{ex.sets.length} séries</span>
+                    <span className="font-rajdhani font-bold text-violet-400 text-xs ml-2">
+                      {isTimed ? `${Math.round(avgHold)}s` : `${totalReps} reps`}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {session.notes && (
+            <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
+          )}
         </div>
       </div>
 
-      {expanded && (
-        <div className="border-t border-white/5 px-4 pb-4 pt-3 space-y-3">
+      {/* Action bar */}
+      <div className="flex items-center border-t border-white/5">
+        <button
+          onClick={() => setShowDetail(true)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-[#e5e5e5] hover:bg-white/5 transition-all"
+        >
+          <Eye className="w-3.5 h-3.5" /> Voir
+        </button>
+        <div className="w-px h-5 bg-white/5" />
+        <button
+          onClick={() => navigate('/calisthenics/new', { state: { copyFrom: session } })}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-violet-400 hover:bg-white/5 transition-all"
+        >
+          <Copy className="w-3.5 h-3.5" /> Copier
+        </button>
+        <div className="w-px h-5 bg-white/5" />
+        <button
+          onClick={onDelete}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-red-400 hover:bg-red-900/10 transition-all"
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Suppr
+        </button>
+      </div>
+    </div>
+
+    {/* Modal détail séance */}
+    <Modal isOpen={showDetail} onClose={() => setShowDetail(false)} title="Détails — Calisthénie" size="md">
+      <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+        {session.name && (
+          <h3 className="font-rajdhani font-bold text-lg text-violet-300 tracking-wide uppercase border-b border-white/5 pb-2">
+            {session.name}
+          </h3>
+        )}
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="text-[#a3a3a3]">{formatDate(session.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          {session.feedback && (
+            <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${
+              session.feedback === 'facile' ? 'text-green-500 border-green-900/50' :
+              session.feedback === 'difficile' ? 'text-orange-500 border-orange-900/50' :
+              'text-red-500 border-red-900/50'
+            }`}>
+              {FEEDBACK_LABELS[session.feedback]}
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-2">
           {session.exercises.map((ex, i) => (
-            <div key={i}>
-              <p className="text-xs font-medium text-[#d4d4d4] mb-1">{ex.name}</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div key={i} className="border border-violet-900/30">
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-violet-900/30 bg-violet-900/10">
+                <Zap className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+                <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{ex.name}</span>
+              </div>
+              <div className="divide-y divide-white/5">
                 {ex.sets.map((set, j) => (
-                  <span key={j} className="text-xs bg-[#1a1a1a] text-[#6b6b6b] px-2 py-0.5 rounded">
-                    {ex.set_type === 'reps' ? `${set.reps} reps` : `${set.hold_seconds}s`}
-                  </span>
+                  <div key={j} className="flex items-center justify-between px-3 py-2 text-sm">
+                    <span className="text-[#6b6b6b] w-14">Série {j + 1}</span>
+                    {ex.set_type === 'reps' ? (
+                      <span className="text-[#d4d4d4]">{set.reps} reps</span>
+                    ) : (
+                      <span className="text-[#d4d4d4]">{set.hold_seconds}s</span>
+                    )}
+                    <span className="text-xs text-violet-400 font-rajdhani font-semibold uppercase">
+                      {ex.set_type === 'timed' ? 'Maintien' : 'Répétitions'}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
           ))}
-          {session.notes && (
-            <p className="text-xs text-[#6b6b6b] italic border-t border-white/5 pt-2">{session.notes}</p>
-          )}
-          <div className="border-t border-white/5 pt-3">
-            <button
-              onClick={e => { e.stopPropagation(); navigate('/calisthenics/new', { state: { copyFrom: session } }); }}
-              className="flex items-center gap-1.5 text-xs text-[#6b6b6b] hover:text-violet-400 transition-colors"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              Réutiliser cette séance
-            </button>
-          </div>
         </div>
-      )}
-    </motion.div>
+
+        {session.skills_unlocked.length > 0 && (
+          <div className="border border-violet-900/30 px-3 py-2">
+            <p className="text-xs text-violet-400 font-rajdhani font-semibold uppercase mb-1">Skills débloqués</p>
+            <div className="flex flex-wrap gap-1">
+              {session.skills_unlocked.map((s, i) => (
+                <span key={i} className="text-xs bg-violet-900/20 text-violet-300 px-2 py-0.5 rounded">{s}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {session.notes && (
+          <p className="text-sm text-[#a3a3a3] italic border-l-2 border-violet-800/50 pl-3">{session.notes}</p>
+        )}
+      </div>
+    </Modal>
+    </>
   );
 }

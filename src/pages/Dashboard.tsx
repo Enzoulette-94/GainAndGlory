@@ -182,10 +182,10 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-            <XPBar profile={profile} discipline="global" />
             <XPBar profile={profile} discipline="musculation" />
             <XPBar profile={profile} discipline="running" />
             <XPBar profile={profile} discipline="calisthenics" />
+            <XPBar profile={profile} discipline="crossfit" />
           </div>
         </div>
       </motion.div>

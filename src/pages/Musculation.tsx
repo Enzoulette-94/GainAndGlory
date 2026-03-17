@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Copy } from 'lucide-react';
+import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Copy, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, LineChart, Line,
@@ -678,6 +678,9 @@ function SessionCard({
   const feedbackLabel = feedback ? FEEDBACK_LABELS[feedback] : null;
   const feedbackColor = feedback ? FEEDBACK_COLORS[feedback] : 'text-[#6b6b6b]';
 
+  // ── Detail state ─────────────────────────────────────────────────────────────
+  const [showDetail, setShowDetail] = useState(false);
+
   // ── Edit state ──────────────────────────────────────────────────────────────
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState('');
@@ -824,72 +827,179 @@ function SessionCard({
     }
   }
 
+  const exerciseRows = useMemo(() => {
+    const map: Record<string, { name: string; group: string; sets: { reps: number; weight: number }[] }> = {};
+    for (const s of (session.sets ?? [])) {
+      const id = s.exercise_id ?? s.exercise?.name ?? String(Math.random());
+      if (!map[id]) map[id] = { name: s.exercise?.name ?? '—', group: s.exercise?.muscle_group ?? '', sets: [] };
+      map[id].sets.push({ reps: s.reps, weight: s.weight });
+    }
+    return Object.values(map);
+  }, [session.sets]);
+
   return (
     <>
-      <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
-        <div className="p-2.5 bg-transparent border border-red-900/40 rounded flex-shrink-0">
-          <Dumbbell className="w-5 h-5 text-red-400" />
+      <div className={`bg-[#111111] border overflow-hidden transition-all ${
+        feedback === 'mort' ? 'border-red-900/70' :
+        feedback === 'difficile' ? 'border-amber-900/70' :
+        feedback === 'facile' ? 'border-emerald-900/70' :
+        'border-white/5'
+      }`}>
+        {/* Header + content */}
+        <div className="flex">
+          <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
+            {/* Ligne 1: date + feedback + relative time */}
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
+                  {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+                </span>
+                {session.name && (
+                  <span className="text-xs text-[#6b6b6b] truncate hidden sm:block">{session.name}</span>
+                )}
+                {feedbackLabel && (
+                  <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${feedbackColor}`}>{feedbackLabel}</span>
+                )}
+              </div>
+              <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
+            </div>
+
+            {/* Stats line */}
+            <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
+              {session.total_tonnage != null && session.total_tonnage > 0 && (
+                <>
+                  <span className="text-red-400">{formatNumber(session.total_tonnage)} KG</span>
+                  <span className="text-[#2a2a2a]">·</span>
+                </>
+              )}
+              <span className="text-[#5a5a5a]">{exerciseCount} EX</span>
+              <span className="text-[#2a2a2a]">·</span>
+              <span className="text-[#5a5a5a]">{setsCount} SÉRIES</span>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-white/5 mb-3" />
+
+            {/* Exercise list */}
+            {exerciseRows.length > 0 ? (
+              <div className="space-y-1.5">
+                {exerciseRows.map((ex, i) => {
+                  const avgReps = ex.sets.length > 0 ? Math.round(ex.sets.reduce((s, r) => s + r.reps, 0) / ex.sets.length) : 0;
+                  const maxWeight = Math.max(...ex.sets.map(s => s.weight));
+                  return (
+                    <div key={i} className="flex items-start gap-2 min-w-0">
+                      <span className="font-rajdhani font-black text-red-700 w-5 flex-shrink-0 text-xs mt-0.5">{String(i+1).padStart(2,'0')}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-rajdhani font-semibold text-[#d4d4d4] uppercase tracking-wide text-xs">{ex.name}</span>
+                        <span className="text-[#5a5a5a] text-xs font-rajdhani ml-2">{ex.sets.length}×{avgReps}</span>
+                        {maxWeight > 0 && (
+                          <span className="font-rajdhani font-bold text-[#c9a870] text-xs ml-2">{maxWeight} kg</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-[#4a4a4a]">Aucun exercice</p>
+            )}
+
+            {session.notes && (
+              <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-            <p className="text-sm font-semibold text-[#e5e5e5]">
-              {session.name
-                ? session.name
-                : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
-            </p>
-            {feedbackLabel && (
-              <span className={`text-xs ${feedbackColor}`}>{feedbackLabel}</span>
-            )}
-            <span className="sm:hidden text-xs text-[#4a4a4a] ml-auto">
-              {formatRelativeTime(session.date)}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
-            {session.total_tonnage != null && session.total_tonnage > 0 && (
-              <span className="font-medium text-[#d4d4d4]">
-                {formatNumber(session.total_tonnage)} kg
-              </span>
-            )}
-            {exerciseCount > 0 && (
-              <span>{exerciseCount} exercice{exerciseCount > 1 ? 's' : ''}</span>
-            )}
-            {setsCount > 0 && (
-              <span>{setsCount} série{setsCount > 1 ? 's' : ''}</span>
-            )}
-          </div>
-          {session.notes && (
-            <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <span className="hidden sm:inline text-xs text-[#6b6b6b]">
-            {formatRelativeTime(session.date)}
-          </span>
+        {/* Action bar */}
+        <div className="flex items-center border-t border-white/5">
+          <button
+            onClick={() => setShowDetail(true)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-[#e5e5e5] hover:bg-white/5 transition-all"
+          >
+            <Eye className="w-3.5 h-3.5" /> Voir
+          </button>
+          <div className="w-px h-5 bg-white/5" />
           <button
             onClick={() => navigate('/musculation/new', { state: { copyFrom: session } })}
-            className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-white/5 transition-all"
-            title="Réutiliser cette séance"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-red-400 hover:bg-white/5 transition-all"
           >
-            <Copy className="w-3.5 h-3.5" />
+            <Copy className="w-3.5 h-3.5" /> Copier
           </button>
+          <div className="w-px h-5 bg-white/5" />
           <button
             onClick={openEdit}
-            className="p-1.5 rounded text-[#6b6b6b] hover:text-[#d4d4d4] hover:bg-white/5 transition-all"
-            title="Modifier"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-[#e5e5e5] hover:bg-white/5 transition-all"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-3.5 h-3.5" /> Modif
           </button>
+          <div className="w-px h-5 bg-white/5" />
           <button
             onClick={() => setShowDelete(true)}
-            className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-red-900/10 transition-all"
-            title="Supprimer"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-red-400 hover:bg-red-900/10 transition-all"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5" /> Suppr
           </button>
         </div>
       </div>
+
+      {/* ── Modal détail séance ─────────────────────────────────────────────────── */}
+      {(() => {
+        type SetItem = NonNullable<typeof session.sets>[number];
+        const grouped: Record<string, { name: string; muscleGroup: string; sets: SetItem[] }> = {};
+        for (const s of (session.sets ?? [])) {
+          const id = s.exercise_id;
+          if (!grouped[id]) grouped[id] = { name: s.exercise?.name ?? '—', muscleGroup: s.exercise?.muscle_group ?? '', sets: [] };
+          grouped[id].sets.push(s);
+        }
+        const groups = Object.values(grouped).map(g => ({ ...g, sets: g.sets.sort((a, b) => a.set_number - b.set_number) }));
+        return (
+          <Modal isOpen={showDetail} onClose={() => setShowDetail(false)} title="Détails — Séance muscu" size="md">
+            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+              {session.name && (
+                <h3 className="font-rajdhani font-bold text-lg text-[#f5f5f5] tracking-wide uppercase border-b border-white/5 pb-2">
+                  {session.name}
+                </h3>
+              )}
+              <div className="flex flex-wrap gap-2 text-sm">
+                <span className="text-[#a3a3a3]">{formatDate(session.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                {session.total_tonnage != null && session.total_tonnage > 0 && (
+                  <span className="font-rajdhani font-bold text-[#c9a870]">{session.total_tonnage.toLocaleString('fr-FR')} kg soulevés</span>
+                )}
+                {feedbackLabel && (
+                  <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${feedbackColor}`}>{feedbackLabel}</span>
+                )}
+              </div>
+
+              {session.notes && (
+                <p className="text-sm text-[#a3a3a3] italic border-l-2 border-[#c9a870]/30 pl-3">{session.notes}</p>
+              )}
+
+              {groups.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
+              <div className="space-y-3">
+                {groups.map((group, gi) => (
+                  <div key={gi} className="border border-white/5">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-white/2">
+                      <Dumbbell className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                      <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{group.name}</span>
+                      <span className="text-xs text-[#6b6b6b] ml-auto">{MUSCLE_GROUP_LABELS[group.muscleGroup as keyof typeof MUSCLE_GROUP_LABELS] ?? group.muscleGroup}</span>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {(group.sets as any[]).map((s, si) => (
+                        <div key={si} className="flex items-center justify-between px-3 py-2 text-sm">
+                          <span className="text-[#6b6b6b] w-14">Série {s.set_number}</span>
+                          <span className="text-[#d4d4d4]">{s.reps} reps</span>
+                          <span className="font-rajdhani font-bold text-[#c9a870]">{s.weight} kg</span>
+                          <span className="text-[#4a4a4a] text-xs">{(s.reps * s.weight).toLocaleString('fr-FR')} kg</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Modal>
+        );
+      })()}
 
       {/* ── Modal édition ─────────────────────────────────────────────────── */}
       <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Modifier la séance" size="xl">

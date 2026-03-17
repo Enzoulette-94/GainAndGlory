@@ -42,7 +42,7 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
 
         {/* XP Bar */}
         {profile && (
-          <div className="hidden md:block flex-1 max-w-sm mx-4">
+          <div className="hidden md:block flex-1 max-w-xl mx-4">
             <XPBar profile={profile} compact />
           </div>
         )}

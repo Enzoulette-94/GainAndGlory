@@ -12,6 +12,7 @@ import {
   Activity,
   Pencil,
   Trash2,
+  Eye,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -725,6 +726,9 @@ function RunSessionCard({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Detail state
+  const [showDetail, setShowDetail] = useState(false);
+
   // Delete state
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -784,69 +788,150 @@ function RunSessionCard({
 
   return (
     <>
-      <div className="flex items-center gap-3 p-4 bg-[#111111] border border-white/5 rounded hover:border-white/10 hover:bg-[#1c1c1c] transition-all">
-        <div className="p-2.5 bg-transparent border border-blue-900/40 rounded flex-shrink-0">
-          <PersonStanding className="w-5 h-5 text-blue-500" />
+      <div className={`bg-[#111111] border overflow-hidden transition-all ${
+        feedback === 'mort' ? 'border-red-900/70' :
+        feedback === 'difficile' ? 'border-amber-900/70' :
+        feedback === 'facile' ? 'border-emerald-900/70' :
+        'border-white/5'
+      }`}>
+        <div className="flex">
+          <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
+            {/* Ligne 1 */}
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
+                  {((session as any).name
+                    ? (session as any).name
+                    : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })
+                  ).toUpperCase()}
+                </span>
+                {runType && (
+                  <span className="text-xs px-1.5 py-0.5 bg-blue-950/40 border border-blue-900/30 text-blue-400 flex-shrink-0 font-rajdhani font-bold uppercase">
+                    {RUN_TYPE_LABELS[runType]}
+                  </span>
+                )}
+                {feedback && (
+                  <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${feedbackColor}`}>{FEEDBACK_LABELS[feedback]}</span>
+                )}
+              </div>
+              <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
+            </div>
+
+            {/* Stats */}
+            <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
+              <span className="text-blue-400">{formatDistance(session.distance)}</span>
+              <span className="text-[#2a2a2a]">·</span>
+              <span className="text-[#5a5a5a]">{formatDuration(session.duration)}</span>
+              {session.pace_min_per_km != null && session.pace_min_per_km > 0 && (
+                <>
+                  <span className="text-[#2a2a2a]">·</span>
+                  <span className="text-[#5a5a5a]">{formatPace(session.pace_min_per_km)}</span>
+                </>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-white/5 mb-3" />
+
+            {/* Stats as lines */}
+            <div className="space-y-1.5">
+              {[
+                { num: '01', label: 'DISTANCE', value: formatDistance(session.distance), color: 'text-blue-400' },
+                { num: '02', label: 'DURÉE', value: formatDuration(session.duration), color: 'text-[#d4d4d4]' },
+                session.pace_min_per_km ? { num: '03', label: 'ALLURE', value: formatPace(session.pace_min_per_km), color: 'text-[#d4d4d4]' } : null,
+                session.avg_heart_rate ? { num: '04', label: 'FC MOY', value: `${session.avg_heart_rate} bpm`, color: 'text-[#d4d4d4]' } : null,
+                session.elevation_gain != null ? { num: '05', label: 'DÉNIVELÉ +', value: `${session.elevation_gain} m`, color: 'text-[#d4d4d4]' } : null,
+              ].filter(Boolean).map((item: any, i) => (
+                <div key={i} className="flex items-start gap-2 min-w-0">
+                  <span className="font-rajdhani font-black text-blue-800 w-5 flex-shrink-0 text-xs mt-0.5">{item.num}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-rajdhani font-semibold text-[#5a5a5a] uppercase tracking-wide text-xs">{item.label}</span>
+                    <span className={`font-rajdhani font-bold text-xs ml-2 ${item.color}`}>{item.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {session.notes && (
+              <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-            <p className="text-sm font-semibold text-[#e5e5e5]">
-              {(session as RunningSession & { name?: string | null }).name
-                ? (session as RunningSession & { name?: string | null }).name
-                : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })}
-            </p>
-            {runType && (
-              <span className="text-xs px-2 py-0.5 bg-transparent border border-blue-900/40 text-blue-500 rounded-md">
-                {RUN_TYPE_LABELS[runType]}
-              </span>
-            )}
-            {feedback && (
-              <span className={`text-xs ${feedbackColor}`}>
-                {FEEDBACK_LABELS[feedback]}
-              </span>
-            )}
-            <span className="sm:hidden text-xs text-[#4a4a4a] ml-auto">
-              {formatRelativeTime(session.date)}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
-            <span className="font-medium text-[#d4d4d4]">
-              {formatDistance(session.distance)}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {formatDuration(session.duration)}
-            </span>
-            {session.pace_min_per_km && session.pace_min_per_km > 0 && (
-              <span>{formatPace(session.pace_min_per_km)}</span>
-            )}
-          </div>
-          {session.notes && (
-            <p className="text-xs text-[#6b6b6b] mt-1 truncate">{session.notes}</p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <span className="hidden sm:inline text-xs text-[#6b6b6b]">
-            {formatRelativeTime(session.date)}
-          </span>
+        {/* Action bar */}
+        <div className="flex items-center border-t border-white/5">
+          <button
+            onClick={() => setShowDetail(true)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-[#e5e5e5] hover:bg-white/5 transition-all"
+          >
+            <Eye className="w-3.5 h-3.5" /> Voir
+          </button>
+          <div className="w-px h-5 bg-white/5" />
           <button
             onClick={openEdit}
-            className="p-1.5 rounded text-[#6b6b6b] hover:text-[#d4d4d4] hover:bg-white/5 transition-all"
-            title="Modifier"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-[#e5e5e5] hover:bg-white/5 transition-all"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-3.5 h-3.5" /> Modif
           </button>
+          <div className="w-px h-5 bg-white/5" />
           <button
             onClick={() => setShowDelete(true)}
-            className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-red-900/10 transition-all"
-            title="Supprimer"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-rajdhani font-bold uppercase tracking-wide text-[#5a5a5a] hover:text-red-400 hover:bg-red-900/10 transition-all"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5" /> Suppr
           </button>
         </div>
       </div>
+
+      {/* Modal détail séance */}
+      <Modal isOpen={showDetail} onClose={() => setShowDetail(false)} title="Détails — Course" size="md">
+        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          {(session as any).name && (
+            <h3 className="font-rajdhani font-bold text-lg text-blue-400 tracking-wide uppercase border-b border-white/5 pb-2">
+              {(session as any).name}
+            </h3>
+          )}
+          <div className="flex flex-wrap gap-2 text-sm">
+            <span className="text-[#a3a3a3]">{formatDate(session.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            {session.run_type && (
+              <span className="text-xs border border-blue-800/50 text-blue-400 px-2 py-0.5 font-rajdhani font-semibold uppercase">
+                {RUN_TYPE_LABELS[session.run_type as RunType]}
+              </span>
+            )}
+            {session.feedback && (
+              <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${
+                session.feedback === 'facile' ? 'text-green-500 border-green-900/50' :
+                session.feedback === 'difficile' ? 'text-orange-500 border-orange-900/50' :
+                'text-red-500 border-red-900/50'
+              }`}>
+                {FEEDBACK_LABELS[session.feedback as Feedback]}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: 'Distance', value: formatDistance(session.distance) },
+              { label: 'Durée', value: formatDuration(session.duration) },
+              { label: 'Allure', value: session.pace_min_per_km ? formatPace(session.pace_min_per_km) : '—' },
+              session.avg_heart_rate ? { label: 'FC moy.', value: `${session.avg_heart_rate} bpm` } : null,
+              session.max_heart_rate ? { label: 'FC max.', value: `${session.max_heart_rate} bpm` } : null,
+              session.elevation_gain != null ? { label: 'Dénivelé +', value: `${session.elevation_gain} m` } : null,
+              session.elevation_loss != null ? { label: 'Dénivelé −', value: `${session.elevation_loss} m` } : null,
+              session.weather_temp != null ? { label: 'Météo', value: `${session.weather_temp}°C` } : null,
+            ].filter(Boolean).map((stat: any, i) => (
+              <div key={i} className="border border-white/5 px-3 py-2">
+                <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">{stat.label}</p>
+                <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {session.notes && (
+            <p className="text-sm text-[#a3a3a3] italic border-l-2 border-blue-800/50 pl-3">{session.notes}</p>
+          )}
+        </div>
+      </Modal>
 
       {/* Modal édition */}
       <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Modifier la course" size="sm">
