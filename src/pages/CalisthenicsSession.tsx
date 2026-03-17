@@ -163,14 +163,23 @@ export function CalisthenicsSessionPage() {
         feedExercises,
       );
 
-      // Auto-détection des records : max reps consécutives par exercice
+      // Auto-détection des records par exercice
       for (const ex of caliExercises) {
-        if (ex.set_type !== 'reps') continue;
-        const maxReps = Math.max(...ex.sets.map(s => s.reps ?? 0));
-        if (maxReps > 0) {
-          await profileRecordsService.upsertRecord(
-            profile.id, ex.name, maxReps, 'reps', 'calisthenics', false,
-          );
+        if (ex.set_type === 'reps') {
+          const maxReps = Math.max(...ex.sets.map(s => s.reps ?? 0));
+          if (maxReps > 0) {
+            await profileRecordsService.upsertRecord(
+              profile.id, ex.name, maxReps, 'reps', 'calisthenics', false,
+            );
+          }
+        } else {
+          // timed : meilleur hold = plus long
+          const maxSeconds = Math.max(...ex.sets.map(s => s.hold_seconds ?? 0));
+          if (maxSeconds > 0) {
+            await profileRecordsService.upsertRecord(
+              profile.id, ex.name, maxSeconds, 's', 'calisthenics', false,
+            );
+          }
         }
       }
 
