@@ -41,6 +41,7 @@ export type ActivityType =
   | 'run'
   | 'calisthenics'
   | 'record'
+  | 'personal_record'
   | 'badge'
   | 'level_up'
   | 'challenge_completed';

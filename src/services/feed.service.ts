@@ -110,4 +110,15 @@ export const feedService = {
       });
     } catch { /* ignore */ }
   },
+
+  // Publier un Personal Record dans le feed
+  async publishPersonalRecord(userId: string, title: string, value: string, unit: string, category: 'musculation' | 'course' | 'calisthenics') {
+    try {
+      await db.from('activity_feed').insert({
+        user_id: userId,
+        type: 'personal_record',
+        content: { type: 'personal_record', title, value, unit, category },
+      });
+    } catch { /* ignore */ }
+  },
 };

@@ -1,11 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Crown, Dumbbell, PersonStanding, Star, Flame, Trophy, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Crown, Dumbbell, PersonStanding, Star, Trophy, Zap, Plus, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/common/Card';
 import { Loader } from '../components/common/Loader';
+import { Modal } from '../components/common/Modal';
+import { Button } from '../components/common/Button';
+import { Input } from '../components/common/Input';
+import { profileRecordsService } from '../services/profile-records.service';
+import { feedService } from '../services/feed.service';
 import { formatDistance, formatNumber, formatDuration } from '../utils/calculations';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -397,19 +402,304 @@ function useRecordsRanking() {
   return { groups, loading, error };
 }
 
+// ─── Confetti PR ──────────────────────────────────────────────────────────────
+
+function PRConfetti({ active }: { active: boolean }) {
+  const COLORS = ['#c9a870', '#f59e0b', '#fcd34d', '#fbbf24', '#ffffff', '#d97706'];
+  const particles = useMemo(() =>
+    Array.from({ length: 50 }, (_, i) => ({
+      left: Math.random() * 100,
+      rotate: Math.random() * 720 - 360,
+      x: (Math.random() - 0.5) * 300,
+      duration: 1.8 + Math.random() * 1.8,
+      delay: Math.random() * 0.6,
+      color: COLORS[i % COLORS.length],
+      size: 4 + Math.random() * 7,
+    })),
+  []);
+
+  if (!active) return null;
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-[300]">
+      {particles.map((p, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-sm"
+          style={{ backgroundColor: p.color, left: `${p.left}%`, top: '-20px', width: p.size, height: p.size }}
+          animate={{ y: ['0vh', '110vh'], rotate: [0, p.rotate], x: [0, p.x] }}
+          transition={{ duration: p.duration, delay: p.delay, ease: 'easeIn' }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Bandeau PR ───────────────────────────────────────────────────────────────
+
+function PRBanner({ onOpen }: { onOpen: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.05 }}
+      onClick={onOpen}
+      className="relative overflow-hidden border border-yellow-600/50 cursor-pointer group"
+    >
+      {/* Fond doré */}
+      <div className="absolute inset-0 bg-gradient-to-r from-yellow-950/60 via-[#1a1200]/50 to-yellow-950/60" />
+
+      {/* Shimmer animé */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent"
+        animate={{ x: ['-100%', '100%'] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+      />
+
+      {/* Couronnes décoratives */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-8 pointer-events-none">
+        <Crown className="w-20 h-20 text-yellow-400" />
+      </div>
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-8 pointer-events-none scale-x-[-1]">
+        <Crown className="w-20 h-20 text-yellow-400" />
+      </div>
+
+      {/* Contenu */}
+      <div className="relative flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6">
+        <div className="flex items-center gap-5">
+          <motion.div
+            animate={{ scale: [1, 1.12, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="flex-shrink-0"
+          >
+            <Trophy className="w-12 h-12 text-yellow-400 drop-shadow-lg" />
+          </motion.div>
+          <div className="text-center sm:text-left">
+            <p className="font-rajdhani font-black text-xl sm:text-2xl uppercase tracking-widest text-yellow-400 leading-tight">
+              Enregistrer un Record Personnel
+            </p>
+            <p className="text-sm text-[#a3a3a3] mt-1">
+              Tu viens de battre un record ? Immortalise-le et entre dans la légende.
+            </p>
+          </div>
+        </div>
+        <div className="flex-shrink-0">
+          <div className="flex items-center gap-2 px-6 py-3 border border-yellow-500/60 bg-yellow-500/10 text-yellow-300 font-rajdhani font-bold text-sm uppercase tracking-wider group-hover:bg-yellow-500/20 group-hover:border-yellow-400/70 transition-all">
+            <Plus className="w-4 h-4" />
+            Nouveau PR
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Modal PR ──────────────────────────────────────────────────────────────────
+
+interface PRModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  userId: string;
+}
+
+function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
+  const [category, setCategory] = useState<'musculation' | 'course' | 'calisthenics'>('musculation');
+  const [title, setTitle] = useState('');
+  const [value, setValue] = useState('');
+  const [unit, setUnit] = useState<'kg' | 'reps' | 's'>('kg');
+  const [distance, setDistance] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  function reset() {
+    setCategory('musculation'); setTitle(''); setValue('');
+    setUnit('kg'); setDistance(''); setError(null); setSuccess(false);
+  }
+
+  function handleClose() { reset(); onClose(); }
+
+  async function handleSubmit() {
+    if (!title.trim()) { setError('Le nom de l\'exercice est requis.'); return; }
+    if (!value.trim()) { setError('La valeur est requise.'); return; }
+    if (category === 'course' && !distance.trim()) { setError('La distance est requise.'); return; }
+    const num = parseFloat(value.replace(',', '.'));
+    if (isNaN(num) || num <= 0) { setError('Valeur numérique invalide.'); return; }
+
+    const finalUnit = category === 'course' ? `${distance.trim()} km` : unit;
+    const ascending = category === 'course';
+
+    setSaving(true); setError(null);
+    try {
+      await profileRecordsService.upsertRecord(userId, title.trim(), num, finalUnit, category, ascending);
+      await feedService.publishPersonalRecord(userId, title.trim(), value.trim(), finalUnit, category);
+      setSuccess(true);
+      onSuccess();
+      setTimeout(() => { handleClose(); }, 2800);
+    } catch {
+      setError('Erreur lors de l\'enregistrement. Réessaie.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={handleClose} title="" size="md">
+      <AnimatePresence mode="wait">
+        {success ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-8 flex flex-col items-center text-center gap-4"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 0.6 }}
+            >
+              <Trophy className="w-16 h-16 text-yellow-400" />
+            </motion.div>
+            <p className="font-rajdhani font-black text-2xl uppercase tracking-widest text-yellow-400">
+              LÉGENDE !
+            </p>
+            <p className="text-[#a3a3a3] text-sm">
+              Ton record a été enregistré et publié dans le feed. Continue comme ça.
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-5 space-y-4">
+            {/* En-tête festif */}
+            <div className="flex items-center gap-3 pb-3 border-b border-yellow-600/20">
+              <Trophy className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+              <div>
+                <p className="font-rajdhani font-black text-lg uppercase tracking-widest text-yellow-400">
+                  Nouveau Record Personnel
+                </p>
+                <p className="text-xs text-[#6b6b6b]">Publié dans le feed · Mis à jour dans ton profil</p>
+              </div>
+            </div>
+
+            {/* Sélecteur catégorie */}
+            <div className="flex rounded overflow-hidden border border-white/10">
+              {([
+                { id: 'musculation', label: 'Muscu', icon: <Dumbbell className="w-3.5 h-3.5" />, active: 'bg-yellow-500/15 text-yellow-400' },
+                { id: 'course', label: 'Course', icon: <PersonStanding className="w-3.5 h-3.5" />, active: 'bg-blue-500/15 text-blue-400' },
+                { id: 'calisthenics', label: 'Cali', icon: <Zap className="w-3.5 h-3.5" />, active: 'bg-violet-500/15 text-violet-400' },
+              ] as const).map((cat, idx) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => { setCategory(cat.id); setUnit(cat.id === 'calisthenics' ? 'reps' : 'kg'); setError(null); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${idx > 0 ? 'border-l border-white/10' : ''} ${category === cat.id ? cat.active : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}
+                >
+                  {cat.icon}
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Champs muscu */}
+            {category === 'musculation' && (
+              <>
+                <Input label="Exercice" value={title} onChange={e => { setTitle(e.target.value); setError(null); }} placeholder="ex: Développé couché, Squat, Tractions…" autoFocus maxLength={60} />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="Valeur" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 120" maxLength={10} />
+                  <div>
+                    <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">Unité</p>
+                    <div className="flex rounded overflow-hidden border border-white/10 h-10">
+                      {(['kg', 'reps'] as const).map((u, i) => (
+                        <button key={u} type="button" onClick={() => setUnit(u)}
+                          className={`flex-1 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-yellow-500/15 text-yellow-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
+                          {u}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Champs course */}
+            {category === 'course' && (
+              <>
+                <Input label="Épreuve" value={title} onChange={e => { setTitle(e.target.value); setError(null); }} placeholder="ex: 5 km, Semi-marathon, Trail des Crêtes…" autoFocus maxLength={60} />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="Distance (km)" value={distance} onChange={e => { setDistance(e.target.value); setError(null); }} placeholder="ex: 5 ou 21.1" maxLength={10} />
+                  <Input label="Durée" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 22:30 ou 1:45:00" maxLength={20} />
+                </div>
+              </>
+            )}
+
+            {/* Champs cali */}
+            {category === 'calisthenics' && (
+              <>
+                <Input label="Exercice" value={title} onChange={e => { setTitle(e.target.value); setError(null); }} placeholder="ex: Tractions, Dips, L-sit…" autoFocus maxLength={60} />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="Valeur" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 25 ou 60" maxLength={10} />
+                  <div>
+                    <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">Unité</p>
+                    <div className="flex rounded overflow-hidden border border-white/10 h-10">
+                      {(['reps', 's'] as const).map((u, i) => (
+                        <button key={u} type="button" onClick={() => setUnit(u as 'reps' | 's')}
+                          className={`flex-1 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-violet-500/15 text-violet-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
+                          {u}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {error && <p className="text-xs text-red-400">{error}</p>}
+
+            <div className="flex gap-3 pt-1">
+              <Button variant="ghost" className="flex-1" onClick={handleClose} disabled={saving}>Annuler</Button>
+              <Button
+                loading={saving}
+                className="flex-1 bg-yellow-600/20 border-yellow-600/50 text-yellow-300 hover:bg-yellow-600/30 hover:border-yellow-500/70"
+                onClick={handleSubmit}
+              >
+                <Trophy className="w-4 h-4" />
+                Enregistrer mon PR
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Modal>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function HallOfFamePage() {
   const { profile } = useAuth();
   const currentUserId = profile?.id ?? null;
 
+  const [prModalOpen, setPrModalOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
   const xp      = useXPRanking();
   const run     = useRunningRanking();
   const musc    = useMusculationRanking();
   const records = useRecordsRanking();
 
+  function handlePRSuccess() {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3500);
+  }
+
   return (
     <div className="space-y-6">
+      <PRConfetti active={showConfetti} />
+      <PRModal
+        isOpen={prModalOpen}
+        onClose={() => setPrModalOpen(false)}
+        onSuccess={handlePRSuccess}
+        userId={profile?.id ?? ''}
+      />
+
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3">
@@ -423,6 +713,9 @@ export function HallOfFamePage() {
           <p className="text-[#a3a3a3] text-sm mt-0.5">Top 5 — XP · Course · Musculation</p>
         </div>
       </motion.div>
+
+      {/* Bandeau PR */}
+      <PRBanner onOpen={() => setPrModalOpen(true)} />
 
       {/* 3 colonnes */}
       <motion.div

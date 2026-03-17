@@ -299,7 +299,8 @@ export type ActivityContent =
   | { type: 'record'; discipline: string; exercise?: string; distance?: number; old_value: number; new_value: number; unit: string }
   | { type: 'badge'; badge_code: string; badge_name: string; badge_rarity: BadgeRarity }
   | { type: 'level_up'; level: number; discipline: 'global' | 'musculation' | 'running' | 'calisthenics'; title: string }
-  | { type: 'challenge_completed'; challenge_title: string; contribution: number; unit: string };
+  | { type: 'challenge_completed'; challenge_title: string; contribution: number; unit: string }
+  | { type: 'personal_record'; title: string; value: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' };
 
 export type NotificationContent =
   | { message: string; challenge_id?: string; challenge_title?: string }

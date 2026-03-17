@@ -757,6 +757,16 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         stats: c.challenge_title,
         feedback: null,
       };
+      case 'personal_record': return {
+        label: 'NOUVEAU RECORD ALL TIME',
+        borderColor: 'border-l-yellow-600/70',
+        labelColor: 'text-yellow-400',
+        bgGradient: 'bg-gradient-to-br from-yellow-950/40 via-[#111] to-[#111]',
+        bannerBg: 'bg-yellow-900/50 border-y border-yellow-700/40',
+        icon: '🏆',
+        stats: c.title ? `${c.title} — ${c.value} ${c.unit}` : null,
+        feedback: null,
+      };
       default: return null;
     }
   })();
@@ -766,7 +776,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const c_content = item.content as any;
   const isMonster = (c_content.tonnage != null && c_content.tonnage > 10000)
     || (c_content.distance != null && c_content.distance > 20)
-    || item.type === 'record';
+    || item.type === 'record'
+    || item.type === 'personal_record';
 
   return (
     <motion.div
