@@ -7,7 +7,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { authService } from '../../services/auth.service';
 import { XPBar } from '../xp-system/XPBar';
 import { NotificationCenter } from '../notifications/NotificationCenter';
-import { getStatusTitle, getStatusColor, getLevelProgress } from '../../utils/calculations';
+import { getStatusTitle, getStatusColor } from '../../utils/calculations';
 
 export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
   const { user, profile } = useAuth();

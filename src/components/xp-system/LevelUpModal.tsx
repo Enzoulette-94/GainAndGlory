@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Zap, X } from 'lucide-react';
 import { getLevelTitle } from '../../utils/calculations';
@@ -19,27 +19,26 @@ const disciplineConfig = {
 
 function Confetti() {
   const colors = ['#6d28d9', '#7c3aed', '#0ea5e9', '#f59e0b', '#10b981', '#f97316'];
+  const particles = useMemo(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      left: Math.random() * 100,
+      rotate: Math.random() * 720 - 360,
+      x: (Math.random() - 0.5) * 200,
+      duration: 2 + Math.random() * 2,
+      delay: Math.random() * 0.5,
+      color: colors[i % colors.length],
+    })),
+  []);
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: 30 }).map((_, i) => (
+      {particles.map((p, i) => (
         <motion.div
           key={i}
           className="absolute w-2 h-2 rounded-sm"
-          style={{
-            backgroundColor: colors[i % colors.length],
-            left: `${Math.random() * 100}%`,
-            top: '-10px',
-          }}
-          animate={{
-            y: ['0vh', '110vh'],
-            rotate: [0, Math.random() * 720 - 360],
-            x: [0, (Math.random() - 0.5) * 200],
-          }}
-          transition={{
-            duration: 2 + Math.random() * 2,
-            delay: Math.random() * 0.5,
-            ease: 'easeIn',
-          }}
+          style={{ backgroundColor: p.color, left: `${p.left}%`, top: '-10px' }}
+          animate={{ y: ['0vh', '110vh'], rotate: [0, p.rotate], x: [0, p.x] }}
+          transition={{ duration: p.duration, delay: p.delay, ease: 'easeIn' }}
         />
       ))}
     </div>

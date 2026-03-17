@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
   Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, X, Zap, Bookmark,
