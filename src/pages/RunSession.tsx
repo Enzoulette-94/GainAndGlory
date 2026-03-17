@@ -188,7 +188,7 @@ export function RunSessionPage() {
           <PersonStanding className="w-6 h-6 text-blue-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-white">Nouvelle course</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-white">Nouvelle course</h1>
           <p className="text-[#a3a3a3] text-sm mt-0.5">Running</p>
         </div>
       </motion.div>

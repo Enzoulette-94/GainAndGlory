@@ -271,7 +271,7 @@ export function RunningPage() {
             <PersonStanding className="w-6 h-6 text-blue-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white">Running</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white">Running</h1>
             <p className="text-[#a3a3a3] text-sm mt-0.5">
               Niveau {profile.running_level} &middot; {profile.running_xp} XP
             </p>
@@ -301,7 +301,7 @@ export function RunningPage() {
               <PersonStanding className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-black text-blue-500">{totalSessions}</p>
+              <p className="text-xl sm:text-2xl font-black text-blue-500">{totalSessions}</p>
               <p className="text-xs text-[#a3a3a3]">Sorties totales</p>
             </div>
           </div>
@@ -312,7 +312,7 @@ export function RunningPage() {
               <MapPin className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-black text-blue-500">
+              <p className="text-xl sm:text-2xl font-black text-blue-500">
                 {totalDistance >= 1000
                   ? `${(totalDistance / 1000).toFixed(1)}k`
                   : `${Math.round(totalDistance)}`}

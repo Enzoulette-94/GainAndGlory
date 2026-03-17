@@ -111,7 +111,7 @@ export function UserProfilePage() {
             </div>
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-black text-white truncate">{profile.username}</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-white truncate">{profile.username}</h1>
               <span className="inline-block mt-1 px-2.5 py-0.5 text-xs font-semibold text-[#c9a870] border border-[#c9a870]/30">
                 {levelTitle}
               </span>
@@ -138,22 +138,22 @@ export function UserProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           <Card className="p-4 flex flex-col gap-2">
             <Dumbbell className="w-4 h-4 text-red-400" />
-            <p className="text-2xl font-black text-white">{stats?.muscuCount ?? 0}</p>
+            <p className="text-xl sm:text-2xl font-black text-white">{stats?.muscuCount ?? 0}</p>
             <p className="text-xs text-[#a3a3a3]">Séances muscu</p>
           </Card>
           <Card className="p-4 flex flex-col gap-2">
             <Timer className="w-4 h-4 text-blue-500" />
-            <p className="text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
+            <p className="text-xl sm:text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
             <p className="text-xs text-[#a3a3a3]">Séances course</p>
           </Card>
           <Card className="p-4 flex flex-col gap-2">
             <Route className="w-4 h-4 text-blue-500" />
-            <p className="text-2xl font-black text-white">{stats ? formatDistance(stats.totalDistance) : '0 km'}</p>
+            <p className="text-xl sm:text-2xl font-black text-white">{stats ? formatDistance(stats.totalDistance) : '0 km'}</p>
             <p className="text-xs text-[#a3a3a3]">Distance totale</p>
           </Card>
           <Card className="p-4 flex flex-col gap-2">
             <Flame className="w-4 h-4 text-orange-600" />
-            <p className="text-2xl font-black text-white">{profile.current_streak}</p>
+            <p className="text-xl sm:text-2xl font-black text-white">{profile.current_streak}</p>
             <p className="text-xs text-[#a3a3a3]">Jours consécutifs</p>
             <p className="text-xs text-[#4a4a4a]">Record : {profile.longest_streak} jours</p>
           </Card>
@@ -224,7 +224,7 @@ export function UserProfilePage() {
             <p className="text-[#6b6b6b] text-sm">Aucun badge encore…</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {badges.map((ub) => {
               const badge = ub.badge;
               if (!badge) return null;

@@ -268,7 +268,7 @@ export function MuscuSessionPage() {
           <Dumbbell className="w-6 h-6 text-red-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-white">Nouvelle séance</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-white">Nouvelle séance</h1>
           <p className="text-[#a3a3a3] text-sm mt-0.5">Musculation</p>
         </div>
       </motion.div>
@@ -376,18 +376,18 @@ export function MuscuSessionPage() {
                   {/* Tableau des séries */}
                   <div className="space-y-2">
                     {/* En-têtes */}
-                    <div className="grid grid-cols-[32px_1fr_1fr_1fr_32px] gap-2 px-1">
+                    <div className="grid grid-cols-[24px_1fr_1fr_1fr_24px] sm:grid-cols-[32px_1fr_1fr_1fr_32px] gap-1 sm:gap-2 px-1">
                       <span className="text-xs text-[#6b6b6b] text-center">#</span>
                       <span className="text-xs text-[#6b6b6b] text-center">Reps</span>
-                      <span className="text-xs text-[#6b6b6b] text-center">Poids (kg)</span>
-                      <span className="text-xs text-[#6b6b6b] text-center">Repos (s)</span>
+                      <span className="text-xs text-[#6b6b6b] text-center">Poids</span>
+                      <span className="text-xs text-[#6b6b6b] text-center">Repos</span>
                       <span />
                     </div>
 
                     {ex.sets.map((set, setIdx) => (
                       <div
                         key={setIdx}
-                        className="grid grid-cols-[32px_1fr_1fr_1fr_32px] gap-2 items-center"
+                        className="grid grid-cols-[24px_1fr_1fr_1fr_24px] sm:grid-cols-[32px_1fr_1fr_1fr_32px] gap-1 sm:gap-2 items-center"
                       >
                         <span className="text-xs text-[#6b6b6b] text-center font-mono">
                           {setIdx + 1}

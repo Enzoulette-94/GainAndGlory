@@ -147,7 +147,7 @@ export function CalisthenicsPage() {
             <Zap className="w-6 h-6 text-violet-400" />
           </div>
           <div>
-            <h1 className="font-rajdhani font-bold text-2xl text-[#f5f5f5] uppercase tracking-wide">
+            <h1 className="font-rajdhani font-bold text-xl sm:text-2xl text-[#f5f5f5] uppercase tracking-wide">
               Calisthénie
             </h1>
             <p className="text-xs text-[#6b6b6b]">Force au poids de corps</p>
@@ -162,17 +162,17 @@ export function CalisthenicsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-rajdhani font-bold text-violet-400">{totalSessions}</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <Card className="p-3 sm:p-4 text-center">
+          <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">{totalSessions}</p>
           <p className="text-xs text-[#6b6b6b] mt-0.5">Séances</p>
         </Card>
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-rajdhani font-bold text-violet-400">{totalReps.toLocaleString('fr-FR')}</p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Reps totales</p>
+        <Card className="p-3 sm:p-4 text-center">
+          <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">{totalReps.toLocaleString('fr-FR')}</p>
+          <p className="text-xs text-[#6b6b6b] mt-0.5">Reps</p>
         </Card>
-        <Card className="p-4 text-center">
-          <p className="text-2xl font-rajdhani font-bold text-violet-400">
+        <Card className="p-3 sm:p-4 text-center">
+          <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">
             {unlockedSkills.length}/{CALISTHENICS_SKILLS.length}
           </p>
           <p className="text-xs text-[#6b6b6b] mt-0.5">Skills</p>
