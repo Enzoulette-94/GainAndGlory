@@ -6,7 +6,7 @@ import type { Profile } from '../../types/models';
 
 interface XPBarProps {
   profile: Profile;
-  discipline?: 'global' | 'musculation' | 'running' | 'calisthenics';
+  discipline?: 'global' | 'musculation' | 'running' | 'calisthenics' | 'crossfit';
   compact?: boolean;
 }
 
@@ -15,6 +15,7 @@ const disciplineConfig = {
   musculation:  { label: 'Musculation', xpKey: 'musculation_xp',   levelKey: 'musculation_level',   barGradient: 'linear-gradient(to right, #7f1d1d, #ef4444)', accentColor: '#f87171' },
   running:      { label: 'Course',      xpKey: 'running_xp',       levelKey: 'running_level',       barGradient: 'linear-gradient(to right, #1e3a5f, #3b82f6)', accentColor: '#60a5fa' },
   calisthenics: { label: 'Calisthénie', xpKey: 'calisthenics_xp',  levelKey: 'calisthenics_level',  barGradient: 'linear-gradient(to right, #3b0764, #a855f7)', accentColor: '#c084fc' },
+  crossfit: { label: 'Crossfit', xpKey: 'crossfit_xp', levelKey: 'crossfit_level', barGradient: 'linear-gradient(to right, #7c2d12, #f97316)', accentColor: '#fb923c' },
 };
 
 export function XPBar({ profile, discipline = 'global', compact = false }: XPBarProps) {

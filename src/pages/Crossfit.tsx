@@ -13,7 +13,7 @@ import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
-import { formatRelativeTime, formatDate } from '../utils/calculations';
+import { formatRelativeTime, formatDate, getLevelProgress } from '../utils/calculations';
 import { CROSSFIT_WOD_TYPES, FEEDBACK_LABELS, FEEDBACK_COLORS } from '../utils/constants';
 import type { CrossfitSession } from '../types/models';
 import type { Feedback } from '../types/enums';
@@ -127,6 +127,19 @@ export function CrossfitPage() {
     }
   }
 
+  const groupedSessions = useMemo(() => {
+    const groups: { month: string; items: typeof displayedSessions }[] = [];
+    const idx: Record<string, number> = {};
+    for (const s of displayedSessions) {
+      const key = new Date(s.date)
+        .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        .toUpperCase();
+      if (idx[key] === undefined) { idx[key] = groups.length; groups.push({ month: key, items: [] }); }
+      groups[idx[key]].items.push(s);
+    }
+    return groups;
+  }, [displayedSessions]);
+
   if (loading) return <Loader fullScreen text="Chargement Crossfit..." />;
 
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode }[] = [
@@ -137,29 +150,46 @@ export function CrossfitPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 pb-24">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-500/10 rounded-xl">
-            <Flame className="w-6 h-6 text-orange-400" />
-          </div>
-          <div>
-            <h1 className="font-rajdhani font-bold text-xl sm:text-2xl text-[#f5f5f5] uppercase tracking-wide">
-              Crossfit
-            </h1>
-            <p className="text-xs text-[#6b6b6b]">WOD & entraînements fonctionnels</p>
-          </div>
-        </div>
-        <Link to="/crossfit/new">
-          <Button size="sm" className="bg-orange-600 hover:bg-orange-500 text-white border-0">
-            <Plus className="w-4 h-4 mr-1" />
-            Nouvelle séance
-          </Button>
-        </Link>
+      {/* Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-orange-900/20 p-6 -mx-4">
+        <Flame className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-orange-900/10 pointer-events-none" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-400/50 mb-2">WOD & entraînements fonctionnels</p>
+        <h1 className="font-rajdhani text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
+          CROSSFIT
+        </h1>
+        {(() => {
+          const { level, current, needed, progress } = getLevelProgress(profile?.crossfit_xp ?? 0);
+          return (
+            <>
+              <p className="text-xs text-[#6b6b6b] mb-3">Niveau {level} · {profile?.crossfit_xp ?? 0} XP</p>
+              <div className="h-1 bg-white/5 overflow-hidden">
+                <motion.div
+                  className="h-full"
+                  style={{ background: 'linear-gradient(to right, #7c2d12, #f97316)' }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+              </div>
+              <p className="text-[10px] text-[#3a3a3a] mt-1.5">{current} / {needed} XP → Niv. {level + 1}</p>
+            </>
+          );
+        })()}
       </div>
 
+      {/* CTA */}
+      <Link to="/crossfit/new" className="-mx-4 block">
+        <motion.div
+          whileHover={{ backgroundColor: '#ea580c' }}
+          className="w-full py-4 bg-orange-600 text-white font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer font-rajdhani"
+        >
+          <Plus className="w-4 h-4" />
+          NOUVELLE SÉANCE
+        </motion.div>
+      </Link>
+
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         <Card className="p-3 sm:p-4 text-center">
           <p className="text-xl sm:text-2xl font-rajdhani font-bold text-orange-400">{totalSessions}</p>
           <p className="text-xs text-[#6b6b6b] mt-0.5">Séances</p>
@@ -231,13 +261,22 @@ export function CrossfitPage() {
               </Link>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {displayedSessions.map(session => (
-                <SessionCard
-                  key={session.id}
-                  session={session}
-                  onDelete={() => setDeleteModal({ open: true, session })}
-                />
+            <div className="space-y-6">
+              {groupedSessions.map(({ month, items }) => (
+                <div key={month} className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                    <span className="text-[10px] text-[#2a2a2a]">{items.length} séance{items.length > 1 ? 's' : ''}</span>
+                  </div>
+                  {items.map(session => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onDelete={() => setDeleteModal({ open: true, session })}
+                    />
+                  ))}
+                </div>
               ))}
               {displayedCount < filteredSessions.length && (
                 <button

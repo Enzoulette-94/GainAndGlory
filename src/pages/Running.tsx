@@ -39,6 +39,7 @@ import {
   formatDuration,
   formatPace,
   getWeekStart,
+  getLevelProgress,
 } from '../utils/calculations';
 import {
   RUN_TYPE_LABELS,
@@ -248,6 +249,19 @@ export function RunningPage() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const groupedSessions = useMemo(() => {
+    const groups: { month: string; items: typeof visibleSessions }[] = [];
+    const idx: Record<string, number> = {};
+    for (const s of visibleSessions) {
+      const key = new Date(s.date)
+        .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        .toUpperCase();
+      if (idx[key] === undefined) { idx[key] = groups.length; groups.push({ month: key, items: [] }); }
+      groups[idx[key]].items.push(s);
+    }
+    return groups;
+  }, [visibleSessions]);
+
   if (!profile) return null;
 
   // ── Onglets config ──────────────────────────────────────────────────────────
@@ -260,33 +274,47 @@ export function RunningPage() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
+      {/* ── Banner hero ── */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative overflow-hidden bg-gradient-to-br from-blue-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-blue-900/20 p-6 -mx-4 sm:mx-0"
       >
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded bg-transparent border border-blue-900/40">
-            <PersonStanding className="w-6 h-6 text-blue-500" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white">Running</h1>
-            <p className="text-[#a3a3a3] text-sm mt-0.5">
-              Niveau {profile.running_level} &middot; {profile.running_xp} XP
-            </p>
-          </div>
-        </div>
-        <Link to="/running/new">
-          <Button
-            icon={<Plus className="w-4 h-4" />}
-            size="md"
-            className="bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
-          >
-            <span className="hidden sm:inline">Nouvelle course</span>
-          </Button>
-        </Link>
+        <PersonStanding className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-blue-900/10 pointer-events-none" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400/50 mb-2">Course à pied</p>
+        <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
+          RUNNING
+        </h1>
+        {(() => {
+          const { level, current, needed, progress } = getLevelProgress(profile.running_xp);
+          return (
+            <>
+              <p className="text-xs text-[#6b6b6b] mb-3">Niveau {level} · {profile.running_xp} XP</p>
+              <div className="h-1 bg-white/5 overflow-hidden">
+                <motion.div
+                  className="h-full"
+                  style={{ background: 'linear-gradient(to right, #1e3a5f, #3b82f6)' }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+              </div>
+              <p className="text-[10px] text-[#3a3a3a] mt-1.5">{current} / {needed} XP → Niv. {level + 1}</p>
+            </>
+          );
+        })()}
       </motion.div>
+
+      {/* ── CTA ── */}
+      <Link to="/running/new" className="-mx-4 sm:mx-0 block">
+        <motion.div
+          whileHover={{ backgroundColor: '#1d4ed8' }}
+          className="w-full py-4 bg-blue-700 text-white font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          NOUVELLE COURSE
+        </motion.div>
+      </Link>
 
       {/* ── Stats globales ── */}
       <motion.div
@@ -444,20 +472,23 @@ export function RunningPage() {
                   </Link>
                 </Card>
               ) : (
-                <div className="space-y-3">
-                  {visibleSessions.map((session, i) => (
-                    <motion.div
-                      key={session.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.04 * i }}
-                    >
-                      <RunSessionCard
-                        session={session}
-                        onUpdated={() => profile && loadData(profile.id)}
-                        onDeleted={() => profile && loadData(profile.id)}
-                      />
-                    </motion.div>
+                <div className="space-y-6">
+                  {groupedSessions.map(({ month, items }) => (
+                    <div key={month} className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
+                        <div className="flex-1 h-px bg-white/5" />
+                        <span className="text-[10px] text-[#2a2a2a]">{items.length} sortie{items.length > 1 ? 's' : ''}</span>
+                      </div>
+                      {items.map(session => (
+                        <RunSessionCard
+                          key={session.id}
+                          session={session}
+                          onUpdated={() => profile && loadData(profile.id)}
+                          onDeleted={() => profile && loadData(profile.id)}
+                        />
+                      ))}
+                    </div>
                   ))}
 
                   {/* Charger plus */}

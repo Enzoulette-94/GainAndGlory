@@ -98,13 +98,13 @@ export function WeightPage() {
     return latestEntry.weight - monthOldEntry.weight;
   }, [entries, latestEntry]);
 
-  // Données graphique (30 derniers jours, ordre chronologique)
+  // Données graphique (90 derniers jours, ordre chronologique)
   const chartData: ChartPoint[] = useMemo(() => {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
     return entries
-      .filter(e => new Date(e.date) >= thirtyDaysAgo)
+      .filter(e => new Date(e.date) >= ninetyDaysAgo)
       .reverse()
       .map(e => ({
         date: e.date,
@@ -113,7 +113,7 @@ export function WeightPage() {
       }));
   }, [entries]);
 
-  const recent20 = entries.slice(0, 20);
+  const recent20 = entries;
 
   async function handleSave() {
     if (!profile) return;
@@ -246,30 +246,55 @@ export function WeightPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* ── Banner hero ── */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative overflow-hidden bg-gradient-to-br from-green-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-green-900/20 p-6 -mx-4 sm:mx-0"
       >
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded bg-transparent border border-green-900/40">
-            <Scale className="w-6 h-6 text-green-600" />
+        <Scale className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-green-900/10 pointer-events-none" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-400/50 mb-2">Suivi corporel</p>
+        <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
+          POIDS
+        </h1>
+        {latestEntry ? (
+          <div className="flex items-end gap-4">
+            <div>
+              <p className="text-4xl font-black text-green-500 leading-none">
+                {latestEntry.weight.toFixed(1)}
+                <span className="text-xl text-green-500/60 ml-1">kg</span>
+              </p>
+              <p className="text-xs text-[#4a4a4a] mt-1">
+                {formatDate(latestEntry.date, { weekday: 'long', day: 'numeric', month: 'long' })}
+              </p>
+            </div>
+            <div className="flex gap-2 mb-1">
+              {variation7d !== null && Math.abs(variation7d) >= 0.1 && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${variation7d > 0 ? 'text-red-400 border-red-800/40 bg-red-950/20' : 'text-emerald-500 border-emerald-800/40 bg-emerald-950/20'}`}>
+                  {variation7d > 0 ? '+' : ''}{variation7d.toFixed(1)} kg / 7j
+                </span>
+              )}
+              {variation30d !== null && Math.abs(variation30d) >= 0.1 && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded border hidden sm:inline ${variation30d > 0 ? 'text-red-400 border-red-800/40 bg-red-950/20' : 'text-emerald-500 border-emerald-800/40 bg-emerald-950/20'}`}>
+                  {variation30d > 0 ? '+' : ''}{variation30d.toFixed(1)} kg / 30j
+                </span>
+              )}
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-white">Poids</h1>
-            <p className="text-[#a3a3a3] text-sm mt-0.5">Suivi corporel</p>
-          </div>
-        </div>
-        <Button
-          icon={<Plus className="w-4 h-4" />}
-          size="md"
-          onClick={openModal}
-          className="bg-transparent border border-green-800/60 text-green-600 hover:bg-green-900/10 hover:border-green-700"
-        >
-          Nouvelle pesée
-        </Button>
+        ) : (
+          <p className="text-sm text-[#4a4a4a]">Aucune pesée enregistrée</p>
+        )}
       </motion.div>
+
+      {/* ── CTA Nouvelle pesée ── */}
+      <motion.button
+        whileHover={{ backgroundColor: '#15803d' }}
+        onClick={openModal}
+        className="w-full -mx-4 sm:mx-0 py-4 bg-green-700 text-white font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        NOUVELLE PESÉE
+      </motion.button>
 
       {loading && <Loader text="Chargement des données..." />}
 
@@ -281,53 +306,18 @@ export function WeightPage() {
 
       {!loading && !error && (
         <>
-          {/* Dernier poids + variations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            {latestEntry ? (
-              <Card className="p-5">
-                <div className="flex items-end justify-between mb-4">
-                  <div>
-                    <p className="text-xs text-[#a3a3a3] mb-1">Dernier poids</p>
-                    <p className="text-4xl sm:text-5xl font-black text-green-600">
-                      {latestEntry.weight.toFixed(1)}
-                      <span className="text-2xl text-green-600/70 ml-1">kg</span>
-                    </p>
-                    <p className="text-xs text-[#6b6b6b] mt-1">
-                      {formatDate(latestEntry.date, {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                      })}
-                    </p>
-                  </div>
-                  <Scale className="w-12 h-12 text-green-600/20" />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <VariationBadge value={variation7d} label="7 derniers jours" />
-                  <VariationBadge value={variation30d} label="30 derniers jours" />
-                </div>
-              </Card>
-            ) : (
-              <Card className="p-8 text-center">
-                <Scale className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] text-sm mb-4">
-                  Aucune pesée enregistrée pour l'instant.
-                </p>
-                <Button
-                  icon={<Plus className="w-4 h-4" />}
-                  onClick={openModal}
-                  className="bg-transparent border border-green-800/60 text-green-600 hover:bg-green-900/10 hover:border-green-700"
-                >
-                  Première pesée
-                </Button>
-              </Card>
-            )}
-          </motion.div>
+          {/* Variations 7j/30j (mobile : 30j masqué dans banner, affiché ici) */}
+          {latestEntry && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 gap-3 sm:hidden"
+            >
+              <VariationBadge value={variation7d} label="7 derniers jours" />
+              <VariationBadge value={variation30d} label="30 derniers jours" />
+            </motion.div>
+          )}
 
           {/* Graphique */}
           {chartData.length >= 2 && (
@@ -338,7 +328,7 @@ export function WeightPage() {
             >
               <Card className="p-4">
                 <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider mb-4">
-                  Évolution sur 30 jours
+                  Évolution sur 90 jours
                 </h2>
                 <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
@@ -381,20 +371,35 @@ export function WeightPage() {
             </motion.div>
           )}
 
-          {/* Historique */}
+          {/* Historique groupé par mois */}
           {recent20.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider mb-3">
-                Historique
-              </h2>
-              <div className="space-y-2">
-                {recent20.map((entry, i) => {
-                  const prev = recent20[i + 1];
-                  const delta = prev ? entry.weight - prev.weight : null;
+              <div className="space-y-6">
+                {(() => {
+                  const groups: { month: string; items: typeof recent20 }[] = [];
+                  const idx: Record<string, number> = {};
+                  recent20.forEach(e => {
+                    const key = new Date(e.date)
+                      .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                      .toUpperCase();
+                    if (idx[key] === undefined) { idx[key] = groups.length; groups.push({ month: key, items: [] }); }
+                    groups[idx[key]].items.push(e);
+                  });
+                  return groups.map(({ month, items }) => (
+                    <div key={month} className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
+                        <div className="flex-1 h-px bg-white/5" />
+                        <span className="text-[10px] text-[#2a2a2a]">{items.length} pesée{items.length > 1 ? 's' : ''}</span>
+                      </div>
+                      {items.map((entry, i) => {
+                        const globalIdx = recent20.indexOf(entry);
+                        const prev = recent20[globalIdx + 1];
+                        const delta = prev ? entry.weight - prev.weight : null;
 
                   return (
                     <motion.div
@@ -448,6 +453,9 @@ export function WeightPage() {
                     </motion.div>
                   );
                 })}
+                    </div>
+                  ));
+                })()}
               </div>
             </motion.div>
           )}
