@@ -198,7 +198,8 @@ describe('ProfilePage', () => {
       await waitFor(() => expect(screen.queryAllByText(/ajouter/i).length).toBeGreaterThan(0), { timeout: 3000 });
       fireEvent.click(screen.getAllByText(/ajouter/i)[0]);
       await waitFor(() => {
-        expect(screen.queryAllByPlaceholderText(/squat|titre|développé/i).length).toBeGreaterThan(0);
+        // MusculationPickerContent shows muscle group buttons
+        expect(screen.queryAllByText(/pectoraux|dos|épaules|biceps|triceps|jambes|abdos/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });

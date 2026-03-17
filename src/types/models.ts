@@ -1,13 +1,13 @@
 import type {
   MuscleGroup, Feedback, RunType, WeatherCondition,
   GoalType, GoalStatus, ChallengeType, ChallengeStatus,
-  EventType, BadgeCategory, BadgeRarity, ActivityType, NotificationType,
+  EventType, BadgeCategory, BadgeRarity, ActivityType, NotificationType, CrossfitWodType,
 } from './enums';
 
 export type {
   MuscleGroup, Feedback, RunType, WeatherCondition,
   GoalType, GoalStatus, ChallengeType, ChallengeStatus,
-  EventType, BadgeCategory, BadgeRarity, ActivityType, NotificationType,
+  EventType, BadgeCategory, BadgeRarity, ActivityType, NotificationType, CrossfitWodType,
 };
 
 // ============================================================
@@ -33,6 +33,8 @@ export interface Profile {
   running_level: number;
   calisthenics_xp: number;
   calisthenics_level: number;
+  crossfit_xp: number;
+  crossfit_level: number;
   current_streak: number;
   longest_streak: number;
   last_activity_date: string | null;
@@ -146,6 +148,33 @@ export interface CalisthenicsSession {
   created_at: string;
 }
 
+export interface CrossfitExercise {
+  name: string;
+  reps: number | null;
+  weight: number | null;
+  duration: number | null;
+  notes: string | null;
+}
+
+export interface CrossfitSession {
+  id: string;
+  user_id: string;
+  date: string;
+  name: string | null;
+  wod_type: CrossfitWodType;
+  total_duration: number | null;
+  round_duration: number | null;
+  target_rounds: number | null;
+  result_time: string | null;
+  result_reps: number | null;
+  result_rounds: number | null;
+  benchmark_name: string | null;
+  exercises: CrossfitExercise[];
+  feedback: Feedback | null;
+  notes: string | null;
+  created_at: string;
+}
+
 export interface ProfileSkill {
   id: string;
   user_id: string;
@@ -226,7 +255,7 @@ export interface ProfileRecord {
   title: string;
   value: string;
   unit: string;
-  category: 'musculation' | 'course' | 'calisthenics';
+  category: 'musculation' | 'course' | 'calisthenics' | 'crossfit';
   created_at: string;
 }
 
@@ -296,11 +325,12 @@ export type ActivityContent =
   | { type: 'workout'; tonnage: number; sets_count: number; feedback?: string; exercises?: { name: string; sets: number; reps: number }[] }
   | { type: 'run'; distance: number; duration: number; pace: number; run_type?: string }
   | { type: 'calisthenics'; exercises_count: number; total_reps: number; feedback?: string; skills_unlocked?: string[]; name?: string }
+  | { type: 'crossfit'; wod_type: string; result_value: string | number | null; result_unit: string | null; feedback?: string; session_id?: string; name?: string; exercises?: { name: string }[] }
   | { type: 'record'; discipline: string; exercise?: string; distance?: number; old_value: number; new_value: number; unit: string }
   | { type: 'badge'; badge_code: string; badge_name: string; badge_rarity: BadgeRarity }
   | { type: 'level_up'; level: number; discipline: 'global' | 'musculation' | 'running' | 'calisthenics'; title: string }
   | { type: 'challenge_completed'; challenge_title: string; contribution: number; unit: string }
-  | { type: 'personal_record'; title: string; value: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' };
+  | { type: 'personal_record'; title: string; value: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' | 'crossfit' };
 
 export type NotificationContent =
   | { message: string; challenge_id?: string; challenge_title?: string }

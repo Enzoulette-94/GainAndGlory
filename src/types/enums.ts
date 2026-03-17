@@ -36,10 +36,13 @@ export type BadgeCategory =
 
 export type BadgeRarity = 'common' | 'rare' | 'epic' | 'legendary';
 
+export type CrossfitWodType = 'emom' | 'amrap' | 'benchmark' | 'for_rounds' | 'for_time';
+
 export type ActivityType =
   | 'workout'
   | 'run'
   | 'calisthenics'
+  | 'crossfit'
   | 'record'
   | 'personal_record'
   | 'badge'

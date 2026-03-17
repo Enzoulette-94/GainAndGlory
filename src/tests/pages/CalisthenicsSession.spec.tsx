@@ -54,6 +54,24 @@ const q = (pattern: RegExp) =>
 
 const renderPage = () => render(<MemoryRouter><CalisthenicsSessionPage /></MemoryRouter>);
 
+const mockCopySession = {
+  id: 's-copy', user_id: 'user-1', date: '2025-03-01T10:00:00Z',
+  name: 'Upper body', feedback: 'difficile', notes: null,
+  exercises: [
+    { name: 'Pull-up', set_type: 'reps', sets: [{ reps: 10, hold_seconds: null }] },
+  ],
+  skills_unlocked: [],
+  total_reps: 10,
+  created_at: '2025-03-01T10:00:00Z',
+};
+
+const renderWithCopyFrom = () =>
+  render(
+    <MemoryRouter initialEntries={[{ pathname: '/calisthenics/new', state: { copyFrom: mockCopySession } }]}>
+      <CalisthenicsSessionPage />
+    </MemoryRouter>
+  );
+
 describe('CalisthenicsSessionPage', () => {
   describe('Rendu initial', () => {
     it('affiche le titre "Nouvelle séance"', async () => {
@@ -105,6 +123,29 @@ describe('CalisthenicsSessionPage', () => {
       await waitFor(() => {
         expect(screen.queryAllByText(/notes/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
+    });
+  });
+
+  describe('Copie de séance', () => {
+    it('affiche le bandeau "Séance copiée depuis" quand copyFrom est présent', async () => {
+      renderWithCopyFrom();
+      await q(/séance copiée depuis/i);
+    });
+
+    it('pré-remplit le nom de la séance depuis copyFrom', async () => {
+      renderWithCopyFrom();
+      await waitFor(() => {
+        const inputs = document.querySelectorAll('input[type="text"], input:not([type])');
+        const nameInput = Array.from(inputs).find(
+          (el) => (el as HTMLInputElement).value === 'Upper body'
+        );
+        expect(nameInput).toBeTruthy();
+      }, { timeout: 3000 });
+    });
+
+    it('pré-remplit les exercices depuis copyFrom', async () => {
+      renderWithCopyFrom();
+      await q(/pull-up/i);
     });
   });
 });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
-  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, X, Zap, Bookmark,
+  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, X, Zap, Bookmark, Flame,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/musculation', icon: Dumbbell, label: 'Muscu' },
   { path: '/running', icon: PersonStanding, label: 'Course' },
   { path: '/calisthenics', icon: Zap, label: 'Calisthénie' },
+  { path: '/crossfit', icon: Flame, label: 'Crossfit' },
   { path: '/weight', icon: Scale, label: 'Poids' },
   { path: '/seances', icon: Bookmark, label: 'Séances' },
   { path: '/calendar', icon: Calendar, label: 'Calendrier' },
@@ -101,7 +102,7 @@ export function MobileDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               </button>
             </div>
             {/* Nav items */}
-            <div className="flex flex-col gap-0.5 px-2 py-2 flex-1">
+            <div className="flex flex-col gap-0.5 px-2 py-2 flex-1 overflow-y-auto max-h-[calc(100vh-52px)]">
               {navItems.map(({ path, icon: Icon, label }) => (
                 <NavLink
                   key={path}

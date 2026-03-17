@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, LineChart, Line,
@@ -260,7 +260,7 @@ export function MusculationPage() {
         </div>
         <Link to="/musculation/new">
           <Button icon={<Plus className="w-4 h-4" />} size="md">
-            Nouvelle séance
+            <span className="hidden sm:inline">Nouvelle séance</span>
           </Button>
         </Link>
       </motion.div>
@@ -317,14 +317,14 @@ export function MusculationPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded text-xs font-semibold transition-all ${
                 activeTab === tab.key
                   ? 'bg-[#7f1d1d] text-white border-l-2 border-[#c9a870]/40'
                   : 'text-[#6b6b6b] hover:text-[#d4d4d4]'
               }`}
             >
               {tab.icon}
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -633,6 +633,7 @@ function SessionCard({
   onUpdated: () => void;
   onDeleted: () => void;
 }) {
+  const navigate = useNavigate();
   const setsCount = session.sets?.length ?? 0;
   const exerciseCount = session.sets
     ? new Set(session.sets.map((s) => s.exercise_id)).size
@@ -796,7 +797,7 @@ function SessionCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <p className="text-sm font-semibold text-[#e5e5e5]">
               {session.name
                 ? session.name
@@ -805,6 +806,9 @@ function SessionCard({
             {feedbackLabel && (
               <span className={`text-xs ${feedbackColor}`}>{feedbackLabel}</span>
             )}
+            <span className="sm:hidden text-xs text-[#4a4a4a] ml-auto">
+              {formatRelativeTime(session.date)}
+            </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
             {session.total_tonnage != null && session.total_tonnage > 0 && (
@@ -824,10 +828,17 @@ function SessionCard({
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs text-[#6b6b6b]">
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <span className="hidden sm:inline text-xs text-[#6b6b6b]">
             {formatRelativeTime(session.date)}
           </span>
+          <button
+            onClick={() => navigate('/musculation/new', { state: { copyFrom: session } })}
+            className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 hover:bg-white/5 transition-all"
+            title="Réutiliser cette séance"
+          >
+            <Copy className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={openEdit}
             className="p-1.5 rounded text-[#6b6b6b] hover:text-[#d4d4d4] hover:bg-white/5 transition-all"

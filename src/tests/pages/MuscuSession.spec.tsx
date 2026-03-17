@@ -53,6 +53,22 @@ const q = (pattern: RegExp) =>
 
 const renderMuscuSession = () => render(<MemoryRouter><MuscuSessionPage /></MemoryRouter>);
 
+const mockCopySession = {
+  id: 's-copy', user_id: 'user-1', date: '2025-03-01T10:00:00Z',
+  name: 'Chest Day', feedback: 'difficile', total_tonnage: 3200, notes: null,
+  sets: [{
+    id: 'set-1', exercise_id: 'ex-1', set_number: 1, reps: 8, weight: 80, rest_time: 120,
+    exercise: { id: 'ex-1', name: 'Développé couché', muscle_group: 'pectoraux' },
+  }],
+};
+
+const renderWithCopyFrom = () =>
+  render(
+    <MemoryRouter initialEntries={[{ pathname: '/musculation/new', state: { copyFrom: mockCopySession } }]}>
+      <MuscuSessionPage />
+    </MemoryRouter>
+  );
+
 describe('MuscuSessionPage', () => {
   describe('Rendu initial', () => {
     it('se monte sans crash (pas de crypto.randomUUID)', async () => {
@@ -100,6 +116,29 @@ describe('MuscuSessionPage', () => {
     it('upsertRecord est défini dans le mock', async () => {
       const { profileRecordsService } = await import('../../services/profile-records.service');
       expect(typeof profileRecordsService.upsertRecord).toBe('function');
+    });
+  });
+
+  describe('Copie de séance', () => {
+    it('affiche le bandeau "Séance copiée depuis" quand copyFrom est présent', async () => {
+      renderWithCopyFrom();
+      await q(/séance copiée depuis/i);
+    });
+
+    it('pré-remplit le nom de la séance depuis copyFrom', async () => {
+      renderWithCopyFrom();
+      await waitFor(() => {
+        const inputs = document.querySelectorAll('input[type="text"], input:not([type])');
+        const nameInput = Array.from(inputs).find(
+          (el) => (el as HTMLInputElement).value === 'Chest Day'
+        );
+        expect(nameInput).toBeTruthy();
+      }, { timeout: 3000 });
+    });
+
+    it('pré-remplit les exercices depuis copyFrom', async () => {
+      renderWithCopyFrom();
+      await q(/développé couché/i);
     });
   });
 

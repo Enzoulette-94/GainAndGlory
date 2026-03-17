@@ -281,6 +281,7 @@ npm run lint     # Linter ESLint
 
 | Commit | Description |
 |---|---|
+| récent | feat(pickers): standardisation sélecteurs exercices — 0 texte libre, composant ExercisePicker partagé (Muscu/Cali/Course), anti-doublons records |
 | récent | feat(db): 4 migrations SQL + tests + MàJ docs (pace_km_per_h, total_tonnage, shoes.total_km, profile_records.value DECIMAL) |
 | récent | feat(seed): seed complète 6 utilisateurs × 3 mois (supabase/seed.sql) |
 | récent | feat(nav): drawer "Plus" dans BottomNav + tests Navigation |
@@ -297,3 +298,5 @@ npm run lint     # Linter ESLint
 | `655fbb1` | feat: titre de statut dans les notifications et le feed |
 | `93111ca` | fix(auth): auto-refresh du profil sur mise à jour BDD realtime |
 | `cfaf445` | feat(hall-of-fame): photo avatar dans les classements |
+
+| récent | feat(crossfit): bloc Crossfit complet — WOD (5 types), formulaire 2 étapes, picker 115 exercices, XP/niveaux, records, feed, Hall of Fame, Profile, Dashboard |

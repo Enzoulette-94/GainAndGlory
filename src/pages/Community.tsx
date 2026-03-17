@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp, Bookmark } from 'lucide-react';
+import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp, Bookmark, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
+import { workoutService } from '../services/workout.service';
+import { calisthenicsService } from '../services/calisthenics.service';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -605,16 +607,72 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showDetail, setShowDetail] = useState(false);
-  const canShowDetail = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics';
+  const canShowDetail = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics' || item.type === 'crossfit';
+  const canCopy = item.type === 'workout' || item.type === 'calisthenics' || item.type === 'crossfit';
   const canSave = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics';
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveCustomName, setSaveCustomName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [sendingComment, setSendingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { profile } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleCopySession() {
+    if (copying) return;
+    setCopying(true);
+    const c = item.content as any;
+    try {
+      if (item.type === 'workout' && c.session_id) {
+        const session = await workoutService.getSession(c.session_id);
+        if (session) {
+          navigate('/musculation/new', { state: { copyFrom: session } });
+          return;
+        }
+      }
+      if (item.type === 'calisthenics') {
+        const exercises = (c.exercises ?? []).map((ex: any) => ({
+          name: ex.name,
+          set_type: ex.set_type ?? 'reps',
+          sets: Array.from({ length: ex.sets || 1 }, () => ({
+            reps: ex.reps ? Math.round(ex.reps / (ex.sets || 1)) : null,
+            hold_seconds: ex.hold_seconds ? Math.round(ex.hold_seconds / (ex.sets || 1)) : null,
+          })),
+        }));
+        const fakeSession = { name: c.name ?? null, date: item.created_at, exercises };
+        navigate('/calisthenics/new', { state: { copyFrom: fakeSession } });
+        return;
+      }
+      if (item.type === 'crossfit') {
+        const exercises = (c.exercises ?? []).map((ex: any) => ({
+          name: ex.name,
+          reps: null,
+          weight: null,
+          duration: null,
+          notes: null,
+        }));
+        const fakeCrossfit = {
+          name: c.name ?? null,
+          date: item.created_at,
+          wod_type: c.wod_type ?? 'emom',
+          exercises,
+          benchmark_name: null,
+          total_duration: null,
+          round_duration: null,
+          target_rounds: null,
+        };
+        navigate('/crossfit/new', { state: { copyFrom: fakeCrossfit } });
+        return;
+      }
+      // Fallback for workout without session_id
+      navigate('/musculation/new');
+    } finally {
+      setCopying(false);
+    }
+  }
 
   const username = item.user?.username ?? 'Inconnu';
   const level = item.user?.global_level ?? 1;
@@ -713,6 +771,16 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         bannerBg: 'bg-violet-900/50 border-y border-violet-700/50',
         icon: '⚡',
         stats: `${c.exercises_count} exercices · ${c.total_reps} reps`,
+        feedback: c.feedback ?? null,
+      };
+      case 'crossfit': return {
+        label: (c as any).name ? (c as any).name.toUpperCase() : 'CROSSFIT',
+        borderColor: 'border-l-orange-800/70',
+        labelColor: 'text-orange-400',
+        bgGradient: 'bg-gradient-to-br from-orange-950/30 via-[#111] to-[#111]',
+        bannerBg: 'bg-orange-900/50 border-y border-orange-700/50',
+        icon: '🔥',
+        stats: c.wod_type ? `${(c.wod_type as string).toUpperCase()} · ${c.result_value ?? ''} ${c.result_unit ?? ''}`.trim() : 'CROSSFIT',
         feedback: c.feedback ?? null,
       };
       case 'badge': return {
@@ -1052,6 +1120,17 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
             className={`flex items-center gap-1 text-xs transition-colors ${saved ? 'text-[#c9a870]' : 'text-[#6b6b6b] hover:text-[#c9a870]'}`}
           >
             <Bookmark className="w-3.5 h-3.5" fill={saved ? 'currentColor' : 'none'} />
+          </button>
+        )}
+
+        {canCopy && currentUserId && (
+          <button
+            onClick={handleCopySession}
+            disabled={copying}
+            title="Réutiliser cette séance"
+            className="flex items-center gap-1 text-xs text-[#6b6b6b] hover:text-[#a3a3a3] transition-colors disabled:opacity-40"
+          >
+            <Copy className="w-3.5 h-3.5" />
           </button>
         )}
 

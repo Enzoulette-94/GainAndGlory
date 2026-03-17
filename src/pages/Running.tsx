@@ -72,7 +72,7 @@ function PaceTooltip({ active, payload }: PaceTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const raw = payload[0];
   return (
-    <div className="bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-xs shadow-lg">
+    <div className="bg-[#1c1c1c] border border-white/5 rounded px-3 py-2 text-xs shadow-lg">
       <p className="text-[#a3a3a3] mb-0.5">
         {formatDate(raw.payload.date, { day: 'numeric', month: 'short' })}
       </p>
@@ -92,7 +92,7 @@ interface DistTooltipProps {
 function DistTooltip({ active, payload, label }: DistTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   return (
-    <div className="bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-xs shadow-lg">
+    <div className="bg-[#1c1c1c] border border-white/5 rounded px-3 py-2 text-xs shadow-lg">
       <p className="text-[#a3a3a3] mb-0.5">{label}</p>
       <p className="text-blue-500 font-semibold">{payload[0].value.toFixed(1)} km</p>
     </div>
@@ -110,7 +110,7 @@ function HrTooltip({ active, payload }: HrTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const raw = payload[0];
   return (
-    <div className="bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-xs shadow-lg">
+    <div className="bg-[#1c1c1c] border border-white/5 rounded px-3 py-2 text-xs shadow-lg">
       <p className="text-[#a3a3a3] mb-0.5">
         {formatDate(raw.payload.date, { day: 'numeric', month: 'short' })}
       </p>
@@ -283,7 +283,7 @@ export function RunningPage() {
             size="md"
             className="bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
           >
-            Nouvelle course
+            <span className="hidden sm:inline">Nouvelle course</span>
           </Button>
         </Link>
       </motion.div>
@@ -335,14 +335,14 @@ export function RunningPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded text-xs font-semibold transition-all ${
                 activeTab === tab.key
                   ? 'bg-blue-700 text-white shadow'
                   : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-[#1c1c1c]'
               }`}
             >
               {tab.icon}
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -464,7 +464,7 @@ export function RunningPage() {
                   {hasMore && (
                     <button
                       onClick={() => setVisibleCount((c) => c + 10)}
-                      className="w-full flex items-center justify-center gap-2 py-3 text-sm text-[#a3a3a3] hover:text-blue-500 bg-[#0d0d0d]/40 border border-white/8/40 rounded transition-all hover:border-blue-700/30"
+                      className="w-full flex items-center justify-center gap-2 py-3 text-sm text-[#a3a3a3] hover:text-blue-500 bg-[#0d0d0d]/40 border border-white/5 rounded transition-all hover:border-blue-700/30"
                     >
                       <ChevronDown className="w-4 h-4" />
                       Charger plus ({filteredSessions.length - visibleCount} restantes)
@@ -759,7 +759,7 @@ function RunSessionCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <p className="text-sm font-semibold text-[#e5e5e5]">
               {(session as RunningSession & { name?: string | null }).name
                 ? (session as RunningSession & { name?: string | null }).name
@@ -775,6 +775,9 @@ function RunSessionCard({
                 {FEEDBACK_LABELS[feedback]}
               </span>
             )}
+            <span className="sm:hidden text-xs text-[#4a4a4a] ml-auto">
+              {formatRelativeTime(session.date)}
+            </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-[#a3a3a3]">
             <span className="font-medium text-[#d4d4d4]">
@@ -793,8 +796,8 @@ function RunSessionCard({
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs text-[#6b6b6b]">
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <span className="hidden sm:inline text-xs text-[#6b6b6b]">
             {formatRelativeTime(session.date)}
           </span>
           <button
@@ -851,7 +854,7 @@ function RunSessionCard({
             <select
               value={editRunType}
               onChange={e => setEditRunType(e.target.value)}
-              className="w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-blue-500/40 appearance-none cursor-pointer"
+              className="w-full bg-[#111111] border border-white/5 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-blue-500/40 appearance-none cursor-pointer"
             >
               <option value="">— Aucun —</option>
               <option value="endurance">{RUN_TYPE_LABELS.endurance}</option>
@@ -864,7 +867,7 @@ function RunSessionCard({
             <select
               value={editFeedback}
               onChange={e => setEditFeedback(e.target.value)}
-              className="w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-blue-500/40 appearance-none cursor-pointer"
+              className="w-full bg-[#111111] border border-white/5 text-[#d4d4d4] text-sm px-3 py-2.5 focus:outline-none focus:border-blue-500/40 appearance-none cursor-pointer"
             >
               <option value="">— Aucun —</option>
               <option value="facile">{FEEDBACK_LABELS.facile}</option>

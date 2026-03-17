@@ -6,7 +6,7 @@ import React from 'react';
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
     user: { id: 'user-1' },
-    profile: { id: 'user-1', username: 'Test', calisthenics_level: 1, calisthenics_xp: 0 },
+    profile: { id: 'user-1', username: 'Test', crossfit_level: 1, crossfit_xp: 0 },
     loading: false,
   }),
 }));
@@ -14,44 +14,45 @@ vi.mock('../../contexts/AuthContext', () => ({
 const mockSessions = [
   {
     id: 's-1', user_id: 'user-1', date: '2025-03-05T10:00:00Z',
-    name: 'Upper body', feedback: 'difficile', notes: null,
+    name: 'Fran', feedback: 'mort', notes: null,
+    wod_type: 'for_time',
+    total_duration: null, round_duration: null, target_rounds: null,
+    result_time: '6:30', result_reps: null, result_rounds: null,
+    benchmark_name: null,
     exercises: [
-      { name: 'Pull-up', set_type: 'reps', sets: [{ reps: 10, hold_seconds: null }, { reps: 8, hold_seconds: null }] },
+      { name: 'Thruster', reps: 21, weight: 43, duration: null, notes: null },
+      { name: 'Pull-up', reps: 21, weight: null, duration: null, notes: null },
     ],
-    skills_unlocked: ['pullup_10'],
-    total_reps: 18,
     created_at: '2025-03-05T10:00:00Z',
   },
 ];
 
-vi.mock('../../services/calisthenics.service', () => ({
-  calisthenicsService: {
+vi.mock('../../services/crossfit.service', () => ({
+  crossfitService: {
     getSessions: vi.fn().mockResolvedValue(mockSessions),
     getSessionsCount: vi.fn().mockResolvedValue(1),
-    getTotalReps: vi.fn().mockResolvedValue(18),
-    getUnlockedSkills: vi.fn().mockResolvedValue([{ id: 'sk-1', user_id: 'user-1', skill_code: 'pullup_10', unlocked_at: '2025-03-05T10:00:00Z' }]),
     deleteSession: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
-let CalisthenicsPage: any;
+let CrossfitPage: any;
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  const mod = await import('../../pages/Calisthenics');
-  CalisthenicsPage = mod.CalisthenicsPage;
+  const mod = await import('../../pages/Crossfit');
+  CrossfitPage = mod.CrossfitPage;
 });
 
 const q = (pattern: RegExp) =>
   waitFor(() => expect(screen.queryAllByText(pattern).length).toBeGreaterThan(0), { timeout: 3000 });
 
-const renderPage = () => render(<MemoryRouter><CalisthenicsPage /></MemoryRouter>);
+const renderPage = () => render(<MemoryRouter><CrossfitPage /></MemoryRouter>);
 
-describe('CalisthenicsPage', () => {
+describe('CrossfitPage', () => {
   describe('En-tête', () => {
-    it('affiche le titre "Calisthénie"', async () => {
+    it('affiche le titre "Crossfit"', async () => {
       renderPage();
-      await q(/calisthénie/i);
+      await q(/crossfit/i);
     });
 
     it('affiche le lien vers une nouvelle séance', async () => {
@@ -62,48 +63,26 @@ describe('CalisthenicsPage', () => {
     });
   });
 
-  describe('Statistiques', () => {
-    it('affiche les 3 cartes de stats', async () => {
-      renderPage();
-      await waitFor(() => {
-        expect(screen.queryAllByText(/séances/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/reps/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/skills/i).length).toBeGreaterThan(0);
-      }, { timeout: 3000 });
-    });
-
-    it('affiche le bon nombre de séances', async () => {
-      renderPage();
-      await q(/1/);
-    });
-  });
-
   describe('Onglets', () => {
-    it('affiche les 4 onglets', async () => {
+    it('affiche les 3 onglets (Séances, Graphiques, Records)', async () => {
       renderPage();
       await waitFor(() => {
         expect(screen.queryAllByText(/séances/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/graphiques/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/records/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/skills/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });
 
   describe('Liste des séances', () => {
-    it('affiche la séance "Upper body"', async () => {
+    it('affiche la séance "Fran"', async () => {
       renderPage();
-      await q(/upper body/i);
+      await q(/fran/i);
     });
 
-    it('affiche le feedback de la séance', async () => {
+    it('affiche le type WOD FOR TIME', async () => {
       renderPage();
-      await q(/difficile/i);
-    });
-
-    it('affiche le nombre de reps', async () => {
-      renderPage();
-      await q(/18/);
+      await q(/for.time/i);
     });
   });
 

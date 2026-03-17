@@ -18,7 +18,7 @@ export const xpService = {
   async awardXP(
     userId: string,
     action: keyof typeof XP_REWARDS,
-    discipline?: 'musculation' | 'running' | 'calisthenics'
+    discipline?: 'musculation' | 'running' | 'calisthenics' | 'crossfit'
   ): Promise<XPResult> {
     const xp = XP_REWARDS[action];
     const profile = await profileService.getProfile(userId);
@@ -35,6 +35,8 @@ export const xpService = {
       updates.running_level = getLevelFromXP(newProfile.running_xp);
     } else if (discipline === 'calisthenics') {
       updates.calisthenics_level = getLevelFromXP(newProfile.calisthenics_xp ?? 0);
+    } else if (discipline === 'crossfit') {
+      updates.crossfit_level = getLevelFromXP(newProfile.crossfit_xp ?? 0);
     }
 
     if (newLevel !== oldLevel || discipline) {

@@ -105,6 +105,7 @@ export const XP_REWARDS = {
   WORKOUT_SESSION: 50,
   RUNNING_SESSION: 50,
   CALISTHENICS_SESSION: 50,
+  CROSSFIT_SESSION: 60,
   SKILL_UNLOCKED: 200,
   WEIGHT_ENTRY: 10,
   PERSONAL_RECORD: 100,
@@ -119,6 +120,26 @@ export const XP_REWARDS = {
 // ============================================================
 // CALISTHÉNIE
 // ============================================================
+
+export const CALISTHENICS_GROUPS = [
+  { id: 'traction',  label: 'Traction / Tirage', emoji: '🔼',
+    exercises: ['Pull-up', 'Chin-up', 'Muscle-up', 'Front lever', 'Australian pull-up', 'One arm pull-up'] },
+  { id: 'poussee',   label: 'Poussée',            emoji: '💪',
+    exercises: ['Dip', 'Pike push-up', 'HSPU', 'Archer push-up', 'Ring push-up', 'Planche push-up', 'Push-up'] },
+  { id: 'core',      label: 'Core / Gainage',     emoji: '🔥',
+    exercises: ['L-sit', 'Planche', 'Dragon flag', 'Hollow body', 'V-sit', 'Tuck planche', 'Ab wheel'] },
+  { id: 'jambes',    label: 'Jambes',              emoji: '🦵',
+    exercises: ['Pistol squat', 'Shrimp squat', 'Nordic curl', 'Jump squat'] },
+  { id: 'isometrie', label: 'Isométrie / Tenu',   emoji: '⏱',
+    exercises: ['Front lever hold', 'Back lever hold', 'Human flag', 'Ring support hold'] },
+] as const;
+
+export const RUNNING_RACE_DISTANCES = [
+  { label: '5 km',          title: '5 km',         km: 5 },
+  { label: '10 km',         title: '10 km',        km: 10 },
+  { label: 'Semi-marathon', title: 'Semi-marathon', km: 21.0975 },
+  { label: 'Marathon',      title: 'Marathon',      km: 42.195 },
+] as const;
 
 export const CALISTHENICS_EXERCISES = [
   'Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Diamond Push-up', 'Pike Push-up',
@@ -142,6 +163,118 @@ export const CALISTHENICS_SKILLS = [
 ] as const;
 
 export type SkillCode = typeof CALISTHENICS_SKILLS[number]['code'];
+
+// ============================================================
+// CROSSFIT
+// ============================================================
+
+export const CROSSFIT_WOD_TYPES = [
+  { id: 'emom',       label: 'EMOM',       description: 'Every Minute on the Minute' },
+  { id: 'amrap',      label: 'AMRAP',      description: 'As Many Reps As Possible' },
+  { id: 'benchmark',  label: 'BENCHMARK',  description: 'Épreuve test de progression' },
+  { id: 'for_rounds', label: 'FOR ROUNDS', description: 'Nombre de rounds dans le temps' },
+  { id: 'for_time',   label: 'FOR TIME',   description: 'Temps pour compléter le WOD' },
+] as const;
+
+export const CROSSFIT_GROUPS = [
+  {
+    id: 'haltero',
+    label: 'Haltérophilie',
+    emoji: '🏋️',
+    exercises: [
+      'Snatch', 'Clean & Jerk', 'Power Snatch', 'Power Clean', 'Hang Power Snatch',
+      'Hang Power Clean', 'Overhead Squat', 'Front Squat', 'Clean', 'Jerk',
+      'Push Jerk', 'Split Jerk', 'Hang Clean',
+    ],
+  },
+  {
+    id: 'power',
+    label: 'Powerlifting & Force',
+    emoji: '💪',
+    exercises: [
+      'Back Squat', 'Deadlift', 'Bench Press', 'Strict Press', 'Push Press',
+      'Romanian Deadlift', 'Sumo Deadlift', 'Thruster', 'Farmer Carry',
+      'Good Morning', 'Hip Thrust', 'Barbell Row',
+    ],
+  },
+  {
+    id: 'gymnastics_sol',
+    label: 'Gymnastics sol',
+    emoji: '🤸',
+    exercises: [
+      'Push-up', 'Diamond Push-up', 'Pike Push-up', 'Handstand Push-up', 'Planche Push-up',
+      'Archer Push-up', 'Burpee', 'V-up', 'Sit-up', 'GHD Sit-up',
+      'Back Extension', 'Superman Hold', 'Hollow Hold', 'Pistol Squat',
+      'Air Squat', 'Lunge', 'Box Step-up', 'Wall Walk', 'Bear Crawl', 'Turkish Get-up',
+    ],
+  },
+  {
+    id: 'gymnastics_barre',
+    label: 'Gymnastics barre & anneaux',
+    emoji: '🔼',
+    exercises: [
+      'Pull-up', 'Chin-up', 'Kipping Pull-up', 'Butterfly Pull-up', 'Chest-to-Bar Pull-up',
+      'Muscle-up (barre)', 'Toes-to-Bar', 'Knees-to-Elbow', 'L-sit (barre)',
+      'Ring Dip', 'Ring Push-up', 'Ring Row', 'Ring Muscle-up', 'Ring L-sit',
+      'Dip (barre)', 'Bar Muscle-up', 'Front Lever', 'Back Lever',
+      'L-sit (anneaux)', 'Skin the Cat', 'Face Pull (anneaux)',
+    ],
+  },
+  {
+    id: 'sauts',
+    label: 'Sauts & Pliométrie',
+    emoji: '🦘',
+    exercises: [
+      'Box Jump', 'Box Jump Over', 'Broad Jump', 'Double Under',
+      'Single Under', 'Jump Squat', 'Lateral Burpee', 'Depth Jump', 'Tuck Jump',
+    ],
+  },
+  {
+    id: 'monostructural',
+    label: 'Monostructural',
+    emoji: '🏃',
+    exercises: [
+      'Run 400m', 'Run 800m', 'Run 1km', 'Rowing (cal)', 'Rowing (m)',
+      'Assault Bike (cal)', 'Ski Erg (cal)',
+    ],
+  },
+  {
+    id: 'kettlebell',
+    label: 'Kettlebell',
+    emoji: '🔔',
+    exercises: [
+      'KB Swing', 'KB Goblet Squat', 'KB Turkish Get-up', 'KB Snatch',
+      'KB Clean & Press', 'KB Windmill', 'KB Deadlift', 'KB Farmer Carry',
+    ],
+  },
+  {
+    id: 'medball',
+    label: 'Médecine-ball',
+    emoji: '⚽',
+    exercises: [
+      'Wall Ball', 'Med Ball Clean', 'Med Ball Slam', 'Med Ball Sit-up',
+      'Med Ball Carry', 'Med Ball Throw',
+    ],
+  },
+  {
+    id: 'carries',
+    label: 'Carries & Objets lourds',
+    emoji: '🪨',
+    exercises: [
+      'Sled Push', 'Sled Pull', 'Tire Flip', 'Yoke Carry', 'Atlas Stone',
+      'Sandbag Carry', 'Sandbag Clean', 'Sandbag Squat', 'Log Press', 'Log Clean',
+      'Heavy Bag Carry', 'Dumbbell Carry', 'D-ball Over Shoulder', 'Prowler Push', 'Plate Carry',
+    ],
+  },
+  {
+    id: 'elastiques',
+    label: 'Bandes élastiques',
+    emoji: '🎗️',
+    exercises: [
+      'Banded Pull-apart', 'Banded Good Morning', 'Banded Squat', 'Banded Deadlift',
+    ],
+  },
+] as const;
 
 // ============================================================
 // BADGES

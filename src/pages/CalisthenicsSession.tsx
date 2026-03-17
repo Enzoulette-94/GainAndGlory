@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Zap, Plus, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Zap, Plus, Trash2, X, Pencil } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { calisthenicsService } from '../services/calisthenics.service';
 import { xpService } from '../services/xp.service';
@@ -8,10 +8,12 @@ import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
 import { Loader } from '../components/common/Loader';
-import { CALISTHENICS_EXERCISES, CALISTHENICS_SKILLS, FEEDBACK_LABELS } from '../utils/constants';
+import { Modal } from '../components/common/Modal';
+import { CalisthenicsPickerContent } from '../components/forms/ExercisePicker';
+import { CALISTHENICS_SKILLS, FEEDBACK_LABELS } from '../utils/constants';
 import { profileRecordsService } from '../services/profile-records.service';
 import { feedService } from '../services/feed.service';
-import type { CaliExercise, CaliSet, ProfileSkill } from '../types/models';
+import type { CaliExercise, CaliSet, ProfileSkill, CalisthenicsSession as CalisthenicsSessionModel } from '../types/models';
 import type { Feedback } from '../types/enums';
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
@@ -28,17 +30,35 @@ interface ExerciseBlock {
 export function CalisthenicsSessionPage() {
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const copyFrom = (location.state as { copyFrom?: CalisthenicsSessionModel } | null)?.copyFrom;
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState(copyFrom?.name ?? '');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [feedback, setFeedback] = useState<Feedback | ''>('');
   const [notes, setNotes] = useState('');
-  const [exercises, setExercises] = useState<ExerciseBlock[]>([]);
+  const [exercises, setExercises] = useState<ExerciseBlock[]>(() => {
+    if (copyFrom?.exercises && copyFrom.exercises.length > 0) {
+      return copyFrom.exercises.map(ex => ({
+        id: Math.random().toString(36).slice(2),
+        name: ex.name,
+        set_type: ex.set_type,
+        sets: ex.sets.map(s => ({
+          reps: s.reps != null ? String(s.reps) : '',
+          hold_seconds: s.hold_seconds != null ? String(s.hold_seconds) : '',
+        })),
+      }));
+    }
+    return [];
+  });
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [unlockedSkills, setUnlockedSkills] = useState<ProfileSkill[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -212,6 +232,15 @@ export function CalisthenicsSessionPage() {
         </div>
       </div>
 
+      {copyFrom && (
+        <div className="flex items-center gap-2 px-3 py-2.5 bg-transparent border border-violet-900/30 rounded text-xs text-violet-300">
+          <Pencil className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>
+            Séance copiée depuis «{copyFrom.name ?? new Date(copyFrom.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}» — modifie à ta guise puis enregistre.
+          </span>
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-950/30 border border-red-800/40 rounded-xl p-3 text-red-400 text-sm">{error}</div>
       )}
@@ -265,6 +294,7 @@ export function CalisthenicsSessionPage() {
                 onAddSet={() => addSet(ex.id)}
                 onRemoveSet={setIdx => removeSet(ex.id, setIdx)}
                 onUpdateSet={(setIdx, field, value) => updateSet(ex.id, setIdx, field, value)}
+                onOpenPicker={() => { setPickerTargetId(ex.id); setPickerOpen(true); }}
               />
             ))}
           </div>
@@ -315,6 +345,24 @@ export function CalisthenicsSessionPage() {
           {saving ? 'Enregistrement...' : 'Enregistrer'}
         </Button>
       </div>
+
+      {/* Exercise Picker Modal */}
+      <Modal
+        isOpen={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        title="Choisir un exercice"
+        size="md"
+      >
+        <div className="p-4">
+          <CalisthenicsPickerContent
+            selected={exercises.find(e => e.id === pickerTargetId)?.name ?? ''}
+            onSelect={name => {
+              if (pickerTargetId) updateExercise(pickerTargetId, 'name', name);
+              setPickerOpen(false);
+            }}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -329,49 +377,32 @@ interface ExerciseBlockProps {
   onAddSet: () => void;
   onRemoveSet: (idx: number) => void;
   onUpdateSet: (idx: number, field: 'reps' | 'hold_seconds', value: string) => void;
+  onOpenPicker: () => void;
 }
 
-function ExerciseBlockComponent({ exercise, index, onUpdate, onRemove, onAddSet, onRemoveSet, onUpdateSet }: ExerciseBlockProps) {
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const suggestions = CALISTHENICS_EXERCISES.filter(e =>
-    e.toLowerCase().includes(exercise.name.toLowerCase()) && exercise.name.length > 0
-  ).slice(0, 6);
-
+function ExerciseBlockComponent({ exercise, index, onUpdate, onRemove, onAddSet, onRemoveSet, onUpdateSet, onOpenPicker }: ExerciseBlockProps) {
   return (
     <div className="bg-[#0d0d0d] border border-white/5 rounded-xl p-3 space-y-3">
       {/* Header exercice */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-rajdhani font-bold text-violet-400 w-5">{index + 1}</span>
-        <div className="flex-1 relative">
-          <input
-            ref={inputRef}
-            value={exercise.name}
-            onChange={e => {
-              onUpdate('name', e.target.value);
-              setShowSuggestions(true);
-            }}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            placeholder="Nom de l'exercice..."
-            className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-violet-500/50"
-          />
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg overflow-hidden z-10 shadow-lg">
-              {suggestions.map(s => (
-                <button
-                  key={s}
-                  onMouseDown={() => {
-                    onUpdate('name', s);
-                    setShowSuggestions(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-sm text-[#d4d4d4] hover:bg-white/5 transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+        <div className="flex-1">
+          {exercise.name ? (
+            <button
+              type="button"
+              onClick={onOpenPicker}
+              className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-violet-500/30 rounded-lg text-sm text-[#f5f5f5] hover:border-violet-400/50 transition-colors"
+            >
+              {exercise.name}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenPicker}
+              className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-sm text-[#4a4a4a] hover:border-violet-500/30 hover:text-[#a3a3a3] transition-colors"
+            >
+              Sélectionner un exercice...
+            </button>
           )}
         </div>
         {/* Toggle reps/timed */}

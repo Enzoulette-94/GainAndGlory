@@ -128,7 +128,7 @@ export function DashboardPage() {
         {/* Actions rapides */}
         <div className="bg-[#0e0e0e] border border-white/5 p-4 flex flex-col gap-3">
           <h2 className="font-rajdhani text-xs font-bold text-[#8b6f47] uppercase tracking-widest">Nouvelle session</h2>
-          <div className="grid grid-cols-2 gap-2 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1">
             <QuickAction
               to="/musculation/new"
               label="Muscu"
@@ -146,12 +146,12 @@ export function DashboardPage() {
               bgHover="hover:bg-blue-900/30 hover:border-blue-700/60"
             />
             <QuickAction
-              to="/weight"
-              label="Pesée"
-              accentColor="text-green-400"
-              borderColor="border-green-900/50"
-              bgFrom="bg-green-950/20"
-              bgHover="hover:bg-green-900/30 hover:border-green-700/60"
+              to="/crossfit/new"
+              label="Crossfit"
+              accentColor="text-orange-400"
+              borderColor="border-orange-900/50"
+              bgFrom="bg-orange-950/20"
+              bgHover="hover:bg-orange-900/30 hover:border-orange-700/60"
             />
             <QuickAction
               to="/calisthenics/new"

@@ -21,7 +21,7 @@ export const profileRecordsService = {
     title: string,
     value: string,
     unit: string,
-    category: 'musculation' | 'course' | 'calisthenics',
+    category: 'musculation' | 'course' | 'calisthenics' | 'crossfit',
   ): Promise<ProfileRecord> {
     const { data, error } = await db
       .from('profile_records')
@@ -37,7 +37,7 @@ export const profileRecordsService = {
     title: string,
     value: string,
     unit: string,
-    category: 'musculation' | 'course' | 'calisthenics',
+    category: 'musculation' | 'course' | 'calisthenics' | 'crossfit',
   ): Promise<ProfileRecord> {
     const { data, error } = await db
       .from('profile_records')
@@ -55,7 +55,7 @@ export const profileRecordsService = {
     title: string,
     newValue: number,
     unit: string,
-    category: 'musculation' | 'course' | 'calisthenics',
+    category: 'musculation' | 'course' | 'calisthenics' | 'crossfit',
     ascending: boolean, // true = plus bas est meilleur (allure), false = plus haut est meilleur (poids, distance)
   ): Promise<void> {
     const { data: existing } = await db

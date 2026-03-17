@@ -111,8 +111,19 @@ export const feedService = {
     } catch { /* ignore */ }
   },
 
+  // Publier une séance Crossfit dans le feed
+  async publishCrossfit(userId: string, wodType: string, resultValue: string | number | null, resultUnit: string | null, feedback?: string, sessionId?: string, name?: string, exercises?: { name: string }[]) {
+    try {
+      await db.from('activity_feed').insert({
+        user_id: userId,
+        type: 'crossfit',
+        content: { type: 'crossfit', wod_type: wodType, result_value: resultValue, result_unit: resultUnit, feedback, session_id: sessionId, name, exercises: exercises ?? [] },
+      });
+    } catch { /* ignore */ }
+  },
+
   // Publier un Personal Record dans le feed
-  async publishPersonalRecord(userId: string, title: string, value: string, unit: string, category: 'musculation' | 'course' | 'calisthenics') {
+  async publishPersonalRecord(userId: string, title: string, value: string, unit: string, category: 'musculation' | 'course' | 'calisthenics' | 'crossfit') {
     try {
       await db.from('activity_feed').insert({
         user_id: userId,

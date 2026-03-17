@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Crown, Dumbbell, PersonStanding, Star, Trophy, Zap, Plus, X } from 'lucide-react';
+import { Crown, Dumbbell, PersonStanding, Star, Trophy, Zap, Plus, X, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
@@ -12,6 +12,8 @@ import { Input } from '../components/common/Input';
 import { profileRecordsService } from '../services/profile-records.service';
 import { feedService } from '../services/feed.service';
 import { formatDistance, formatNumber, formatDuration } from '../utils/calculations';
+import { MusculationPickerContent, CalisthenicsPickerContent, RunningRacePicker } from '../components/forms/ExercisePicker';
+import { CrossfitExercisePickerContent } from '../components/forms/CrossfitExercisePicker';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,7 +38,7 @@ interface RecordEntry {
 interface RecordGroup {
   title: string;
   unit: string;
-  category: 'musculation' | 'course' | 'calisthenics';
+  category: 'musculation' | 'course' | 'calisthenics' | 'crossfit';
   ascending: boolean;
   entries: RecordEntry[];
 }
@@ -344,12 +346,13 @@ function useRecordsRanking() {
           .order('title');
         if (err) throw err;
 
-        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course' | 'calisthenics'; entries: RecordEntry[] }> = {};
+        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' | 'crossfit'; entries: RecordEntry[] }> = {};
 
         for (const rec of (records ?? []) as any[]) {
-          const cat: 'musculation' | 'course' | 'calisthenics' =
+          const cat: 'musculation' | 'course' | 'calisthenics' | 'crossfit' =
             rec.category === 'course' ? 'course'
             : rec.category === 'calisthenics' ? 'calisthenics'
+            : rec.category === 'crossfit' ? 'crossfit'
             : 'musculation';
           const key = `${cat}::${rec.title.trim().toLowerCase()}`;
           if (!groupMap[key]) {
@@ -503,7 +506,7 @@ interface PRModalProps {
 }
 
 function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
-  const [category, setCategory] = useState<'musculation' | 'course' | 'calisthenics'>('musculation');
+  const [category, setCategory] = useState<'musculation' | 'course' | 'calisthenics' | 'crossfit'>('musculation');
   const [title, setTitle] = useState('');
   const [value, setValue] = useState('');
   const [unit, setUnit] = useState<'kg' | 'reps' | 's'>('kg');
@@ -585,6 +588,7 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                 { id: 'musculation', label: 'Muscu', icon: <Dumbbell className="w-3.5 h-3.5" />, active: 'bg-yellow-500/15 text-yellow-400' },
                 { id: 'course', label: 'Course', icon: <PersonStanding className="w-3.5 h-3.5" />, active: 'bg-blue-500/15 text-blue-400' },
                 { id: 'calisthenics', label: 'Cali', icon: <Zap className="w-3.5 h-3.5" />, active: 'bg-violet-500/15 text-violet-400' },
+                { id: 'crossfit', label: 'Crossfit', icon: <Flame className="w-3.5 h-3.5" />, active: 'bg-orange-500/15 text-orange-400' },
               ] as const).map((cat, idx) => (
                 <button
                   key={cat.id}
@@ -601,7 +605,11 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
             {/* Champs muscu */}
             {category === 'musculation' && (
               <>
-                <Input label="Exercice" value={title} onChange={e => { setTitle(e.target.value); setError(null); }} placeholder="ex: Développé couché, Squat, Tractions…" autoFocus maxLength={60} />
+                <div>
+                  <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-2">Exercice</p>
+                  {title && <p className="text-sm font-semibold text-yellow-400 mb-2">{title}</p>}
+                  <MusculationPickerContent selected={title} onSelect={t => { setTitle(t); setError(null); }} />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input label="Valeur" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 120" maxLength={10} />
                   <div>
@@ -622,18 +630,22 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
             {/* Champs course */}
             {category === 'course' && (
               <>
-                <Input label="Épreuve" value={title} onChange={e => { setTitle(e.target.value); setError(null); }} placeholder="ex: 5 km, Semi-marathon, Trail des Crêtes…" autoFocus maxLength={60} />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input label="Distance (km)" value={distance} onChange={e => { setDistance(e.target.value); setError(null); }} placeholder="ex: 5 ou 21.1" maxLength={10} />
-                  <Input label="Durée" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 22:30 ou 1:45:00" maxLength={20} />
-                </div>
+                <RunningRacePicker
+                  value={title}
+                  onChange={(t, km) => { setTitle(t); setDistance(String(km)); setError(null); }}
+                />
+                <Input label="Durée" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 22:30 ou 1:45:00" maxLength={20} />
               </>
             )}
 
             {/* Champs cali */}
             {category === 'calisthenics' && (
               <>
-                <Input label="Exercice" value={title} onChange={e => { setTitle(e.target.value); setError(null); }} placeholder="ex: Tractions, Dips, L-sit…" autoFocus maxLength={60} />
+                <div>
+                  <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-2">Exercice</p>
+                  {title && <p className="text-sm font-semibold text-violet-400 mb-2">{title}</p>}
+                  <CalisthenicsPickerContent selected={title} onSelect={t => { setTitle(t); setError(null); }} />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input label="Valeur" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 25 ou 60" maxLength={10} />
                   <div>
@@ -642,6 +654,31 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                       {(['reps', 's'] as const).map((u, i) => (
                         <button key={u} type="button" onClick={() => setUnit(u as 'reps' | 's')}
                           className={`flex-1 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-violet-500/15 text-violet-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
+                          {u}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Champs crossfit */}
+            {category === 'crossfit' && (
+              <>
+                <div>
+                  <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-2">Exercice</p>
+                  {title && <p className="text-sm font-semibold text-orange-400 mb-2">{title}</p>}
+                  <CrossfitExercisePickerContent selected={title} onSelect={t => { setTitle(t); setError(null); }} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="Valeur" value={value} onChange={e => { setValue(e.target.value); setError(null); }} placeholder="ex: 100 ou 20" maxLength={10} />
+                  <div>
+                    <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">Unité</p>
+                    <div className="flex rounded overflow-hidden border border-white/10 h-10">
+                      {(['kg', 'reps'] as const).map((u, i) => (
+                        <button key={u} type="button" onClick={() => setUnit(u)}
+                          className={`flex-1 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-orange-500/15 text-orange-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
                           {u}
                         </button>
                       ))}
@@ -823,6 +860,21 @@ export function HallOfFamePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'calisthenics').map(group => (
                   <RecordGroupCard key={`cali-${group.title}`} group={group} currentUserId={currentUserId} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Crossfit */}
+          {records.groups.filter(g => g.category === 'crossfit').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-orange-400">Crossfit</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {records.groups.filter(g => g.category === 'crossfit').map(group => (
+                  <RecordGroupCard key={`crossfit-${group.title}`} group={group} currentUserId={currentUserId} />
                 ))}
               </div>
             </div>

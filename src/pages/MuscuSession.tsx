@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Dumbbell,
   Plus,
@@ -17,9 +17,9 @@ import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
 import { Card } from '../components/common/Card';
 import { Modal } from '../components/common/Modal';
-import { calcTonnage, formatNumber } from '../utils/calculations';
+import { calcTonnage, formatNumber, formatDate } from '../utils/calculations';
 import { FEEDBACK_LABELS, MUSCLE_GROUP_LABELS, MUSCLE_GROUP_DISPLAY, XP_REWARDS } from '../utils/constants';
-import type { Exercise } from '../types/models';
+import type { Exercise, WorkoutSession } from '../types/models';
 import type { Feedback } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
 
@@ -32,7 +32,6 @@ interface SetRow {
 interface ExerciseBlock {
   id: string;
   exercise: Exercise | null;
-  customName: string;
   sets: SetRow[];
 }
 
@@ -44,7 +43,6 @@ function defaultExerciseBlock(): ExerciseBlock {
   return {
     id: Math.random().toString(36).slice(2),
     exercise: null,
-    customName: '',
     sets: [defaultSet()],
   };
 }
@@ -58,10 +56,34 @@ function toLocalDatetimeValue(): string {
 export function MuscuSessionPage() {
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const copyFrom = (location.state as { copyFrom?: WorkoutSession } | null)?.copyFrom ?? null;
 
   const [date, setDate] = useState(toLocalDatetimeValue());
-  const [sessionName, setSessionName] = useState('');
-  const [exercises, setExercises] = useState<ExerciseBlock[]>([defaultExerciseBlock()]);
+  const [sessionName, setSessionName] = useState(copyFrom?.name ?? '');
+  const [exercises, setExercises] = useState<ExerciseBlock[]>(() => {
+    if (copyFrom?.sets && copyFrom.sets.length > 0) {
+      const grouped = new Map<string, ExerciseBlock>();
+      for (const set of copyFrom.sets) {
+        if (!set.exercise_id) continue;
+        if (!grouped.has(set.exercise_id)) {
+          grouped.set(set.exercise_id, {
+            id: Math.random().toString(36).slice(2),
+            exercise: set.exercise ?? null,
+            sets: [],
+          });
+        }
+        grouped.get(set.exercise_id)!.sets.push({
+          reps: set.reps,
+          weight: set.weight,
+          rest_time: set.rest_time ?? null,
+        });
+      }
+      const blocks = Array.from(grouped.values());
+      return blocks.length > 0 ? blocks : [defaultExerciseBlock()];
+    }
+    return [defaultExerciseBlock()];
+  });
   const [feedback, setFeedback] = useState<Feedback | ''>('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -75,8 +97,6 @@ export function MuscuSessionPage() {
   const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
   const [pickerStep, setPickerStep] = useState<'group' | 'exercises'>('group');
   const [pickerGroup, setPickerGroup] = useState<string | null>(null);
-  const [customNameInput, setCustomNameInput] = useState('');
-  const [showCustomInput, setShowCustomInput] = useState(false);
 
   useEffect(() => {
     workoutService
@@ -114,8 +134,6 @@ export function MuscuSessionPage() {
     setPickerTargetId(targetId);
     setPickerStep('group');
     setPickerGroup(null);
-    setCustomNameInput('');
-    setShowCustomInput(false);
     setPickerOpen(true);
   }
 
@@ -125,13 +143,7 @@ export function MuscuSessionPage() {
   }
 
   function selectExercise(targetId: string, exercise: Exercise) {
-    updateExercise(targetId, { exercise, customName: '' });
-    closePicker();
-  }
-
-  function selectCustom(targetId: string, name: string) {
-    if (!name.trim()) return;
-    updateExercise(targetId, { exercise: null, customName: name.trim() });
+    updateExercise(targetId, { exercise });
     closePicker();
   }
 
@@ -171,7 +183,7 @@ export function MuscuSessionPage() {
     e.preventDefault();
     if (!profile) return;
 
-    const validExercises = exercises.filter(ex => ex.exercise !== null || ex.customName.trim() !== '');
+    const validExercises = exercises.filter(ex => ex.exercise !== null);
     if (validExercises.length === 0) {
       setError('Ajoute au moins un exercice.');
       return;
@@ -273,6 +285,16 @@ export function MuscuSessionPage() {
         </div>
       </motion.div>
 
+      {/* Bandeau copie */}
+      {copyFrom && (
+        <div className="flex items-center gap-2 px-3 py-2.5 bg-transparent border border-red-900/30 rounded text-xs text-red-300">
+          <Pencil className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>
+            Séance copiée depuis &laquo;{copyFrom.name ?? formatDate(copyFrom.date, { weekday: 'short', day: 'numeric', month: 'short' })}&raquo; — modifie à ta guise puis enregistre.
+          </span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Date */}
         <motion.div
@@ -329,21 +351,14 @@ export function MuscuSessionPage() {
                       <label className="text-sm font-medium text-[#d4d4d4] mb-1 block">
                         Exercice {exIdx + 1}
                       </label>
-                      {ex.exercise || ex.customName ? (
+                      {ex.exercise ? (
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-white">
-                            {ex.exercise ? ex.exercise.name : ex.customName}
+                            {ex.exercise.name}
                           </span>
-                          {ex.exercise && (
-                            <span className="text-xs px-2 py-0.5 bg-transparent border border-red-800/40 text-red-300 rounded-lg">
-                              {MUSCLE_GROUP_LABELS[ex.exercise.muscle_group]}
-                            </span>
-                          )}
-                          {!ex.exercise && (
-                            <span className="text-xs px-2 py-0.5 bg-transparent border border-white/10 text-[#6b6b6b] rounded-lg">
-                              Autre
-                            </span>
-                          )}
+                          <span className="text-xs px-2 py-0.5 bg-transparent border border-red-800/40 text-red-300 rounded-lg">
+                            {MUSCLE_GROUP_LABELS[ex.exercise.muscle_group]}
+                          </span>
                           <button
                             type="button"
                             onClick={() => openPicker(ex.id)}
@@ -582,72 +597,28 @@ export function MuscuSessionPage() {
       >
         <div className="p-4 space-y-3">
           {pickerStep === 'group' && (
-            <>
-              <div className="grid grid-cols-2 gap-2">
-                {MUSCLE_GROUP_DISPLAY.map(group => (
-                  <button
-                    key={group.id}
-                    type="button"
-                    onClick={() => {
-                      setPickerGroup(group.id);
-                      setPickerStep('exercises');
-                      setShowCustomInput(false);
-                      setCustomNameInput('');
-                    }}
-                    className="flex items-center gap-3 p-3 bg-[#1c1c1c] border border-white/8 rounded hover:border-red-500/50 hover:bg-[#242424] transition-all text-left"
-                  >
-                    <span className="text-sm font-medium text-[#d4d4d4]">{group.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="pt-2 border-t border-white/8">
-                {showCustomInput ? (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      autoFocus
-                      placeholder="Nom de l'exercice..."
-                      value={customNameInput}
-                      onChange={e => setCustomNameInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && pickerTargetId) {
-                          e.preventDefault();
-                          selectCustom(pickerTargetId, customNameInput);
-                        }
-                      }}
-                      className="flex-1 bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-sm text-[#f5f5f5] placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => pickerTargetId && selectCustom(pickerTargetId, customNameInput)}
-                    >
-                      Valider
-                    </Button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowCustomInput(true)}
-                    className="w-full flex items-center gap-2 p-3 text-sm text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Autre (saisie libre, sans suivi de PR)
-                  </button>
-                )}
-              </div>
-            </>
+            <div className="grid grid-cols-2 gap-2">
+              {MUSCLE_GROUP_DISPLAY.map(group => (
+                <button
+                  key={group.id}
+                  type="button"
+                  onClick={() => {
+                    setPickerGroup(group.id);
+                    setPickerStep('exercises');
+                  }}
+                  className="flex items-center gap-3 p-3 bg-[#1c1c1c] border border-white/8 rounded hover:border-red-500/50 hover:bg-[#242424] transition-all text-left"
+                >
+                  <span className="text-sm font-medium text-[#d4d4d4]">{group.label}</span>
+                </button>
+              ))}
+            </div>
           )}
 
           {pickerStep === 'exercises' && (
             <>
               <button
                 type="button"
-                onClick={() => {
-                  setPickerStep('group');
-                  setShowCustomInput(false);
-                  setCustomNameInput('');
-                }}
+                onClick={() => setPickerStep('group')}
                 className="flex items-center gap-1.5 text-sm text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors mb-1"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -667,42 +638,6 @@ export function MuscuSessionPage() {
                       {exercise.name}
                     </button>
                   ))
-                )}
-              </div>
-              <div className="pt-2 border-t border-white/8">
-                {showCustomInput ? (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      autoFocus
-                      placeholder="Nom de l'exercice..."
-                      value={customNameInput}
-                      onChange={e => setCustomNameInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && pickerTargetId) {
-                          e.preventDefault();
-                          selectCustom(pickerTargetId, customNameInput);
-                        }
-                      }}
-                      className="flex-1 bg-[#1c1c1c] border border-white/8 rounded px-3 py-2 text-sm text-[#f5f5f5] placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => pickerTargetId && selectCustom(pickerTargetId, customNameInput)}
-                    >
-                      Valider
-                    </Button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowCustomInput(true)}
-                    className="w-full flex items-center gap-2 p-3 text-sm text-[#a3a3a3] hover:text-[#d4d4d4] transition-colors"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Autre (saisie libre, sans suivi de PR)
-                  </button>
                 )}
               </div>
             </>

@@ -180,7 +180,7 @@
 
 - Sélection de la date/heure
 - Nom de la séance (optionnel)
-- Ajout dynamique d'exercices avec recherche autocomplete (filtre sur 8 résultats, groupe musculaire affiché)
+- Ajout dynamique d'exercices via **sélecteur prédéfini** en 2 étapes : grille groupes musculaires → liste exercices (plus de saisie libre pour éviter les doublons dans les records)
 - Pour chaque exercice : tableau de séries (n°, reps, poids, repos)
   - Ajout de série (pré-remplie avec les valeurs de la dernière série)
   - Suppression de série (désactivée si une seule série)
@@ -434,10 +434,16 @@
 - 4 lignes : Global, Musculation, Course, Calisthénie
 - Niveau, XP courant / XP requis, barre de progression colorée
 
+### Meilleures performances — Sélecteurs standardisés (anti-doublons)
+- **Muscu** : sélecteur 2 étapes (groupe musculaire → exercice prédéfini) — plus de saisie libre
+- **Cali** : sélecteur 2 étapes (groupe → exercice calisthénie prédéfini)
+- **Course** : 4 boutons fixes (5 km / 10 km / Semi-marathon / Marathon) + champ Durée
+- Garantit l'uniformité des titres de records pour les classements du Hall of Fame
+
 ### Meilleures performances — Records de course
 - **Allure moyenne calculée automatiquement** depuis le titre (ex : "10 km") et la durée
 - Format affiché : `10 km · 52:00 temps · 5:12 /km`
-- Fonctionne pour les 5 distances standard : 1 km, 5 km, 10 km, Semi-marathon, Marathon
+- Fonctionne pour les 4 distances standard : 5 km, 10 km, Semi-marathon, Marathon
 
 ### Statistiques
 - Séances muscu totales
@@ -485,13 +491,14 @@
 | Séance de musculation | 50 XP |
 | Course à pied | 50 XP |
 | Séance de calisthénie | 50 XP |
+| Séance de Crossfit | 60 XP |
 | Skill calisthénie débloqué | 200 XP |
 | Pesée | 10 XP |
 | Compléter un objectif personnel | Variable |
 
 ### Calcul des niveaux
 - Formule exponentielle : `XP niveau N → N+1 = floor(100 × 1.5^(N-2))`
-- 4 compteurs indépendants : Global, Musculation, Course, Calisthénie
+- 5 compteurs indépendants : Global, Musculation, Course, Calisthénie, Crossfit
 - Détection automatique de montée de niveau
 
 ### Titres de statut (niveaux 1–30+)
@@ -625,6 +632,7 @@
 | XP & Niveaux | Système exponentiel, 30 niveaux thématiques | ✅ |
 | Badges | Vérification automatique, déblocage, affichage | ✅ |
 | Notifications | Realtime, 7 types, centre de notifs | ✅ |
+| Crossfit | WOD (EMOM/AMRAP/Benchmark/For Rounds/For Time), records, graphiques, feed | ✅ |
 | Navigation | SideNav desktop, BottomNav mobile + drawer "Plus" | ✅ |
 | Mot de passe oublié | Envoi email de reset, page réinitialisation | ✅ |
 | Migrations DB | 4 migrations SQL avec BEGIN/COMMIT, DO blocks, vérifications | ✅ |

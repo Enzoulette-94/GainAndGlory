@@ -11,6 +11,7 @@ vi.mock('../../contexts/AuthContext', () => ({
       musculation_level: 1, musculation_xp: 0,
       running_level: 1, running_xp: 50,
       calisthenics_level: 1, calisthenics_xp: 0,
+      crossfit_level: 1, crossfit_xp: 0,
       current_streak: 3,
     },
     loading: false,
@@ -47,6 +48,7 @@ vi.mock('../../lib/supabase-client', () => ({
       eq: vi.fn().mockReturnThis(),
       gte: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({ data: [], error: null }),
       limit: vi.fn().mockResolvedValue({ data: [], error: null }),
     })),
   },
@@ -89,9 +91,9 @@ describe('DashboardPage', () => {
       await q(/course/i);
     });
 
-    it('affiche le bouton "Pesée"', async () => {
+    it('affiche le bouton "Crossfit"', async () => {
       renderDashboard();
-      await q(/pesée/i);
+      await q(/crossfit/i);
     });
   });
 

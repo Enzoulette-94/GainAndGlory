@@ -668,3 +668,35 @@ CREATE TABLE IF NOT EXISTS saved_sessions (
 ALTER TABLE saved_sessions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "own saved_sessions" ON saved_sessions
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- ============================================================
+-- CROSSFIT (migration)
+-- ============================================================
+
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS crossfit_xp INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS crossfit_level INTEGER DEFAULT 1;
+
+CREATE TABLE IF NOT EXISTS crossfit_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  name TEXT,
+  wod_type TEXT NOT NULL,
+  total_duration INTEGER,
+  round_duration INTEGER,
+  target_rounds INTEGER,
+  result_time TEXT,
+  result_reps INTEGER,
+  result_rounds INTEGER,
+  benchmark_name TEXT,
+  exercises JSONB NOT NULL DEFAULT '[]',
+  feedback TEXT CHECK (feedback IN ('facile', 'difficile', 'mort')),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_crossfit_sessions_user_date ON crossfit_sessions(user_id, date DESC);
+ALTER TABLE crossfit_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "crossfit_sel" ON crossfit_sessions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "crossfit_ins" ON crossfit_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "crossfit_del" ON crossfit_sessions FOR DELETE USING (auth.uid() = user_id);

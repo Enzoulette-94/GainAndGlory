@@ -292,7 +292,7 @@ export function WeightPage() {
                 <div className="flex items-end justify-between mb-4">
                   <div>
                     <p className="text-xs text-[#a3a3a3] mb-1">Dernier poids</p>
-                    <p className="text-5xl font-black text-green-600">
+                    <p className="text-4xl sm:text-5xl font-black text-green-600">
                       {latestEntry.weight.toFixed(1)}
                       <span className="text-2xl text-green-600/70 ml-1">kg</span>
                     </p>

@@ -7,7 +7,7 @@ export interface SavedSession {
   user_id: string;
   source_user_id: string | null;
   source_username: string | null;
-  type: 'workout' | 'run' | 'calisthenics';
+  type: 'workout' | 'run' | 'calisthenics' | 'crossfit';
   custom_name: string | null;
   original_name: string | null;
   exercises: { name: string; sets: number; reps: number; maxWeight?: number; distance?: number; duration?: number }[];
@@ -29,7 +29,7 @@ export const savedSessionsService = {
     userId: string;
     sourceUserId?: string;
     sourceUsername?: string;
-    type: 'workout' | 'run' | 'calisthenics';
+    type: 'workout' | 'run' | 'calisthenics' | 'crossfit';
     customName?: string;
     originalName?: string;
     exercises: object[];

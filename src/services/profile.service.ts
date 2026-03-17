@@ -35,7 +35,7 @@ export const profileService = {
     return (data?.length ?? 0) > 0;
   },
 
-  async addXP(userId: string, xp: number, discipline?: 'musculation' | 'running' | 'calisthenics') {
+  async addXP(userId: string, xp: number, discipline?: 'musculation' | 'running' | 'calisthenics' | 'crossfit') {
     const profile = await this.getProfile(userId);
     const updates: Partial<Profile> = {
       total_xp: profile.total_xp + xp,
@@ -47,6 +47,8 @@ export const profileService = {
       updates.running_xp = profile.running_xp + xp;
     } else if (discipline === 'calisthenics') {
       updates.calisthenics_xp = (profile.calisthenics_xp ?? 0) + xp;
+    } else if (discipline === 'crossfit') {
+      updates.crossfit_xp = (profile.crossfit_xp ?? 0) + xp;
     }
 
     return this.updateProfile(userId, updates);

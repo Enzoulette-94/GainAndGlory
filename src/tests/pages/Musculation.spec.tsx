@@ -97,4 +97,14 @@ describe('MusculationPage', () => {
       await q(/tous/i);
     });
   });
+
+  describe('Copie de séance', () => {
+    it('affiche le bouton Réutiliser sur chaque SessionCard', async () => {
+      renderMusculation();
+      await waitFor(() => {
+        const btns = screen.queryAllByTitle(/réutiliser/i);
+        expect(btns.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
 });
