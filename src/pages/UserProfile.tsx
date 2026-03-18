@@ -121,19 +121,72 @@ export function UserProfilePage() {
         </Card>
       </motion.div>
 
+      {/* ── PERFORMANCES ─────────────────────────────────────────────── */}
+      {records.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
+          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Meilleures performances</h2>
+
+          {records.filter(r => (r.category ?? 'musculation') === 'musculation').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Dumbbell className="w-3.5 h-3.5 text-[#c9a870]" />
+                <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Musculation</span>
+              </div>
+              <div className="space-y-1.5">
+                {records.filter(r => (r.category ?? 'musculation') === 'musculation').map((r, i) => (
+                  <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.12 + i * 0.04 }}
+                    className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
+                  >
+                    <Trophy className="w-3.5 h-3.5 text-[#c9a870] flex-shrink-0" />
+                    <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                    <span className="text-[#6b6b6b] text-xs">•</span>
+                    <span className="text-sm font-bold text-[#c9a870]">
+                      {r.value}<span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span>
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {records.filter(r => r.category === 'course').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <PersonStanding className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Course</span>
+              </div>
+              <div className="space-y-1.5">
+                {records.filter(r => r.category === 'course').map((r, i) => (
+                  <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.12 + i * 0.04 }}
+                    className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-blue-800/50"
+                  >
+                    <PersonStanding className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                    <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
+                    <span className="text-[#6b6b6b] text-xs">•</span>
+                    <span className="text-sm font-bold text-blue-400">{r.value}</span>
+                    <span className="text-xs text-[#6b6b6b]">{r.unit}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {/* ── XP BARS ──────────────────────────────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <Card className="p-5 space-y-5">
           <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Progression</h2>
-          <XPRow label={`Global · ${profile.total_xp.toLocaleString('fr-FR')} XP total`} xp={profile.total_xp} color="bg-red-500" delay={0.12} />
-          <XPRow label={`Musculation · ${profile.musculation_xp.toLocaleString('fr-FR')} XP total`} xp={profile.musculation_xp} color="bg-red-800" delay={0.18} />
-          <XPRow label={`Course · ${profile.running_xp.toLocaleString('fr-FR')} XP total`} xp={profile.running_xp} color="bg-blue-700" delay={0.24} />
-          <XPRow label={`Calisthénie · ${(profile.calisthenics_xp ?? 0).toLocaleString('fr-FR')} XP total`} xp={profile.calisthenics_xp ?? 0} color="bg-violet-700" delay={0.30} />
+          <XPRow label={`Global · ${profile.total_xp.toLocaleString('fr-FR')} XP total`} xp={profile.total_xp} color="bg-red-500" delay={0.22} />
+          <XPRow label={`Musculation · ${profile.musculation_xp.toLocaleString('fr-FR')} XP total`} xp={profile.musculation_xp} color="bg-red-800" delay={0.26} />
+          <XPRow label={`Course · ${profile.running_xp.toLocaleString('fr-FR')} XP total`} xp={profile.running_xp} color="bg-blue-700" delay={0.30} />
+          <XPRow label={`Calisthénie · ${(profile.calisthenics_xp ?? 0).toLocaleString('fr-FR')} XP total`} xp={profile.calisthenics_xp ?? 0} color="bg-violet-700" delay={0.34} />
+          <XPRow label={`Crossfit · ${(profile.crossfit_xp ?? 0).toLocaleString('fr-FR')} XP total`} xp={profile.crossfit_xp ?? 0} color="bg-orange-600" delay={0.38} />
         </Card>
       </motion.div>
 
       {/* ── STATS ────────────────────────────────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider mb-3">Statistiques</h2>
         <div className="grid grid-cols-2 gap-3">
           <Card className="p-4 flex flex-col gap-2">
@@ -159,60 +212,6 @@ export function UserProfilePage() {
           </Card>
         </div>
       </motion.div>
-
-      {/* ── PERFORMANCES ─────────────────────────────────────────────── */}
-      {records.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="space-y-4">
-          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Meilleures performances</h2>
-
-          {/* Musculation */}
-          {records.filter(r => (r.category ?? 'musculation') === 'musculation').length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Dumbbell className="w-3.5 h-3.5 text-[#c9a870]" />
-                <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Musculation</span>
-              </div>
-              <div className="space-y-1.5">
-                {records.filter(r => (r.category ?? 'musculation') === 'musculation').map((r, i) => (
-                  <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 + i * 0.04 }}
-                    className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-[#c9a870]/40"
-                  >
-                    <Trophy className="w-3.5 h-3.5 text-[#c9a870] flex-shrink-0" />
-                    <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
-                    <span className="text-[#6b6b6b] text-xs">•</span>
-                    <span className="text-sm font-bold text-[#c9a870]">
-                      {r.value}<span className="text-xs font-normal text-[#6b6b6b] ml-1">{r.unit}</span>
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Course */}
-          {records.filter(r => r.category === 'course').length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <PersonStanding className="w-3.5 h-3.5 text-blue-400" />
-                <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-wider">Course</span>
-              </div>
-              <div className="space-y-1.5">
-                {records.filter(r => r.category === 'course').map((r, i) => (
-                  <motion.div key={r.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 + i * 0.04 }}
-                    className="flex items-center gap-2 px-3 py-2.5 bg-[#111111] border border-white/5 border-l-2 border-l-blue-800/50"
-                  >
-                    <PersonStanding className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                    <span className="text-sm font-medium text-[#d4d4d4]">{r.title}</span>
-                    <span className="text-[#6b6b6b] text-xs">•</span>
-                    <span className="text-sm font-bold text-blue-400">{r.value}</span>
-                    <span className="text-xs text-[#6b6b6b]">{r.unit}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
-      )}
 
       {/* ── BADGES ───────────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
