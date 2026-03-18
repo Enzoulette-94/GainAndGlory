@@ -8,13 +8,15 @@ interface LevelUpModalProps {
   isOpen: boolean;
   onClose: () => void;
   level: number;
-  discipline?: 'global' | 'musculation' | 'running';
+  discipline?: 'global' | 'musculation' | 'running' | 'calisthenics' | 'crossfit';
 }
 
 const disciplineConfig = {
   global: { label: 'Niveau global', color: 'from-red-500 to-red-600', emoji: '⭐' },
   musculation: { label: 'Musculation', color: 'from-blue-500 to-indigo-600', emoji: '💪' },
   running: { label: 'Course', color: 'from-emerald-500 to-teal-600', emoji: '🏃' },
+  calisthenics: { label: 'Calisthénie', color: 'from-violet-500 to-purple-600', emoji: '⚡' },
+  crossfit: { label: 'Crossfit', color: 'from-orange-500 to-red-600', emoji: '🔥' },
 };
 
 function Confetti() {

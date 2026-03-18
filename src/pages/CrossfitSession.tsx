@@ -8,6 +8,7 @@ import { feedService } from '../services/feed.service';
 import { profileRecordsService } from '../services/profile-records.service';
 import { badgesService } from '../services/badges.service';
 import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
+import { LevelUpModal } from '../components/xp-system/LevelUpModal';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
@@ -74,6 +75,8 @@ export function CrossfitSessionPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
 
@@ -132,7 +135,7 @@ export function CrossfitSessionPage() {
         notes: notes.trim() || undefined,
       });
 
-      await xpService.awardXP(profile.id, 'CROSSFIT_SESSION', 'crossfit');
+      const xpResult = await xpService.awardXP(profile.id, 'CROSSFIT_SESSION', 'crossfit');
       await refreshProfile();
 
       // Determine result value and unit for feed
@@ -172,12 +175,15 @@ export function CrossfitSessionPage() {
           currentStreak: profile.current_streak,
           totalSessions,
         });
-        if (newBadges.length > 0) {
-          setBadgeQueue(newBadges);
-          return; // Le navigate sera déclenché par onClose du modal
-        }
+        if (newBadges.length > 0) setBadgeQueue(newBadges);
       } catch { /* ignore */ }
 
+      if (xpResult.leveledUp && xpResult.newLevel) {
+        setLevelUpLevel(xpResult.newLevel);
+        setShowLevelUp(true);
+        return;
+      }
+      if (badgeQueue.length > 0) return;
       navigate('/crossfit');
     } catch (e) {
       console.error(e);
@@ -458,6 +464,15 @@ export function CrossfitSessionPage() {
         </div>
       </Modal>
 
+      <LevelUpModal
+        isOpen={showLevelUp}
+        level={levelUpLevel}
+        discipline="crossfit"
+        onClose={() => {
+          setShowLevelUp(false);
+          if (badgeQueue.length === 0) navigate('/crossfit');
+        }}
+      />
       <BadgeUnlockModal
         badge={badgeQueue[0] ?? null}
         onClose={() => {

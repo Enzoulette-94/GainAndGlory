@@ -25,6 +25,7 @@ import type { Feedback, RunType, WeatherCondition } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
 import { badgesService } from '../services/badges.service';
 import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
+import { LevelUpModal } from '../components/xp-system/LevelUpModal';
 import type { UserBadge } from '../types/models';
 
 function toLocalDatetimeValue(): string {
@@ -65,6 +66,8 @@ export function RunSessionPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState(0);
 
   useEffect(() => {
     if (!profile) return;
@@ -142,7 +145,7 @@ export function RunSessionPage() {
         }
       }
 
-      await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
+      const xpResult = await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
       await refreshProfile();
 
       await feedService.publishRun(
@@ -169,12 +172,15 @@ export function RunSessionPage() {
           totalSessions,
           totalKm,
         });
-        if (newBadges.length > 0) {
-          setBadgeQueue(newBadges);
-          return; // Le navigate sera déclenché par onClose du modal
-        }
+        if (newBadges.length > 0) setBadgeQueue(newBadges);
       } catch { /* ignore */ }
 
+      if (xpResult.leveledUp && xpResult.newLevel) {
+        setLevelUpLevel(xpResult.newLevel);
+        setShowLevelUp(true);
+        return;
+      }
+      if (badgeQueue.length > 0) return;
       navigate('/running');
     } catch {
       setError('Erreur lors de l\'enregistrement. Réessaie.');
@@ -532,6 +538,15 @@ export function RunSessionPage() {
         </motion.div>
       </form>
 
+      <LevelUpModal
+        isOpen={showLevelUp}
+        level={levelUpLevel}
+        discipline="running"
+        onClose={() => {
+          setShowLevelUp(false);
+          if (badgeQueue.length === 0) navigate('/running');
+        }}
+      />
       <BadgeUnlockModal
         badge={badgeQueue[0] ?? null}
         onClose={() => {

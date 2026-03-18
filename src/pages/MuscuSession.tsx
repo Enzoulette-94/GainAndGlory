@@ -24,6 +24,7 @@ import type { Feedback } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
 import { badgesService } from '../services/badges.service';
 import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
+import { LevelUpModal } from '../components/xp-system/LevelUpModal';
 import type { UserBadge } from '../types/models';
 
 interface SetRow {
@@ -92,6 +93,8 @@ export function MuscuSessionPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState(0);
 
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(true);
@@ -237,7 +240,7 @@ export function MuscuSessionPage() {
         }
       }
 
-      await xpService.awardXP(profile.id, 'WORKOUT_SESSION', 'musculation');
+      const xpResult = await xpService.awardXP(profile.id, 'WORKOUT_SESSION', 'musculation');
       await refreshProfile();
 
       const exercisesSummary = validExercises
@@ -268,12 +271,15 @@ export function MuscuSessionPage() {
           currentStreak: profile.current_streak,
           totalSessions,
         });
-        if (newBadges.length > 0) {
-          setBadgeQueue(newBadges);
-          return; // Le navigate sera déclenché par onClose du modal
-        }
+        if (newBadges.length > 0) setBadgeQueue(newBadges);
       } catch { /* ignore */ }
 
+      if (xpResult.leveledUp && xpResult.newLevel) {
+        setLevelUpLevel(xpResult.newLevel);
+        setShowLevelUp(true);
+        return;
+      }
+      if (badgeQueue.length > 0) return;
       navigate('/musculation');
     } catch (err) {
       setError('Erreur lors de l\'enregistrement. Réessaie.');
@@ -664,6 +670,15 @@ export function MuscuSessionPage() {
         </div>
       </Modal>
 
+      <LevelUpModal
+        isOpen={showLevelUp}
+        level={levelUpLevel}
+        discipline="musculation"
+        onClose={() => {
+          setShowLevelUp(false);
+          if (badgeQueue.length === 0) navigate('/musculation');
+        }}
+      />
       <BadgeUnlockModal
         badge={badgeQueue[0] ?? null}
         onClose={() => {
