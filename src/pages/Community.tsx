@@ -941,9 +941,12 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
             <span className="text-[#4a4a4a] text-xs">·</span>
             <span className="text-[10px] text-[#5a5a5a]">{formatRelativeTime(item.created_at)}</span>
             {typeConfig.feedback && (
-              <span className="ml-auto text-[10px] border px-1.5 py-0.5 uppercase tracking-wide font-rajdhani text-[#6b6b6b] border-white/10">
-                {typeConfig.feedback}
-              </span>
+              <>
+                <span className="text-[#4a4a4a] text-xs">·</span>
+                <span className="text-[10px] border px-1.5 py-0.5 uppercase tracking-wide font-rajdhani text-[#6b6b6b] border-white/10">
+                  {typeConfig.feedback}
+                </span>
+              </>
             )}
           </div>
         </div>
