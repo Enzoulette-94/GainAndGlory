@@ -232,11 +232,15 @@ export function UserProfilePage() {
               return (
                 <div
                   key={ub.id}
-                  title={badge.description ?? badge.name}
-                  className="rounded border px-3 py-2 text-center cursor-default select-none"
+                  className="relative group rounded border px-3 py-2 text-center cursor-default select-none"
                   style={{ backgroundColor: config.bg, borderColor: config.color + '40' }}
                 >
                   <p className="text-xs font-semibold truncate" style={{ color: config.color }}>{badge.name}</p>
+                  {(badge.description ?? badge.name) && (
+                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-max max-w-[200px] px-2.5 py-1.5 bg-[#1a1a1a] border border-white/10 text-[11px] text-[#d4d4d4] text-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-1000">
+                      {badge.description ?? badge.name}
+                    </div>
+                  )}
                 </div>
               );
             })}
