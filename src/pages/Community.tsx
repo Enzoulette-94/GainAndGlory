@@ -924,6 +924,15 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                 {statusTitle}
               </span>
             )}
+            {isMonster && (
+              <motion.div
+                animate={{ scale: [1, 1.06, 1] }}
+                transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+                className="ml-auto flex-shrink-0 flex items-center gap-1 border border-[#c9a870]/60 px-1.5 py-0.5 text-[10px] font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide bg-[#111]/80"
+              >
+                🔥 MONSTRE
+              </motion.div>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-[10px] font-rajdhani font-bold uppercase tracking-widest" style={{ color: typeConfig.accentColor, opacity: 0.6 }}>
@@ -938,16 +947,6 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
             )}
           </div>
         </div>
-        {/* MONSTRE badge in header */}
-        {isMonster && (
-          <motion.div
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-            className="flex-shrink-0 flex items-center gap-1 border border-[#c9a870]/60 px-1.5 py-0.5 text-[10px] font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide bg-[#111]/80"
-          >
-            🔥 MONSTRE
-          </motion.div>
-        )}
       </div>
 
       {/* ═══ CONTENT ═══ */}
