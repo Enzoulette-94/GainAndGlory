@@ -208,9 +208,11 @@ export function CalisthenicsSessionPage() {
 
       // Check badges after session
       try {
+        const totalSessions = await calisthenicsService.getSessionsCount(profile.id).catch(() => 0);
         const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
           globalLevel: profile.global_level,
           currentStreak: profile.current_streak,
+          totalSessions,
         });
         if (newBadges.length > 0) {
           setBadgeQueue(newBadges);

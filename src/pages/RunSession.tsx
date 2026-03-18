@@ -158,10 +158,16 @@ export function RunSessionPage() {
 
       // Check badges after session
       try {
+        const [totalSessions, totalKm] = await Promise.all([
+          runningService.getSessionsCount(profile.id).catch(() => 0),
+          runningService.getTotalDistance(profile.id).catch(() => 0),
+        ]);
         const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
           globalLevel: profile.global_level,
           runningLevel: profile.running_level,
           currentStreak: profile.current_streak,
+          totalSessions,
+          totalKm,
         });
         if (newBadges.length > 0) {
           setBadgeQueue(newBadges);

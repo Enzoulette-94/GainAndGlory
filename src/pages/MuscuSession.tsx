@@ -261,10 +261,12 @@ export function MuscuSessionPage() {
 
       // Check badges after session
       try {
+        const totalSessions = await workoutService.getSessionsCount(profile.id).catch(() => 0);
         const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
           globalLevel: profile.global_level,
           musculationLevel: profile.musculation_level,
           currentStreak: profile.current_streak,
+          totalSessions,
         });
         if (newBadges.length > 0) {
           setBadgeQueue(newBadges);
