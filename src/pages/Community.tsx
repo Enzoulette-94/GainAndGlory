@@ -792,18 +792,28 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         stats: c.wod_type ? `${(c.wod_type as string).toUpperCase()} · ${c.result_value ?? ''} ${c.result_unit ?? ''}`.trim() : 'CROSSFIT',
         feedback: c.feedback ?? null,
       };
-      case 'badge': return {
-        label: 'BADGE DÉBLOQUÉ',
-        borderColor: 'border-l-yellow-700/70',
-        labelColor: 'text-yellow-500',
-        bgGradient: 'bg-gradient-to-br from-yellow-950/25 via-[#111] to-[#111]',
-        bannerBg: 'bg-yellow-900/40 border-y border-yellow-700/40',
-        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
-        accentColor: '#c9a870',
-        icon: '🏅',
-        stats: c.badge_name,
-        feedback: null,
-      };
+      case 'badge': {
+        const rarityColors: Record<string, { accent: string; gradient: string }> = {
+          common:    { accent: '#94a3b8', gradient: 'linear-gradient(to right, #1e293b, #111111)' },
+          uncommon:  { accent: '#94a3b8', gradient: 'linear-gradient(to right, #1e293b, #111111)' },
+          rare:      { accent: '#60a5fa', gradient: 'linear-gradient(to right, #0a1628, #111111)' },
+          epic:      { accent: '#a78bfa', gradient: 'linear-gradient(to right, #1a0a2e, #111111)' },
+          legendary: { accent: '#fbbf24', gradient: 'linear-gradient(to right, #1a1200, #111111)' },
+        };
+        const rc = rarityColors[c.badge_rarity ?? 'common'] ?? rarityColors.common;
+        return {
+          label: 'BADGE DÉBLOQUÉ',
+          borderColor: 'border-l-[#c9a870]/60',
+          labelColor: 'text-[#c9a870]',
+          bgGradient: '',
+          bannerBg: '',
+          headerGradient: rc.gradient,
+          accentColor: rc.accent,
+          icon: '🏅',
+          stats: null,
+          feedback: null,
+        };
+      }
       case 'level_up': return {
         label: `NIVEAU ${c.level} ATTEINT`,
         borderColor: 'border-l-[#c9a870]/60',
@@ -1109,8 +1119,44 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         );
       })()}
 
+      {/* Badge card */}
+      {item.type === 'badge' && (
+        <div className="px-4 py-4 flex items-center gap-4 border-b border-white/5">
+          <div
+            className="flex-shrink-0 w-12 h-12 flex items-center justify-center border-2"
+            style={{ borderColor: typeConfig.accentColor + '60', backgroundColor: typeConfig.accentColor + '15' }}
+          >
+            <span className="text-2xl">🏅</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide leading-none">
+                {c_content.badge_name ?? 'Badge'}
+              </span>
+              <span
+                className="text-[10px] font-rajdhani font-bold border px-1.5 py-0.5 uppercase tracking-wide flex-shrink-0"
+                style={{ color: typeConfig.accentColor, borderColor: typeConfig.accentColor + '50' }}
+              >
+                {c_content.badge_rarity ?? 'commun'}
+              </span>
+              <span
+                className="ml-auto font-rajdhani font-black text-sm flex-shrink-0"
+                style={{ color: typeConfig.accentColor }}
+              >
+                + {c_content.badge_xp ?? 50} XP
+              </span>
+            </div>
+            {c_content.badge_description && (
+              <p className="text-xs text-[#6b6b6b] mt-1 italic leading-relaxed truncate">
+                "{c_content.badge_description}"
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Autres types */}
-      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && typeConfig.stats && (
+      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && item.type !== 'badge' && typeConfig.stats && (
         <div className="px-4 py-3">
           <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
         </div>

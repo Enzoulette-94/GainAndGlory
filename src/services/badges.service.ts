@@ -74,6 +74,8 @@ export const badgesService = {
           badge_code: badge.code,
           badge_name: badge.name,
           badge_rarity: badge.rarity,
+          badge_description: badge.description ?? null,
+          badge_xp: ({ common: 50, uncommon: 50, rare: 250, epic: 250, legendary: 500 } as Record<string, number>)[badge.rarity ?? 'common'] ?? 50,
         },
       });
     } catch { /* ignore */ }
