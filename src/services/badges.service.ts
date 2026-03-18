@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase-client';
+import { profileService } from './profile.service';
 import type { Badge, UserBadge } from '../types/models';
 
 export const badgesService = {
@@ -55,6 +56,13 @@ export const badgesService = {
       .single();
 
     if (error) throw error;
+
+    // Award XP for badge rarity
+    try {
+      const xpRewards: Record<string, number> = { common: 50, uncommon: 50, rare: 250, epic: 250, legendary: 500 };
+      const xp = xpRewards[badge.rarity ?? 'common'] ?? 50;
+      await profileService.addXP(userId, xp);
+    } catch { /* ignore */ }
 
     // Publier dans le feed
     try {

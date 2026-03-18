@@ -13,7 +13,9 @@ import { CalisthenicsPickerContent } from '../components/forms/ExercisePicker';
 import { CALISTHENICS_SKILLS, FEEDBACK_LABELS } from '../utils/constants';
 import { profileRecordsService } from '../services/profile-records.service';
 import { feedService } from '../services/feed.service';
-import type { CaliExercise, CaliSet, ProfileSkill, CalisthenicsSession as CalisthenicsSessionModel } from '../types/models';
+import { badgesService } from '../services/badges.service';
+import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
+import type { CaliExercise, CaliSet, ProfileSkill, CalisthenicsSession as CalisthenicsSessionModel, UserBadge } from '../types/models';
 import type { Feedback } from '../types/enums';
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
@@ -56,6 +58,7 @@ export function CalisthenicsSessionPage() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
@@ -202,6 +205,18 @@ export function CalisthenicsSessionPage() {
           }
         }
       }
+
+      // Check badges after session
+      try {
+        const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
+          globalLevel: profile.global_level,
+          currentStreak: profile.current_streak,
+        });
+        if (newBadges.length > 0) {
+          setBadgeQueue(newBadges);
+          return; // Le navigate sera déclenché par onClose du modal
+        }
+      } catch { /* ignore */ }
 
       navigate('/calisthenics');
     } catch (e) {
@@ -363,6 +378,17 @@ export function CalisthenicsSessionPage() {
           />
         </div>
       </Modal>
+
+      <BadgeUnlockModal
+        badge={badgeQueue[0] ?? null}
+        onClose={() => {
+          setBadgeQueue(prev => {
+            const next = prev.slice(1);
+            if (next.length === 0) navigate('/calisthenics');
+            return next;
+          });
+        }}
+      />
     </div>
   );
 }

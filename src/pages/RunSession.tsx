@@ -23,6 +23,9 @@ import {
 import type { Shoe } from '../types/models';
 import type { Feedback, RunType, WeatherCondition } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
+import { badgesService } from '../services/badges.service';
+import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
+import type { UserBadge } from '../types/models';
 
 function toLocalDatetimeValue(): string {
   const now = new Date();
@@ -61,6 +64,7 @@ export function RunSessionPage() {
   // State
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
 
   useEffect(() => {
     if (!profile) return;
@@ -151,6 +155,19 @@ export function RunSessionPage() {
         sessionName.trim() || undefined,
         feedback || undefined,
       );
+
+      // Check badges after session
+      try {
+        const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
+          globalLevel: profile.global_level,
+          runningLevel: profile.running_level,
+          currentStreak: profile.current_streak,
+        });
+        if (newBadges.length > 0) {
+          setBadgeQueue(newBadges);
+          return; // Le navigate sera déclenché par onClose du modal
+        }
+      } catch { /* ignore */ }
 
       navigate('/running');
     } catch {
@@ -508,6 +525,17 @@ export function RunSessionPage() {
           </Button>
         </motion.div>
       </form>
+
+      <BadgeUnlockModal
+        badge={badgeQueue[0] ?? null}
+        onClose={() => {
+          setBadgeQueue(prev => {
+            const next = prev.slice(1);
+            if (next.length === 0) navigate('/running');
+            return next;
+          });
+        }}
+      />
     </div>
   );
 }

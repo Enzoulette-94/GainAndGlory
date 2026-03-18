@@ -22,6 +22,9 @@ import { FEEDBACK_LABELS, MUSCLE_GROUP_LABELS, MUSCLE_GROUP_DISPLAY, XP_REWARDS 
 import type { Exercise, WorkoutSession } from '../types/models';
 import type { Feedback } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
+import { badgesService } from '../services/badges.service';
+import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
+import type { UserBadge } from '../types/models';
 
 interface SetRow {
   reps: number;
@@ -88,6 +91,7 @@ export function MuscuSessionPage() {
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
 
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(true);
@@ -254,6 +258,19 @@ export function MuscuSessionPage() {
         sessionName.trim() || undefined,
         exercisesSummary,
       );
+
+      // Check badges after session
+      try {
+        const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
+          globalLevel: profile.global_level,
+          musculationLevel: profile.musculation_level,
+          currentStreak: profile.current_streak,
+        });
+        if (newBadges.length > 0) {
+          setBadgeQueue(newBadges);
+          return; // Le navigate sera déclenché par onClose du modal
+        }
+      } catch { /* ignore */ }
 
       navigate('/musculation');
     } catch (err) {
@@ -644,6 +661,17 @@ export function MuscuSessionPage() {
           )}
         </div>
       </Modal>
+
+      <BadgeUnlockModal
+        badge={badgeQueue[0] ?? null}
+        onClose={() => {
+          setBadgeQueue(prev => {
+            const next = prev.slice(1);
+            if (next.length === 0) navigate('/musculation');
+            return next;
+          });
+        }}
+      />
     </div>
   );
 }

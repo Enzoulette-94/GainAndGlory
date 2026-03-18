@@ -430,3 +430,11 @@ export const BADGE_RARITY_CONFIG = {
   epic: { label: 'Épique', color: '#a78bfa', bg: '#2e1065' },
   legendary: { label: 'Légendaire', color: '#fbbf24', bg: '#451a03' },
 } as const;
+
+export const BADGE_XP_REWARDS: Record<string, number> = {
+  common: 50,
+  uncommon: 50,
+  rare: 250,
+  epic: 250,
+  legendary: 500,
+};

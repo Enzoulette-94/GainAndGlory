@@ -6,13 +6,15 @@ import { crossfitService } from '../services/crossfit.service';
 import { xpService } from '../services/xp.service';
 import { feedService } from '../services/feed.service';
 import { profileRecordsService } from '../services/profile-records.service';
+import { badgesService } from '../services/badges.service';
+import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { CrossfitExercisePickerContent } from '../components/forms/CrossfitExercisePicker';
 import { CROSSFIT_WOD_TYPES, FEEDBACK_LABELS } from '../utils/constants';
-import type { CrossfitSession as CrossfitSessionModel, CrossfitExercise } from '../types/models';
+import type { CrossfitSession as CrossfitSessionModel, CrossfitExercise, UserBadge } from '../types/models';
 import type { CrossfitWodType } from '../types/enums';
 import type { Feedback } from '../types/enums';
 
@@ -71,6 +73,7 @@ export function CrossfitSessionPage() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [badgeQueue, setBadgeQueue] = useState<UserBadge[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
 
@@ -160,6 +163,18 @@ export function CrossfitSessionPage() {
           );
         }
       }
+
+      // Check badges after session
+      try {
+        const newBadges = await badgesService.checkAndUnlockBadges(profile.id, {
+          globalLevel: profile.global_level,
+          currentStreak: profile.current_streak,
+        });
+        if (newBadges.length > 0) {
+          setBadgeQueue(newBadges);
+          return; // Le navigate sera déclenché par onClose du modal
+        }
+      } catch { /* ignore */ }
 
       navigate('/crossfit');
     } catch (e) {
@@ -440,6 +455,17 @@ export function CrossfitSessionPage() {
           />
         </div>
       </Modal>
+
+      <BadgeUnlockModal
+        badge={badgeQueue[0] ?? null}
+        onClose={() => {
+          setBadgeQueue(prev => {
+            const next = prev.slice(1);
+            if (next.length === 0) navigate('/crossfit');
+            return next;
+          });
+        }}
+      />
     </div>
   );
 }
