@@ -317,106 +317,6 @@ export function ProfilePage() {
         </Card>
       </motion.div>
 
-      {/* ── XP BARS ─────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className="p-5 space-y-5">
-          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Progression</h2>
-
-          <XPRow
-            label={`Global · ${profile.total_xp.toLocaleString('fr-FR')} XP total`}
-            xp={profile.total_xp}
-            color="bg-red-500"
-            delay={0.12}
-          />
-          <XPRow
-            label={`Musculation · ${profile.musculation_xp.toLocaleString('fr-FR')} XP total`}
-            xp={profile.musculation_xp}
-            color="bg-red-800"
-            delay={0.18}
-          />
-          <XPRow
-            label={`Course · ${profile.running_xp.toLocaleString('fr-FR')} XP total`}
-            xp={profile.running_xp}
-            color="bg-blue-700"
-            delay={0.24}
-          />
-          <XPRow
-            label={`Calisthénie · ${profile.calisthenics_xp.toLocaleString('fr-FR')} XP total`}
-            xp={profile.calisthenics_xp}
-            color="bg-violet-700"
-            delay={0.30}
-          />
-          <XPRow
-            label={`Crossfit · ${(profile.crossfit_xp ?? 0).toLocaleString('fr-FR')} XP total`}
-            xp={profile.crossfit_xp ?? 0}
-            color="bg-orange-600"
-            delay={0.36}
-          />
-        </Card>
-      </motion.div>
-
-      {/* ── STATS ───────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider mb-3">Statistiques</h2>
-
-        {dataLoading ? (
-          <Loader size="sm" />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-            {/* Séances muscu */}
-            <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded bg-transparent w-fit">
-                <Dumbbell className="w-4 h-4 text-red-400" />
-              </div>
-              <p className="text-2xl font-black text-white">{stats?.muscuCount ?? 0}</p>
-              <p className="text-xs text-[#a3a3a3]">Séances muscu</p>
-            </Card>
-
-            {/* Séances course */}
-            <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded bg-transparent w-fit">
-                <Timer className="w-4 h-4 text-blue-500" />
-              </div>
-              <p className="text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
-              <p className="text-xs text-[#a3a3a3]">Séances course</p>
-            </Card>
-
-            {/* Distance totale */}
-            <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded bg-transparent w-fit">
-                <Route className="w-4 h-4 text-blue-500" />
-              </div>
-              <p className="text-2xl font-black text-white">
-                {stats ? formatDistance(stats.totalDistance) : '0 km'}
-              </p>
-              <p className="text-xs text-[#a3a3a3]">Distance totale</p>
-            </Card>
-
-            {/* Série */}
-            <Card className="p-4 flex flex-col gap-2">
-              <div className="p-2 rounded bg-transparent w-fit">
-                <Flame className="w-4 h-4 text-orange-600" />
-              </div>
-              <p className="text-2xl font-black text-white">{profile.current_streak}</p>
-              <p className="text-xs text-[#a3a3a3]">Jours consécutifs</p>
-              <p className="text-xs text-[#4a4a4a]">
-                Record : {profile.longest_streak} jours
-              </p>
-            </Card>
-
-          </div>
-        )}
-      </motion.div>
-
       {/* ── PERFORMANCES MANUELLES ──────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -593,6 +493,102 @@ export function ProfilePage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+      </motion.div>
+
+      {/* ── XP BARS ─────────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Card className="p-5 space-y-5">
+          <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider">Progression</h2>
+
+          <XPRow
+            label={`Global · ${profile.total_xp.toLocaleString('fr-FR')} XP total`}
+            xp={profile.total_xp}
+            color="bg-red-500"
+            delay={0.12}
+          />
+          <XPRow
+            label={`Musculation · ${profile.musculation_xp.toLocaleString('fr-FR')} XP total`}
+            xp={profile.musculation_xp}
+            color="bg-red-800"
+            delay={0.18}
+          />
+          <XPRow
+            label={`Course · ${profile.running_xp.toLocaleString('fr-FR')} XP total`}
+            xp={profile.running_xp}
+            color="bg-blue-700"
+            delay={0.24}
+          />
+          <XPRow
+            label={`Calisthénie · ${profile.calisthenics_xp.toLocaleString('fr-FR')} XP total`}
+            xp={profile.calisthenics_xp}
+            color="bg-violet-700"
+            delay={0.30}
+          />
+          <XPRow
+            label={`Crossfit · ${(profile.crossfit_xp ?? 0).toLocaleString('fr-FR')} XP total`}
+            xp={profile.crossfit_xp ?? 0}
+            color="bg-orange-600"
+            delay={0.36}
+          />
+        </Card>
+      </motion.div>
+
+      {/* ── STATS ───────────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h2 className="text-sm font-semibold text-[#d4d4d4] uppercase tracking-wider mb-3">Statistiques</h2>
+
+        {dataLoading ? (
+          <Loader size="sm" />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+            <Card className="p-4 flex flex-col gap-2">
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Dumbbell className="w-4 h-4 text-red-400" />
+              </div>
+              <p className="text-2xl font-black text-white">{stats?.muscuCount ?? 0}</p>
+              <p className="text-xs text-[#a3a3a3]">Séances muscu</p>
+            </Card>
+
+            <Card className="p-4 flex flex-col gap-2">
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Timer className="w-4 h-4 text-blue-500" />
+              </div>
+              <p className="text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
+              <p className="text-xs text-[#a3a3a3]">Séances course</p>
+            </Card>
+
+            <Card className="p-4 flex flex-col gap-2">
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Route className="w-4 h-4 text-blue-500" />
+              </div>
+              <p className="text-2xl font-black text-white">
+                {stats ? formatDistance(stats.totalDistance) : '0 km'}
+              </p>
+              <p className="text-xs text-[#a3a3a3]">Distance totale</p>
+            </Card>
+
+            <Card className="p-4 flex flex-col gap-2">
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Flame className="w-4 h-4 text-orange-600" />
+              </div>
+              <p className="text-2xl font-black text-white">{profile.current_streak}</p>
+              <p className="text-xs text-[#a3a3a3]">Jours consécutifs</p>
+              <p className="text-xs text-[#4a4a4a]">
+                Record : {profile.longest_streak} jours
+              </p>
+            </Card>
+
           </div>
         )}
       </motion.div>
