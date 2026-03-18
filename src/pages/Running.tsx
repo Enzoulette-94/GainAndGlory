@@ -794,69 +794,68 @@ function RunSessionCard({
         feedback === 'facile' ? 'border-emerald-900/70' :
         'border-white/5'
       }`}>
-        <div className="flex">
-          <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
-            {/* Ligne 1 */}
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
-                  {((session as any).name
-                    ? (session as any).name
-                    : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })
-                  ).toUpperCase()}
+        {/* Header */}
+        <div className="px-4 pt-3.5 pb-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide truncate">
+                {((session as any).name
+                  ? (session as any).name
+                  : formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' })
+                ).toUpperCase()}
+              </span>
+              {runType && (
+                <span className="text-xs px-1.5 py-0.5 bg-blue-950/40 border border-blue-900/30 text-blue-400 flex-shrink-0 font-rajdhani font-bold uppercase">
+                  {RUN_TYPE_LABELS[runType]}
                 </span>
-                {runType && (
-                  <span className="text-xs px-1.5 py-0.5 bg-blue-950/40 border border-blue-900/30 text-blue-400 flex-shrink-0 font-rajdhani font-bold uppercase">
-                    {RUN_TYPE_LABELS[runType]}
-                  </span>
-                )}
-                {feedback && (
-                  <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${feedbackColor}`}>{FEEDBACK_LABELS[feedback]}</span>
-                )}
-              </div>
-              <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
-              <span className="text-blue-400">{formatDistance(session.distance)}</span>
-              <span className="text-[#2a2a2a]">·</span>
-              <span className="text-[#5a5a5a]">{formatDuration(session.duration)}</span>
-              {session.pace_min_per_km != null && session.pace_min_per_km > 0 && (
-                <>
-                  <span className="text-[#2a2a2a]">·</span>
-                  <span className="text-[#5a5a5a]">{formatPace(session.pace_min_per_km)}</span>
-                </>
+              )}
+              {feedback && (
+                <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${feedbackColor}`}>{FEEDBACK_LABELS[feedback]}</span>
               )}
             </div>
-
-            {/* Divider */}
-            <div className="border-t border-white/5 mb-3" />
-
-            {/* Stats as lines */}
-            <div className="space-y-1.5">
-              {[
-                { num: '01', label: 'DISTANCE', value: formatDistance(session.distance), color: 'text-blue-400' },
-                { num: '02', label: 'DURÉE', value: formatDuration(session.duration), color: 'text-[#d4d4d4]' },
-                session.pace_min_per_km ? { num: '03', label: 'ALLURE', value: formatPace(session.pace_min_per_km), color: 'text-[#d4d4d4]' } : null,
-                session.avg_heart_rate ? { num: '04', label: 'FC MOY', value: `${session.avg_heart_rate} bpm`, color: 'text-[#d4d4d4]' } : null,
-                session.elevation_gain != null ? { num: '05', label: 'DÉNIVELÉ +', value: `${session.elevation_gain} m`, color: 'text-[#d4d4d4]' } : null,
-              ].filter(Boolean).map((item: any, i) => (
-                <div key={i} className="flex items-start gap-2 min-w-0">
-                  <span className="font-rajdhani font-black text-blue-800 w-5 flex-shrink-0 text-xs mt-0.5">{item.num}</span>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-rajdhani font-semibold text-[#5a5a5a] uppercase tracking-wide text-xs">{item.label}</span>
-                    <span className={`font-rajdhani font-bold text-xs ml-2 ${item.color}`}>{item.value}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {session.notes && (
-              <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
-            )}
+            <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
           </div>
         </div>
+
+        {/* Metric blocks */}
+        <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-b border-white/5 bg-[#0d0d0d]">
+          <div className="flex flex-col items-center py-3 px-2">
+            <span className="font-rajdhani font-black text-xl text-blue-400 leading-none">{formatDistance(session.distance)}</span>
+            <span className="text-[10px] text-blue-700 uppercase tracking-widest font-rajdhani mt-1">Distance</span>
+          </div>
+          <div className="flex flex-col items-center py-3 px-2">
+            <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{formatDuration(session.duration)}</span>
+            <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Durée</span>
+          </div>
+          <div className="flex flex-col items-center py-3 px-2">
+            <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">
+              {session.pace_min_per_km && session.pace_min_per_km > 0 ? formatPace(session.pace_min_per_km) : '—'}
+            </span>
+            <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Allure</span>
+          </div>
+        </div>
+
+        {/* Optional extras */}
+        {(session.avg_heart_rate || session.elevation_gain != null) && (
+          <div className="px-4 py-3 space-y-2.5">
+            {[
+              session.avg_heart_rate ? { num: '01', label: 'FC MOY', value: `${session.avg_heart_rate} bpm`, color: 'text-[#e5e5e5]' } : null,
+              session.elevation_gain != null ? { num: session.avg_heart_rate ? '02' : '01', label: 'DÉNIVELÉ +', value: `${session.elevation_gain} m`, color: 'text-[#e5e5e5]' } : null,
+            ].filter(Boolean).map((item: any, i) => (
+              <div key={i} className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-blue-700 w-5 flex-shrink-0 text-sm">{item.num}</span>
+                <span className="font-rajdhani font-bold text-[#7a7a7a] uppercase tracking-wide text-sm min-w-0 truncate">{item.label}</span>
+                <span className={`font-rajdhani font-black text-sm flex-shrink-0 ${item.color}`}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {session.notes && (
+          <div className="px-4 pb-3 border-t border-white/5 pt-2">
+            <p className="text-xs text-[#7a7a7a] italic">{session.notes}</p>
+          </div>
+        )}
 
         {/* Action bar */}
         <div className="flex items-center border-t border-white/5">

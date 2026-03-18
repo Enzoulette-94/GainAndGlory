@@ -845,70 +845,69 @@ function SessionCard({
         feedback === 'facile' ? 'border-emerald-900/70' :
         'border-white/5'
       }`}>
-        {/* Header + content */}
-        <div className="flex">
-          <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
-            {/* Ligne 1: date + feedback + relative time */}
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
-                  {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
-                </span>
-                {session.name && (
-                  <span className="text-xs text-[#6b6b6b] truncate hidden sm:block">{session.name}</span>
-                )}
-                {feedbackLabel && (
-                  <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${feedbackColor}`}>{feedbackLabel}</span>
-                )}
-              </div>
-              <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
-            </div>
-
-            {/* Stats line */}
-            <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
-              {session.total_tonnage != null && session.total_tonnage > 0 && (
-                <>
-                  <span className="text-red-400">{formatNumber(session.total_tonnage)} KG</span>
-                  <span className="text-[#2a2a2a]">·</span>
-                </>
+        {/* Header */}
+        <div className="px-4 pt-3.5 pb-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
+                {formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+              </span>
+              {session.name && (
+                <span className="text-xs text-[#6b6b6b] truncate hidden sm:block">{session.name}</span>
               )}
-              <span className="text-[#5a5a5a]">{exerciseCount} EX</span>
-              <span className="text-[#2a2a2a]">·</span>
-              <span className="text-[#5a5a5a]">{setsCount} SÉRIES</span>
+              {feedbackLabel && (
+                <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${feedbackColor}`}>{feedbackLabel}</span>
+              )}
             </div>
-
-            {/* Divider */}
-            <div className="border-t border-white/5 mb-3" />
-
-            {/* Exercise list */}
-            {exerciseRows.length > 0 ? (
-              <div className="space-y-1.5">
-                {exerciseRows.map((ex, i) => {
-                  const avgReps = ex.sets.length > 0 ? Math.round(ex.sets.reduce((s, r) => s + r.reps, 0) / ex.sets.length) : 0;
-                  const maxWeight = Math.max(...ex.sets.map(s => s.weight));
-                  return (
-                    <div key={i} className="flex items-start gap-2 min-w-0">
-                      <span className="font-rajdhani font-black text-red-700 w-5 flex-shrink-0 text-xs mt-0.5">{String(i+1).padStart(2,'0')}</span>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-rajdhani font-semibold text-[#d4d4d4] uppercase tracking-wide text-xs">{ex.name}</span>
-                        <span className="text-[#5a5a5a] text-xs font-rajdhani ml-2">{ex.sets.length}×{avgReps}</span>
-                        {maxWeight > 0 && (
-                          <span className="font-rajdhani font-bold text-[#c9a870] text-xs ml-2">{maxWeight} kg</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-xs text-[#4a4a4a]">Aucun exercice</p>
-            )}
-
-            {session.notes && (
-              <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
-            )}
+            <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
           </div>
         </div>
+
+        {/* Metric blocks */}
+        <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-b border-white/5 bg-[#0d0d0d]">
+          <div className="flex flex-col items-center py-3 px-2">
+            <span className="font-rajdhani font-black text-xl text-red-400 leading-none">
+              {session.total_tonnage != null && session.total_tonnage > 0 ? `${formatNumber(session.total_tonnage)}` : '—'}
+            </span>
+            <span className="text-[10px] text-red-700 uppercase tracking-widest font-rajdhani mt-1">
+              {session.total_tonnage != null && session.total_tonnage > 0 ? 'kg soulevés' : 'Tonnage'}
+            </span>
+          </div>
+          <div className="flex flex-col items-center py-3 px-2">
+            <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{exerciseCount}</span>
+            <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Exercice{exerciseCount > 1 ? 's' : ''}</span>
+          </div>
+          <div className="flex flex-col items-center py-3 px-2">
+            <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{setsCount}</span>
+            <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Série{setsCount > 1 ? 's' : ''}</span>
+          </div>
+        </div>
+
+        {/* Exercise list */}
+        {exerciseRows.length > 0 && (
+          <div className="px-4 py-3 space-y-2.5">
+            {exerciseRows.map((ex, i) => {
+              const avgReps = ex.sets.length > 0 ? Math.round(ex.sets.reduce((s, r) => s + r.reps, 0) / ex.sets.length) : 0;
+              const maxWeight = Math.max(...ex.sets.map(s => s.weight));
+              return (
+                <div key={i} className="flex items-center gap-3 min-w-0">
+                  <span className="font-rajdhani font-black text-red-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
+                  <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
+                  <span className="font-rajdhani font-bold text-[#7a7a7a] text-sm flex-shrink-0">{ex.sets.length}×{avgReps}</span>
+                  {maxWeight > 0 && (
+                    <span className="font-rajdhani font-black text-[#c9a870] text-sm flex-shrink-0">{maxWeight} kg</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {session.notes && (
+          <div className="px-4 pb-3 border-t border-white/5 pt-2">
+            <p className="text-xs text-[#7a7a7a] italic">{session.notes}</p>
+          </div>
+        )}
 
         {/* Action bar */}
         <div className="flex items-center border-t border-white/5">

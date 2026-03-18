@@ -99,10 +99,10 @@ describe('MusculationPage', () => {
   });
 
   describe('Copie de séance', () => {
-    it('affiche le bouton Réutiliser sur chaque SessionCard', async () => {
+    it('affiche le bouton Copier sur chaque SessionCard', async () => {
       renderMusculation();
       await waitFor(() => {
-        const btns = screen.queryAllByTitle(/réutiliser/i);
+        const btns = screen.queryAllByText(/copier/i);
         expect(btns.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });

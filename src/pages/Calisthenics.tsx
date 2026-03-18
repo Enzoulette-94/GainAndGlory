@@ -422,65 +422,69 @@ function SessionCard({ session, onDelete }: { session: CalisthenicsSession; onDe
       session.feedback === 'facile' ? 'border-emerald-900/70' :
       'border-white/5'
     }`}>
-      <div className="flex">
-        <div className="flex-1 min-w-0 px-4 pt-3.5 pb-3">
-          {/* Ligne 1 */}
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">
-                {session.name ?? formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+      {/* Header */}
+      <div className="px-4 pt-3.5 pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide truncate">
+              {session.name ?? formatDate(session.date, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
+            </span>
+            {session.feedback && (
+              <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${FEEDBACK_COLORS[session.feedback]}`}>
+                {FEEDBACK_LABELS[session.feedback]}
               </span>
-              {session.feedback && (
-                <span className={`text-sm font-bold font-rajdhani flex-shrink-0 ${FEEDBACK_COLORS[session.feedback]}`}>
-                  {FEEDBACK_LABELS[session.feedback]}
-                </span>
-              )}
-            </div>
-            <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
-          </div>
-
-          {/* Stats */}
-          <div className="flex items-center gap-2 font-rajdhani font-bold text-xs uppercase tracking-widest mb-3">
-            <span className="text-violet-400">{session.total_reps} REPS</span>
-            <span className="text-[#2a2a2a]">·</span>
-            <span className="text-[#5a5a5a]">{session.exercises.length} EX</span>
-            {session.skills_unlocked.length > 0 && (
-              <>
-                <span className="text-[#2a2a2a]">·</span>
-                <span className="text-violet-600">{session.skills_unlocked.length} SKILL{session.skills_unlocked.length > 1 ? 'S' : ''}</span>
-              </>
             )}
           </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/5 mb-3" />
-
-          {/* Exercise list */}
-          <div className="space-y-1.5">
-            {session.exercises.map((ex, i) => {
-              const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
-              const avgHold = ex.sets.reduce((sum, s) => sum + (s.hold_seconds ?? 0), 0) / ex.sets.length;
-              const isTimed = ex.set_type === 'timed';
-              return (
-                <div key={i} className="flex items-start gap-2 min-w-0">
-                  <span className="font-rajdhani font-black text-violet-800 w-5 flex-shrink-0 text-xs mt-0.5">{String(i+1).padStart(2,'0')}</span>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-rajdhani font-semibold text-[#d4d4d4] uppercase tracking-wide text-xs">{ex.name}</span>
-                    <span className="text-[#5a5a5a] text-xs font-rajdhani ml-2">{ex.sets.length} séries</span>
-                    <span className="font-rajdhani font-bold text-violet-400 text-xs ml-2">
-                      {isTimed ? `${Math.round(avgHold)}s` : `${totalReps} reps`}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {session.notes && (
-            <p className="text-xs text-[#4a4a4a] italic mt-2 border-t border-white/5 pt-2 truncate">{session.notes}</p>
-          )}
+          <span className="text-xs text-[#3a3a3a] flex-shrink-0">{formatRelativeTime(session.date)}</span>
         </div>
       </div>
+
+      {/* Metric blocks */}
+      <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-b border-white/5 bg-[#0d0d0d]">
+        <div className="flex flex-col items-center py-3 px-2">
+          <span className="font-rajdhani font-black text-xl text-violet-400 leading-none">{session.total_reps}</span>
+          <span className="text-[10px] text-violet-700 uppercase tracking-widest font-rajdhani mt-1">Reps</span>
+        </div>
+        <div className="flex flex-col items-center py-3 px-2">
+          <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{session.exercises.length}</span>
+          <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Exercice{session.exercises.length > 1 ? 's' : ''}</span>
+        </div>
+        <div className="flex flex-col items-center py-3 px-2">
+          <span className={`font-rajdhani font-black text-xl leading-none ${session.skills_unlocked.length > 0 ? 'text-violet-400' : 'text-[#d4d4d4]'}`}>
+            {session.skills_unlocked.length > 0 ? session.skills_unlocked.length : session.exercises.reduce((sum, ex) => sum + ex.sets.length, 0)}
+          </span>
+          <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">
+            {session.skills_unlocked.length > 0 ? `Skill${session.skills_unlocked.length > 1 ? 's' : ''}` : 'Séries'}
+          </span>
+        </div>
+      </div>
+
+      {/* Exercise list */}
+      {session.exercises.length > 0 && (
+        <div className="px-4 py-3 space-y-2.5">
+          {session.exercises.map((ex, i) => {
+            const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
+            const avgHold = ex.sets.reduce((sum, s) => sum + (s.hold_seconds ?? 0), 0) / ex.sets.length;
+            const isTimed = ex.set_type === 'timed';
+            return (
+              <div key={i} className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-violet-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
+                <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
+                <span className="font-rajdhani font-bold text-[#7a7a7a] text-sm flex-shrink-0">{ex.sets.length} sér.</span>
+                <span className="font-rajdhani font-black text-violet-400 text-sm flex-shrink-0">
+                  {isTimed ? `${Math.round(avgHold)}s` : `${totalReps} reps`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {session.notes && (
+        <div className="px-4 pb-3 border-t border-white/5 pt-2">
+          <p className="text-xs text-[#7a7a7a] italic">{session.notes}</p>
+        </div>
+      )}
 
       {/* Action bar */}
       <div className="flex items-center border-t border-white/5">

@@ -144,10 +144,18 @@ export const workoutService = {
       .order('usage_count', { ascending: false });
 
     if (error) throw error;
-    return (data ?? []).map(e => ({
-      ...e,
-      tags: e.tags?.map((t: { tag: Exercise['tags'] }) => t.tag).flat() ?? [],
-    })) as Exercise[];
+    const seen = new Set<string>();
+    return (data ?? [])
+      .filter(e => {
+        const key = e.name?.toLowerCase().trim();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map(e => ({
+        ...e,
+        tags: e.tags?.map((t: { tag: Exercise['tags'] }) => t.tag).flat() ?? [],
+      })) as Exercise[];
   },
 
   async createExercise(name: string, muscleGroup: string, userId: string): Promise<Exercise> {

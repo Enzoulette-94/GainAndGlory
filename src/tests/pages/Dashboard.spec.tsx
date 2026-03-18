@@ -113,9 +113,9 @@ describe('DashboardPage', () => {
   });
 
   describe('Barres XP', () => {
-    it('affiche la section Global XP', async () => {
+    it('affiche la section Crossfit XP', async () => {
       renderDashboard();
-      await q(/global/i);
+      await q(/crossfit/i);
     });
 
     it('affiche la section Musculation XP', async () => {
