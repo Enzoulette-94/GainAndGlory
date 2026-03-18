@@ -607,6 +607,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showDetail, setShowDetail] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
   const canShowDetail = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics' || item.type === 'crossfit';
   const canCopy = item.type === 'workout' || item.type === 'calisthenics' || item.type === 'crossfit';
   const canSave = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics';
@@ -749,6 +750,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-red-400',
         bgGradient: 'bg-gradient-to-br from-red-950/30 via-[#111] to-[#111]',
         bannerBg: 'bg-red-900/50 border-y border-red-700/50',
+        headerGradient: 'linear-gradient(to right, #2d0a0a, #111111)',
+        accentColor: '#f87171',
         icon: '🏋️',
         stats: `${c.sets_count} séries`,
         feedback: c.feedback ?? null,
@@ -759,6 +762,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-blue-500',
         bgGradient: 'bg-gradient-to-br from-blue-950/30 via-[#111] to-[#111]',
         bannerBg: 'bg-blue-900/50 border-y border-blue-700/50',
+        headerGradient: 'linear-gradient(to right, #0a1628, #111111)',
+        accentColor: '#60a5fa',
         icon: '🏃',
         stats: `${formatDistance(c.distance)} · ${formatDuration(c.duration)}`,
         feedback: (c as any).feedback ?? null,
@@ -769,6 +774,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-violet-400',
         bgGradient: 'bg-gradient-to-br from-violet-950/30 via-[#111] to-[#111]',
         bannerBg: 'bg-violet-900/50 border-y border-violet-700/50',
+        headerGradient: 'linear-gradient(to right, #1a0a2e, #111111)',
+        accentColor: '#a78bfa',
         icon: '⚡',
         stats: `${c.exercises_count} exercices · ${c.total_reps} reps`,
         feedback: c.feedback ?? null,
@@ -779,6 +786,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-orange-400',
         bgGradient: 'bg-gradient-to-br from-orange-950/30 via-[#111] to-[#111]',
         bannerBg: 'bg-orange-900/50 border-y border-orange-700/50',
+        headerGradient: 'linear-gradient(to right, #2d1000, #111111)',
+        accentColor: '#fb923c',
         icon: '🔥',
         stats: c.wod_type ? `${(c.wod_type as string).toUpperCase()} · ${c.result_value ?? ''} ${c.result_unit ?? ''}`.trim() : 'CROSSFIT',
         feedback: c.feedback ?? null,
@@ -789,6 +798,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-yellow-500',
         bgGradient: 'bg-gradient-to-br from-yellow-950/25 via-[#111] to-[#111]',
         bannerBg: 'bg-yellow-900/40 border-y border-yellow-700/40',
+        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
+        accentColor: '#c9a870',
         icon: '🏅',
         stats: c.badge_name,
         feedback: null,
@@ -799,6 +810,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-[#c9a870]',
         bgGradient: 'bg-gradient-to-br from-[#c9a870]/10 via-[#111] to-[#111]',
         bannerBg: 'bg-[#c9a870]/20 border-y border-[#c9a870]/40',
+        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
+        accentColor: '#c9a870',
         icon: '⚡',
         stats: null,
         subLabel: `Statut débloqué : ${getStatusTitle(c.level)}`,
@@ -811,6 +824,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-orange-600',
         bgGradient: 'bg-gradient-to-br from-orange-950/30 via-[#111] to-[#111]',
         bannerBg: 'bg-orange-900/50 border-y border-orange-700/50',
+        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
+        accentColor: '#c9a870',
         icon: '🏆',
         stats: c.discipline,
         feedback: null,
@@ -821,6 +836,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-pink-600',
         bgGradient: 'bg-gradient-to-br from-pink-950/25 via-[#111] to-[#111]',
         bannerBg: 'bg-pink-900/40 border-y border-pink-700/40',
+        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
+        accentColor: '#c9a870',
         icon: '🎯',
         stats: c.challenge_title,
         feedback: null,
@@ -831,6 +848,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-yellow-400',
         bgGradient: 'bg-gradient-to-br from-yellow-950/40 via-[#111] to-[#111]',
         bannerBg: 'bg-yellow-900/50 border-y border-yellow-700/40',
+        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
+        accentColor: '#c9a870',
         icon: '🏆',
         stats: c.title ? `${c.title} — ${c.value} ${c.unit}` : null,
         feedback: null,
@@ -847,191 +866,268 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
     || item.type === 'record'
     || item.type === 'personal_record';
 
+  const statusTitle = getStatusTitle(level);
+
+  const REACTIONS = [
+    { emoji: '🔥', label: 'Feu', bg: 'bg-red-900/40' },
+    { emoji: '💪', label: 'Force', bg: 'bg-orange-900/40' },
+    { emoji: '🫡', label: 'Respect', bg: 'bg-blue-900/40' },
+    { emoji: '😤', label: 'Motivé', bg: 'bg-purple-900/40' },
+  ];
+  const storageKey = `reaction_${item.id}_${currentUserId}`;
+  const lsGet = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
+  const lsSet = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
+  const lsRemove = (k: string) => { try { localStorage.removeItem(k); } catch {} };
+  const savedReaction = currentUserId ? (lsGet(storageKey) ?? '🔥') : '🔥';
+
+  function handleReaction(emoji: string) {
+    if (!currentUserId) return;
+    if (hasLiked && savedReaction === emoji) {
+      lsRemove(storageKey);
+    } else if (!hasLiked) {
+      lsSet(storageKey, emoji);
+    } else {
+      lsSet(storageKey, emoji);
+      return;
+    }
+    onLike(item.id);
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`relative border border-white/5 ${typeConfig.bgGradient} flex overflow-hidden`}
+      className="relative border border-white/5 bg-[#0d0d0d] overflow-hidden"
     >
-      {/* Bandeau vertical gauche */}
-      <div className={`flex-shrink-0 w-8 flex items-center justify-center ${(typeConfig as any).bannerBg ?? 'bg-[#1a1a1a]'}`}>
-        <span
-          className="font-rajdhani font-black text-[11px] uppercase tracking-widest text-white whitespace-nowrap select-none"
-          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-        >
-          {typeConfig.label}
-        </span>
-      </div>
-
-      {/* Contenu principal */}
-      <div className="flex-1 p-3 space-y-2 min-w-0">
-
-      {/* Badge MONSTRE */}
-      {isMonster && (
-        <motion.div
-          animate={{ scale: [1, 1.06, 1] }}
-          transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-          className="absolute top-2 right-2 flex items-center gap-1 border border-[#c9a870]/60 px-1.5 py-0.5 text-[10px] font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide bg-[#111]/80"
-        >
-          🔥 MONSTRE
-        </motion.div>
-      )}
-
-      {/* Header : une seule ligne — avatar + nom + niveau + temps + feedback + voir */}
-      <div className="flex items-center gap-2">
-        <Link to={`/profil/${item.user_id}`} className="flex-shrink-0 w-7 h-7 border border-[#c9a870]/30 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-[#c9a870]/70 transition-colors">
+      {/* ═══ IDENTITY BANNER ═══ */}
+      <div className="flex items-center gap-3 px-4 py-3" style={{ background: (typeConfig as any).headerGradient ?? 'linear-gradient(to right,#1a1a1a,#111111)' }}>
+        {/* Avatar 40px */}
+        <Link to={`/profil/${item.user_id}`} className="flex-shrink-0 w-10 h-10 border-2 border-white/20 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-white/40 transition-colors">
           {item.user?.avatar_url ? (
             <img src={item.user.avatar_url} alt={username} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-[10px] font-bold font-rajdhani text-[#c9a870]">{initials}</span>
+            <span className="text-sm font-bold font-rajdhani" style={{ color: typeConfig.accentColor }}>{initials}</span>
           )}
         </Link>
-        <Link to={`/profil/${item.user_id}`} className="font-rajdhani font-bold text-[#f5f5f5] tracking-wide uppercase text-sm hover:text-[#c9a870] transition-colors flex-shrink-0">{username}</Link>
-        <span className="text-[10px] font-rajdhani font-bold text-[#c9a870] border border-[#c9a870]/40 px-1.5 py-0.5 leading-none flex-shrink-0">Niv. {level}</span>
-        <span className="text-xs text-[#4a4a4a]">·</span>
-        <span className="text-xs text-[#4a4a4a] flex-shrink-0">{formatRelativeTime(item.created_at)}</span>
-        <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          {typeConfig.feedback && (
-            <span className="text-[10px] text-[#6b6b6b] border border-white/8 px-1.5 py-0.5 uppercase tracking-wide font-rajdhani">{typeConfig.feedback}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Contenu */}
-      <div className="space-y-1">
-        {/* Liste d'exercices (workout) */}
-        {(item.type === 'workout') && (() => {
-          const exList = (c_content.exercises ?? []) as { name: string; sets: number; reps: number; maxWeight?: number }[];
-          if (exList.length === 0) {
-            return typeConfig.stats ? (
-              <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
-            ) : null;
-          }
-          const repsPerSet = (ex: { sets: number; reps: number }) =>
-            ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
-          return (
-            <div>
-              {exList.map((ex, i) => (
-                <div key={i} className="flex items-baseline gap-2 py-0 min-w-0">
-                  <span className="text-sm text-[#d4d4d4] font-medium truncate min-w-0">{ex.name}</span>
-                  <span className="text-sm text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
-                    {ex.sets > 1
-                      ? `${ex.sets} × ${repsPerSet(ex)} reps`
-                      : `${repsPerSet(ex)} reps`}
-                  </span>
-                  {ex.maxWeight != null && ex.maxWeight > 0 && (
-                    <>
-                      <span className="text-[#4a4a4a] text-xs flex-shrink-0">·</span>
-                      <span className="text-sm font-rajdhani font-bold text-[#c9a870] flex-shrink-0 whitespace-nowrap">
-                        {ex.maxWeight} kg
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))}
-              {canShowDetail && (
-                <div className="flex justify-start mt-1.5">
-                  <button
-                    onClick={() => setShowDetail(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                    Voir la séance
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* Stats run */}
-        {item.type === 'run' && (() => {
-          const r = item.content as any;
-          return (
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-5">
-                <div>
-                  <p className="text-xs text-[#4a4a4a] uppercase tracking-wide font-rajdhani">Distance</p>
-                  <p className="text-base font-rajdhani font-bold text-[#d4d4d4]">{formatDistance(r.distance)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-[#4a4a4a] uppercase tracking-wide font-rajdhani">Temps</p>
-                  <p className="text-base font-rajdhani font-bold text-[#d4d4d4]">{formatDuration(r.duration)}</p>
-                </div>
-                {r.pace != null && r.pace > 0 && (
-                  <div>
-                    <p className="text-xs text-[#4a4a4a] uppercase tracking-wide font-rajdhani">Allure moy.</p>
-                    <p className="text-base font-rajdhani font-bold text-blue-400">{formatPace(r.pace)}</p>
-                  </div>
-                )}
-              </div>
-              {canShowDetail && (
-                <button
-                  onClick={() => setShowDetail(true)}
-                  className="self-start flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                  Voir la séance
-                </button>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* Stats calisthénie */}
-        {item.type === 'calisthenics' && (() => {
-          const c = item.content as any;
-          const exList: { name: string; sets: number; reps: number; hold_seconds?: number; set_type?: string }[] =
-            Array.isArray(c.exercises) && c.exercises.length > 0 ? c.exercises : [];
-          if (exList.length === 0) {
-            return (
-              <span className="text-sm text-[#a3a3a3]">
-                {c.exercises_count} exercice{c.exercises_count > 1 ? 's' : ''} · {c.total_reps} reps
+        {/* Identity text */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link to={`/profil/${item.user_id}`} className="font-rajdhani font-black text-xl text-white uppercase tracking-wide hover:opacity-80 transition-opacity leading-none">
+              {username}
+            </Link>
+            <span className="text-xs font-rajdhani font-bold border px-1.5 py-0.5 leading-none" style={{ color: typeConfig.accentColor, borderColor: typeConfig.accentColor + '50' }}>
+              NIV. {level}
+            </span>
+            {statusTitle && (
+              <span className="text-xs font-rajdhani uppercase tracking-wide hidden sm:block" style={{ color: typeConfig.accentColor, opacity: 0.7 }}>
+                {statusTitle}
               </span>
-            );
-          }
-          const repsPerSet = (ex: { sets: number; reps: number }) =>
-            ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
-          return (
-            <div>
-              {exList.map((ex, i) => (
-                <div key={i} className="flex items-baseline gap-2 py-0 min-w-0">
-                  <span className="text-sm text-[#d4d4d4] font-medium truncate min-w-0">{ex.name}</span>
-                  <span className="text-[#4a4a4a] text-xs flex-shrink-0">·</span>
-                  <span className="text-sm text-[#a3a3a3] flex-shrink-0 font-rajdhani whitespace-nowrap">
-                    {ex.set_type === 'timed' && ex.hold_seconds
-                      ? `${ex.sets} × ${ex.hold_seconds / (ex.sets || 1)}s`
-                      : ex.sets > 1
-                        ? `${ex.sets} × ${repsPerSet(ex)} reps`
-                        : `${repsPerSet(ex)} reps`}
-                  </span>
-                </div>
-              ))}
-              {canShowDetail && (
-                <div className="flex justify-start mt-1.5">
-                  <button
-                    onClick={() => setShowDetail(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 border border-violet-500/40 text-violet-300 text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-violet-500/20 hover:border-violet-500/70 transition-all"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                    Voir la séance
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* Stats autres types (badge, etc.) */}
-        {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && (
-          <div className="flex items-end gap-2">
-            {typeConfig.stats && (
-              <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
             )}
           </div>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="text-[10px] font-rajdhani font-bold uppercase tracking-widest" style={{ color: typeConfig.accentColor, opacity: 0.6 }}>
+              {typeConfig.label}
+            </span>
+            <span className="text-[#4a4a4a] text-xs">·</span>
+            <span className="text-[10px] text-[#5a5a5a]">{formatRelativeTime(item.created_at)}</span>
+            {typeConfig.feedback && (
+              <span className="ml-auto text-[10px] border px-1.5 py-0.5 uppercase tracking-wide font-rajdhani text-[#6b6b6b] border-white/10">
+                {typeConfig.feedback}
+              </span>
+            )}
+          </div>
+        </div>
+        {/* MONSTRE badge in header */}
+        {isMonster && (
+          <motion.div
+            animate={{ scale: [1, 1.06, 1] }}
+            transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+            className="flex-shrink-0 flex items-center gap-1 border border-[#c9a870]/60 px-1.5 py-0.5 text-[10px] font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide bg-[#111]/80"
+          >
+            🔥 MONSTRE
+          </motion.div>
         )}
       </div>
+
+      {/* ═══ CONTENT ═══ */}
+      <div className="min-w-0">
+
+      {/* ── Metric blocks ── */}
+      {item.type === 'workout' && (() => {
+        const tonnage = c_content.tonnage ?? 0;
+        const exCount = c_content.exercises_count ?? (c_content.exercises?.length ?? 0);
+        const setsCount = c_content.sets_count ?? 0;
+        return (
+          <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5 bg-[#0d0d0d]">
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-red-400 leading-none">{tonnage > 0 ? tonnage.toLocaleString('fr-FR') : '—'}</span>
+              <span className="text-[10px] text-red-700 uppercase tracking-widest font-rajdhani mt-1">{tonnage > 0 ? 'kg soulevés' : 'Tonnage'}</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{exCount}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Exercice{exCount > 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{setsCount}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Série{setsCount > 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {item.type === 'run' && (() => {
+        const r = c_content;
+        return (
+          <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5 bg-[#0d0d0d]">
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-blue-400 leading-none">{formatDistance(r.distance)}</span>
+              <span className="text-[10px] text-blue-700 uppercase tracking-widest font-rajdhani mt-1">Distance</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{formatDuration(r.duration)}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Durée</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{r.pace && r.pace > 0 ? formatPace(r.pace) : '—'}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Allure</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {item.type === 'calisthenics' && (() => {
+        const c = c_content;
+        const totalReps = c.total_reps ?? 0;
+        const exCount = c.exercises_count ?? (c.exercises?.length ?? 0);
+        const skillsCount = c.skills_unlocked?.length ?? 0;
+        const setsTotal = c.exercises?.reduce((s: number, ex: any) => s + (ex.sets ?? 0), 0) ?? 0;
+        return (
+          <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5 bg-[#0d0d0d]">
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-violet-400 leading-none">{totalReps}</span>
+              <span className="text-[10px] text-violet-700 uppercase tracking-widest font-rajdhani mt-1">Reps</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{exCount}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Exercice{exCount > 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className={`font-rajdhani font-black text-xl leading-none ${skillsCount > 0 ? 'text-violet-400' : 'text-[#d4d4d4]'}`}>{skillsCount > 0 ? skillsCount : setsTotal}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">{skillsCount > 0 ? `Skill${skillsCount > 1 ? 's' : ''}` : 'Séries'}</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {item.type === 'crossfit' && (() => {
+        const c = c_content;
+        const wodType = c.wod_type?.toUpperCase() ?? 'WOD';
+        const exCount = c.exercises?.length ?? 0;
+        const result = c.result_value ? `${c.result_value} ${c.result_unit ?? ''}`.trim() : '—';
+        return (
+          <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5 bg-[#0d0d0d]">
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-orange-400 leading-none uppercase">{wodType}</span>
+              <span className="text-[10px] text-orange-700 uppercase tracking-widest font-rajdhani mt-1">Type WOD</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-[#d4d4d4] leading-none">{exCount}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Exercice{exCount > 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <span className="font-rajdhani font-black text-xl text-orange-400 leading-none">{result}</span>
+              <span className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani mt-1">Résultat</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Exercise lists ── */}
+      {item.type === 'workout' && (() => {
+        const exList = (c_content.exercises ?? []) as { name: string; sets: number; reps: number; maxWeight?: number }[];
+        if (exList.length === 0) return null;
+        const repsPerSet = (ex: { sets: number; reps: number }) => ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+        return (
+          <div className="px-4 py-3 space-y-2.5">
+            {exList.map((ex, i) => (
+              <div key={i} className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-red-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
+                <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
+                <span className="font-rajdhani font-bold text-[#7a7a7a] text-sm flex-shrink-0">{ex.sets > 1 ? `${ex.sets}×${repsPerSet(ex)}` : `${repsPerSet(ex)} reps`}</span>
+                {ex.maxWeight != null && ex.maxWeight > 0 && (
+                  <span className="font-rajdhani font-black text-[#c9a870] text-sm flex-shrink-0">{ex.maxWeight} kg</span>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {item.type === 'calisthenics' && (() => {
+        const c = c_content;
+        const exList: { name: string; sets: number; reps: number; hold_seconds?: number; set_type?: string }[] =
+          Array.isArray(c.exercises) && c.exercises.length > 0 ? c.exercises : [];
+        if (exList.length === 0) return null;
+        const repsPerSet = (ex: { sets: number; reps: number }) => ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+        return (
+          <div className="px-4 py-3 space-y-2.5">
+            {exList.map((ex, i) => (
+              <div key={i} className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-violet-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
+                <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
+                <span className="font-rajdhani font-bold text-[#7a7a7a] text-sm flex-shrink-0">{ex.sets} sér.</span>
+                <span className="font-rajdhani font-black text-violet-400 text-sm flex-shrink-0">
+                  {ex.set_type === 'timed' && ex.hold_seconds ? `${Math.round(ex.hold_seconds / (ex.sets || 1))}s` : `${repsPerSet(ex)} reps`}
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {item.type === 'crossfit' && (() => {
+        const exList = (c_content.exercises ?? []) as { name: string; reps?: number; duration?: number; weight?: number }[];
+        if (exList.length === 0) return null;
+        return (
+          <div className="px-4 py-3 space-y-2.5">
+            {exList.map((ex, i) => (
+              <div key={i} className="flex items-center gap-3 min-w-0">
+                <span className="font-rajdhani font-black text-orange-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
+                <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
+                {(ex.reps != null || ex.duration != null) && (
+                  <span className="font-rajdhani font-bold text-[#7a7a7a] text-sm flex-shrink-0">{ex.reps != null ? `${ex.reps} reps` : `${ex.duration}s`}</span>
+                )}
+                {ex.weight != null && (
+                  <span className="font-rajdhani font-black text-orange-400 text-sm flex-shrink-0">{ex.weight} kg</span>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Autres types */}
+      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && typeConfig.stats && (
+        <div className="px-4 py-3">
+          <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
+        </div>
+      )}
+
+      {/* Voir la séance */}
+      {canShowDetail && (
+        <div className="px-4 pb-3">
+          <button
+            onClick={() => setShowDetail(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c9a870]/10 border border-[#c9a870]/40 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 hover:border-[#c9a870]/70 transition-all"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+            Voir la séance
+          </button>
+        </div>
+      )}
+
+      <div className="px-3 space-y-2">
 
 
       {/* Dernier commentaire inline */}
@@ -1061,57 +1157,44 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
 
       {/* Footer : réactions + commentaires */}
       <div className="flex items-center gap-3 pt-1 border-t border-white/5 flex-wrap">
-        {/* 4 réactions */}
-        {(() => {
-          const REACTIONS = [
-            { emoji: '🔥', label: 'Feu', bg: 'bg-red-900/40' },
-            { emoji: '💪', label: 'Force', bg: 'bg-orange-900/40' },
-            { emoji: '🫡', label: 'Respect', bg: 'bg-blue-900/40' },
-            { emoji: '😤', label: 'Motivé', bg: 'bg-purple-900/40' },
-          ];
-          const storageKey = `reaction_${item.id}_${currentUserId}`;
-          const lsGet = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
-          const lsSet = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
-          const lsRemove = (k: string) => { try { localStorage.removeItem(k); } catch {} };
-          const savedReaction = currentUserId ? (lsGet(storageKey) ?? '🔥') : '🔥';
+        {/* Reaction dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowReactionPicker(p => !p)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-rajdhani font-bold uppercase tracking-wide border transition-all ${
+              hasLiked
+                ? 'border-[#c9a870]/50 text-[#c9a870] bg-[#c9a870]/10'
+                : 'border-white/10 text-[#5a5a5a] hover:border-white/20 hover:text-[#a3a3a3]'
+            }`}
+          >
+            <span>{hasLiked ? savedReaction : '＋'}</span>
+            <span>{hasLiked ? likes.length : 'Réagir'}</span>
+            {!hasLiked && <span className="text-[10px] opacity-60">▾</span>}
+          </button>
 
-          function handleReaction(emoji: string) {
-            if (!currentUserId) return;
-            if (hasLiked && savedReaction === emoji) {
-              // Toggle off
-              lsRemove(storageKey);
-            } else if (!hasLiked) {
-              // Like + save emoji
-              lsSet(storageKey, emoji);
-            } else {
-              // Already liked, just change emoji (no API call)
-              lsSet(storageKey, emoji);
-              return;
-            }
-            onLike(item.id);
-          }
-
-          return (
-            <div className="flex items-center gap-1">
-              {REACTIONS.map(r => {
-                const isActive = hasLiked && savedReaction === r.emoji;
-                return (
+          {showReactionPicker && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowReactionPicker(false)} />
+              <div className="absolute bottom-full left-0 mb-1 z-50 flex gap-1 bg-[#1a1a1a] border border-white/10 p-1.5">
+                {REACTIONS.map(r => (
                   <button
                     key={r.emoji}
-                    onClick={() => handleReaction(r.emoji)}
-                    className={`flex items-center gap-0.5 px-1.5 py-0.5 text-xs transition-colors rounded ${
-                      isActive ? `${r.bg} text-white` : 'text-[#4a4a4a] hover:text-[#a3a3a3]'
+                    onClick={() => { handleReaction(r.emoji); setShowReactionPicker(false); }}
+                    className={`text-lg px-1.5 py-0.5 transition-colors hover:bg-white/10 ${
+                      hasLiked && savedReaction === r.emoji ? 'bg-white/15' : ''
                     }`}
                     title={r.label}
                   >
-                    <span>{r.emoji}</span>
+                    {r.emoji}
                   </button>
-                );
-              })}
-              <span className="text-xs text-[#4a4a4a] ml-1">{likes.length}</span>
-            </div>
-          );
-        })()}
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        {hasLiked && likes.length > 0 && (
+          <span className="text-xs text-[#4a4a4a]">{likes.length}</span>
+        )}
 
         {canSave && currentUserId && (
           <button
@@ -1289,7 +1372,8 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       {showDetail && canShowDetail && (
         <SessionDetailModal item={item} onClose={() => setShowDetail(false)} />
       )}
-      </div>{/* fin contenu principal */}
+      </div>{/* fin px-3 */}
+      </div>{/* fin min-w-0 CONTENT */}
     </motion.div>
   );
 }
