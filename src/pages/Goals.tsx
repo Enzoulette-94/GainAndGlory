@@ -432,28 +432,56 @@ export function GoalsPage() {
 
       {/* ── Header ── */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden -mx-4 px-6 py-8 sm:mx-0 sm:px-8"
+        style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0a00 50%, #080808 100%)' }}
       >
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded bg-transparent border border-orange-900/40">
-            <Target className="w-6 h-6 text-[#c9a870]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-white">Objectifs</h1>
-            <p className="text-[#a3a3a3] text-sm mt-0.5">Tes objectifs personnels</p>
-          </div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/20 to-transparent" />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none">
+          <Target className="w-44 h-44 text-[#c9a870]" />
         </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={openCreateModal}
-        >
-          Nouvel objectif
-        </Button>
+        <div className="relative flex flex-col items-center text-center gap-3">
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+            className="flex items-center justify-center w-14 h-14 border-2 border-[#c9a870]/40 bg-[#c9a870]/5"
+          >
+            <Target className="w-7 h-7 text-[#c9a870]" />
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <h1
+              className="font-rajdhani font-black uppercase leading-none tracking-[0.25em]"
+              style={{
+                fontSize: 'clamp(1.8rem, 7vw, 3.5rem)',
+                background: 'linear-gradient(180deg, #f5d990 0%, #c9a870 45%, #8b6f47 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Objectifs
+            </h1>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-[#c9a870]/40" />
+              <p className="text-[10px] text-[#8b6f47] uppercase tracking-[0.3em] font-rajdhani font-bold">
+                Forge ta destinée — un objectif à la fois
+              </p>
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-[#c9a870]/40" />
+            </div>
+          </motion.div>
+
+          <motion.button
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            onClick={openCreateModal}
+            className="flex items-center gap-1.5 px-4 py-2 border border-[#c9a870]/50 bg-[#c9a870]/10 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-widest hover:bg-[#c9a870]/20 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nouvel objectif
+          </motion.button>
+        </div>
       </motion.div>
 
       {/* ── Stats 3 cards ── */}

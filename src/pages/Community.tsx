@@ -858,7 +858,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         labelColor: 'text-[#c9a870]',
         bgGradient: 'bg-gradient-to-br from-[#1a1400] via-[#0f0e00] to-[#0a0a0a]',
         bannerBg: 'bg-[#c9a870]/20 border-y border-[#c9a870]/40',
-        headerGradient: 'linear-gradient(135deg, #1a1200 0%, #110e00 60%, #0a0a0a 100%)',
+        headerGradient: 'linear-gradient(135deg, #2a1e00 0%, #1a1200 60%, #0f0a00 100%)',
         accentColor: '#c9a870',
         icon: '🏆',
         stats: c.title ? `${c.title} — ${c.value} ${c.unit}` : null,
@@ -908,7 +908,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`relative overflow-hidden ${item.type === 'personal_record' ? 'border border-[#c9a870]/40 bg-[#0f0d00]' : 'border border-white/5 bg-[#0d0d0d]'}`}
+      className={`relative overflow-hidden ${item.type === 'personal_record' ? 'border border-[#c9a870]/70 bg-[#150f00]' : 'border border-white/5 bg-[#0d0d0d]'}`}
     >
       {/* ═══ IDENTITY BANNER ═══ */}
       <div className="flex items-center gap-3 px-4 py-3" style={{ background: (typeConfig as any).headerGradient ?? 'linear-gradient(to right,#1a1a1a,#111111)' }}>
@@ -1162,17 +1162,17 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/60 to-transparent" />
           {/* Glow pulsant en fond */}
           <motion.div
-            animate={{ opacity: [0.03, 0.10, 0.03] }}
+            animate={{ opacity: [0.08, 0.22, 0.08] }}
             transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
             className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at 50% 50%, #c9a870 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(ellipse at 50% 50%, #e8c060 0%, #c9a870 30%, transparent 70%)' }}
           />
           {/* Shimmer diagonal qui balaie */}
           <motion.div
             animate={{ x: ['-120%', '220%'] }}
             transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.5, ease: 'easeInOut' }}
             className="absolute inset-y-0 w-1/3 pointer-events-none"
-            style={{ background: 'linear-gradient(105deg, transparent 0%, rgba(201,168,112,0.12) 50%, transparent 100%)', skewX: '-15deg' }}
+            style={{ background: 'linear-gradient(105deg, transparent 0%, rgba(232,192,96,0.25) 50%, transparent 100%)', skewX: '-15deg' }}
           />
           {/* Trophée watermark */}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.05] pointer-events-none select-none">
@@ -1230,7 +1230,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         </div>
       )}
 
-      <div className="px-3 space-y-2">
+      <div className="px-3 pt-3 pb-3 space-y-2 border-t border-white/5">
 
 
       {/* Dernier commentaire inline */}
@@ -1379,7 +1379,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       {currentUserId && !showComments && (
         <button
           onClick={() => { setShowComments(true); setTimeout(() => inputRef.current?.focus(), 100); }}
-          className="w-full flex items-center gap-2.5 bg-[#1a1a1a] border border-white/8 px-3 py-2 hover:border-[#c9a870]/30 transition-colors group"
+          className="w-full flex items-center gap-2.5 bg-[#1a1a1a] border-t border-white/8 px-3 py-2.5 hover:bg-white/3 transition-colors group"
         >
           <div className="flex-shrink-0 w-7 h-7 bg-[#252525] border border-white/10 flex items-center justify-center">
             {profile?.avatar_url ? (
