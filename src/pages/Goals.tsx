@@ -11,6 +11,7 @@ import {
   Flame,
   AlertCircle,
   CalendarClock,
+  ChevronDown,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -274,7 +275,9 @@ export function GoalsPage() {
   const [loading, setLoading] = useState(true);
 
   // State UI
-  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [visibleSections, setVisibleSections] = useState<Set<TabType>>(new Set(['active']));
+  const toggleSection = (tab: TabType) =>
+    setVisibleSections(prev => { const n = new Set(prev); n.has(tab) ? n.delete(tab) : n.add(tab); return n; });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<PersonalGoal | null>(null);
@@ -459,7 +462,7 @@ export function GoalsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+        className="grid grid-cols-3 gap-3"
       >
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-[#c9a870]">{activeGoals.length}</p>
@@ -478,100 +481,89 @@ export function GoalsPage() {
         </Card>
       </motion.div>
 
-      {/* ── Onglets ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="flex gap-1 bg-[#1c1c1c] rounded p-1 border border-white/5"
-        role="tablist"
-        aria-label="Filtrer les objectifs"
-      >
-        {(['active', 'completed', 'cancelled'] as TabType[]).map((tab) => (
-          <button
-            key={tab}
-            role="tab"
-            aria-selected={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
-            className={`
-              flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-sm font-medium
-              transition-all duration-200
-              ${activeTab === tab
-                ? 'bg-red-700 text-white shadow-sm'
-                : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-white/5'
-              }
-            `}
-          >
-            {STATUS_TAB_LABELS[tab]}
-            <span className={`
-              text-xs px-1.5 py-0.5 rounded-full font-bold
-              ${activeTab === tab ? 'bg-white/20 text-white' : 'bg-slate-700 text-[#a3a3a3]'}
-            `}>
-              {tabGoals[tab].length}
-            </span>
-          </button>
-        ))}
-      </motion.div>
-
-      {/* ── Liste des objectifs ── */}
-      <div role="tabpanel" aria-label={STATUS_TAB_LABELS[activeTab]}>
-        {loading ? (
-          // Squelette de chargement
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded border border-white/5 bg-[#111111] p-4 animate-pulse">
-                <div className="flex gap-3">
-                  <div className="w-9 h-9 rounded bg-slate-700/50" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-slate-700/50 rounded w-1/2" />
-                    <div className="h-3 bg-slate-700/50 rounded w-3/4" />
-                    <div className="h-2 bg-slate-700/50 rounded w-full mt-3" />
-                  </div>
+      {/* ── Sections accordéon ── */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border border-white/5 bg-[#111111] p-4 animate-pulse">
+              <div className="flex gap-3">
+                <div className="w-9 h-9 rounded bg-slate-700/50" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-slate-700/50 rounded w-1/2" />
+                  <div className="h-3 bg-slate-700/50 rounded w-3/4" />
+                  <div className="h-2 bg-slate-700/50 rounded w-full mt-3" />
                 </div>
               </div>
-            ))}
-          </div>
-        ) : tabGoals[activeTab].length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <Card className="p-12 text-center">
-              <Target className="w-14 h-14 mx-auto mb-4 text-[#4a4a4a]" />
-              <p className="text-[#a3a3a3] font-medium">
-                {activeTab === 'active' && 'Aucun objectif actif. Crée-en un !'}
-                {activeTab === 'completed' && 'Aucun objectif complété pour l\'instant.'}
-                {activeTab === 'cancelled' && 'Aucun objectif annulé.'}
-              </p>
-              {activeTab === 'active' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={<Plus className="w-4 h-4" />}
-                  onClick={openCreateModal}
-                  className="mt-4"
-                >
-                  Nouvel objectif
-                </Button>
-              )}
-            </Card>
-          </motion.div>
-        ) : (
-          <AnimatePresence mode="popLayout">
-            <div className="space-y-3">
-              {tabGoals[activeTab].map((goal) => (
-                <GoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onUpdate={openUpdateModal}
-                  onComplete={handleComplete}
-                  onCancel={handleCancel}
-                />
-              ))}
             </div>
-          </AnimatePresence>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {(['active', 'completed', 'cancelled'] as TabType[]).map((tab) => {
+            const open = visibleSections.has(tab);
+            return (
+              <div key={tab}>
+                {/* En-tête toggle */}
+                <button
+                  onClick={() => toggleSection(tab)}
+                  className={`
+                    w-full flex items-center justify-between px-4 py-3 border transition-all duration-200
+                    ${open
+                      ? 'bg-red-700/20 border-red-700/50 text-white'
+                      : 'bg-[#111] border-white/5 text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/10'
+                    }
+                  `}
+                >
+                  <span className="font-rajdhani font-bold text-sm uppercase tracking-widest">
+                    {STATUS_TAB_LABELS[tab]}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 font-bold ${open ? 'bg-red-700 text-white' : 'bg-slate-800 text-[#5a5a5a]'}`}>
+                      {tabGoals[tab].length}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+
+                {/* Contenu */}
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-2 space-y-3">
+                        {tabGoals[tab].length === 0 ? (
+                          <Card className="p-8 text-center">
+                            <Target className="w-10 h-10 mx-auto mb-3 text-[#4a4a4a]" />
+                            <p className="text-[#a3a3a3] text-sm">
+                              {tab === 'active' && 'Aucun objectif actif. Crée-en un !'}
+                              {tab === 'completed' && "Aucun objectif complété pour l'instant."}
+                              {tab === 'cancelled' && 'Aucun objectif annulé.'}
+                            </p>
+                            {tab === 'active' && (
+                              <Button variant="outline" size="sm" icon={<Plus className="w-4 h-4" />} onClick={openCreateModal} className="mt-3">
+                                Nouvel objectif
+                              </Button>
+                            )}
+                          </Card>
+                        ) : (
+                          tabGoals[tab].map((goal) => (
+                            <GoalCard key={goal.id} goal={goal} onUpdate={openUpdateModal} onComplete={handleComplete} onCancel={handleCancel} />
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── Modal : Nouvel objectif ── */}
       <Modal
