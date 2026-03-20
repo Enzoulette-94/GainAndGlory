@@ -287,14 +287,16 @@ export function WeightPage() {
       </motion.div>
 
       {/* ── CTA Nouvelle pesée ── */}
-      <motion.button
-        whileHover={{ backgroundColor: '#15803d' }}
-        onClick={openModal}
-        className="w-full -mx-4 sm:mx-0 py-4 bg-green-700 text-white font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 transition-colors"
-      >
-        <Plus className="w-4 h-4" />
-        NOUVELLE PESÉE
-      </motion.button>
+      <div className="-mx-4 sm:mx-0">
+        <motion.button
+          whileHover={{ backgroundColor: '#047857' }}
+          onClick={openModal}
+          className="w-full py-4 bg-emerald-700 text-white font-black uppercase tracking-[0.15em] text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          NOUVELLE PESÉE
+        </motion.button>
+      </div>
 
       {loading && <Loader text="Chargement des données..." />}
 

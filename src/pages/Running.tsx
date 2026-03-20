@@ -398,62 +398,26 @@ export function RunningPage() {
           {activeTab === 'sorties' && (
             <div className="space-y-4">
               {/* Filtres */}
-              <div className="flex flex-wrap gap-2">
-                {/* Filtre type */}
-                <div className="flex gap-1 flex-wrap">
-                  {(
-                    [
-                      { key: 'tous', label: 'Tous' },
-                      { key: 'fractionne', label: 'Fractionné' },
-                      { key: 'endurance', label: 'Endurance' },
-                      { key: 'tempo', label: 'Tempo' },
-                    ] as { key: RunTypeFilter; label: string }[]
-                  ).map((f) => (
-                    <button
-                      key={f.key}
-                      onClick={() => {
-                        setTypeFilter(f.key);
-                        setVisibleCount(10);
-                      }}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
-                        typeFilter === f.key
-                          ? 'bg-blue-700 text-white'
-                          : 'bg-[#1c1c1c] text-[#a3a3a3] hover:text-[#e5e5e5] border border-white/5'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Séparateur vertical */}
-                <div className="w-px bg-slate-700/50 self-stretch" />
-
-                {/* Filtre période */}
-                <div className="flex gap-1 flex-wrap">
-                  {(
-                    [
-                      { key: 'semaine', label: 'Cette semaine' },
-                      { key: 'mois', label: 'Ce mois' },
-                      { key: 'tout', label: 'Tout' },
-                    ] as { key: PeriodFilter; label: string }[]
-                  ).map((f) => (
-                    <button
-                      key={f.key}
-                      onClick={() => {
-                        setPeriodFilter(f.key);
-                        setVisibleCount(10);
-                      }}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
-                        periodFilter === f.key
-                          ? 'bg-slate-600 text-white'
-                          : 'bg-[#1c1c1c] text-[#a3a3a3] hover:text-[#e5e5e5] border border-white/5'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex gap-2">
+                <select
+                  value={typeFilter}
+                  onChange={e => { setTypeFilter(e.target.value as RunTypeFilter); setVisibleCount(10); }}
+                  className="flex-1 bg-[#111] border border-white/10 text-[#d4d4d4] text-xs px-3 py-2 font-rajdhani font-semibold uppercase tracking-wide focus:outline-none focus:border-blue-700/60"
+                >
+                  <option value="tous">Tous les types</option>
+                  <option value="fractionne">Fractionné</option>
+                  <option value="endurance">Endurance</option>
+                  <option value="tempo">Tempo</option>
+                </select>
+                <select
+                  value={periodFilter}
+                  onChange={e => { setPeriodFilter(e.target.value as PeriodFilter); setVisibleCount(10); }}
+                  className="flex-1 bg-[#111] border border-white/10 text-[#d4d4d4] text-xs px-3 py-2 font-rajdhani font-semibold uppercase tracking-wide focus:outline-none focus:border-blue-700/60"
+                >
+                  <option value="tout">Toute la période</option>
+                  <option value="semaine">Cette semaine</option>
+                  <option value="mois">Ce mois</option>
+                </select>
               </div>
 
               {/* Résultats */}

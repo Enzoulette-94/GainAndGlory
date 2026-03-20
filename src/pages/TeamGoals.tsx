@@ -681,7 +681,7 @@ export function TeamGoalsPage() {
   );
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'active', label: 'Objectifs actifs', icon: <Trophy className="w-4 h-4" /> },
+    { id: 'active', label: 'Défis actifs', icon: <Trophy className="w-4 h-4" /> },
     { id: 'mine',   label: 'Mes contributions', icon: <Target className="w-4 h-4" /> },
     { id: 'create', label: 'Créer', icon: <Plus className="w-4 h-4" /> },
   ];
@@ -720,7 +720,7 @@ export function TeamGoalsPage() {
             `}
           >
             {t.icon}
-            <span className="hidden sm:inline ml-1">{t.label}</span>
+            <span className="ml-1">{t.label}</span>
           </button>
         ))}
       </motion.div>

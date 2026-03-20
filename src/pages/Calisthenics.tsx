@@ -148,7 +148,6 @@ export function CalisthenicsPage() {
     { id: 'sessions', label: 'Séances', icon: <Zap className="w-4 h-4" /> },
     { id: 'charts', label: 'Graphiques', icon: <BarChart2 className="w-4 h-4" /> },
     { id: 'records', label: 'Records', icon: <Trophy className="w-4 h-4" /> },
-    { id: 'skills', label: 'Skills', icon: <Grid className="w-4 h-4" /> },
   ];
 
   return (
@@ -192,22 +191,10 @@ export function CalisthenicsPage() {
       </Link>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-        <Card className="p-3 sm:p-4 text-center">
-          <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">{totalSessions}</p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Séances</p>
-        </Card>
-        <Card className="p-3 sm:p-4 text-center">
-          <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">{totalReps.toLocaleString('fr-FR')}</p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Reps</p>
-        </Card>
-        <Card className="p-3 sm:p-4 text-center">
-          <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">
-            {unlockedSkills.length}/{CALISTHENICS_SKILLS.length}
-          </p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Skills</p>
-        </Card>
-      </div>
+      <Card className="p-3 sm:p-4 text-center">
+        <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">{totalSessions}</p>
+        <p className="text-xs text-[#6b6b6b] mt-0.5">Séances</p>
+      </Card>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-white/5">

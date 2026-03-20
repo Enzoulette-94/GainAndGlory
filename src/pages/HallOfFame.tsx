@@ -737,17 +737,75 @@ export function HallOfFamePage() {
         userId={profile?.id ?? ''}
       />
 
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3">
-        <div className="p-2.5 border border-yellow-700/50">
-          <Crown className="w-6 h-6 text-yellow-400" />
+      {/* Header — vitrine trophée */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden -mx-4 px-6 py-8 sm:mx-0 sm:px-8"
+        style={{ background: 'linear-gradient(135deg, #0a0700 0%, #111005 40%, #0a0700 100%)' }}
+      >
+        {/* Bordures dorées */}
+        <div className="absolute inset-0 border-y border-[#c9a870]/20 pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/30 to-transparent" />
+
+        {/* Trophées décoratifs en arrière-plan */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none">
+          <Trophy className="w-40 h-40 text-[#c9a870]" />
         </div>
-        <div>
-          <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
-            Hall of Fame
-          </h1>
-          <p className="text-[#a3a3a3] text-sm mt-0.5">Top 5 — XP · Course · Musculation</p>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none select-none">
+          <Crown className="w-24 h-24 text-[#c9a870]" />
+        </div>
+
+        {/* Contenu */}
+        <div className="relative flex flex-col items-center text-center gap-3">
+          {/* Couronne */}
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+            className="flex items-center justify-center w-14 h-14 border-2 border-[#c9a870]/40 bg-[#c9a870]/5"
+          >
+            <Crown className="w-7 h-7 text-[#c9a870]" />
+          </motion.div>
+
+          {/* Titre */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <h1
+              className="font-rajdhani font-black uppercase leading-none tracking-[0.25em]"
+              style={{
+                fontSize: 'clamp(2rem, 8vw, 4rem)',
+                background: 'linear-gradient(180deg, #f5d990 0%, #c9a870 45%, #8b6f47 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: 'none',
+              }}
+            >
+              Hall of Fame
+            </h1>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-[#c9a870]/40" />
+              <p className="text-[10px] text-[#8b6f47] uppercase tracking-[0.3em] font-rajdhani font-bold">
+                Les légendes de la troupe
+              </p>
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-[#c9a870]/40" />
+            </div>
+          </motion.div>
+
+          {/* Stats rapides */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="flex items-center gap-4 text-[10px] text-[#5a5a5a] uppercase tracking-widest font-rajdhani"
+          >
+            <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-600/60" /> XP</span>
+            <span className="text-[#3a3a3a]">·</span>
+            <span className="flex items-center gap-1"><Dumbbell className="w-3 h-3 text-red-700/60" /> Musculation</span>
+            <span className="text-[#3a3a3a]">·</span>
+            <span className="flex items-center gap-1"><PersonStanding className="w-3 h-3 text-blue-700/60" /> Course</span>
+            <span className="text-[#3a3a3a]">·</span>
+            <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-violet-700/60" /> Calisthénie</span>
+            <span className="text-[#3a3a3a]">·</span>
+            <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-orange-700/60" /> Crossfit</span>
+          </motion.div>
         </div>
       </motion.div>
 
