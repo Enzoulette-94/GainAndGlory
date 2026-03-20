@@ -206,11 +206,49 @@ export function CalendarPage() {
     <div className="space-y-4">
 
       {/* ── Header ────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3">
-        <CalendarDays className="w-5 h-5 text-[#c9a870]" />
-        <h1 className="font-rajdhani font-bold text-xl text-[#f5f5f5] tracking-wide uppercase">Calendrier</h1>
-        <span className="ml-auto text-xs text-[#6b6b6b] font-rajdhani">{totalMonthActivities} séance{totalMonthActivities > 1 ? 's' : ''} ce mois</span>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden -mx-4 px-6 py-8 sm:mx-0 sm:px-8"
+        style={{ background: 'linear-gradient(135deg, #080808 0%, #0e0a00 50%, #080808 100%)' }}
+      >
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/20 to-transparent" />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none">
+          <CalendarDays className="w-44 h-44 text-[#c9a870]" />
+        </div>
+
+        <div className="relative flex flex-col items-center text-center gap-3">
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+            className="flex items-center justify-center w-14 h-14 border-2 border-[#c9a870]/40 bg-[#c9a870]/5"
+          >
+            <CalendarDays className="w-7 h-7 text-[#c9a870]" />
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <h1
+              className="font-rajdhani font-black uppercase leading-none tracking-[0.25em]"
+              style={{
+                fontSize: 'clamp(1.8rem, 7vw, 3.5rem)',
+                background: 'linear-gradient(180deg, #f5d990 0%, #c9a870 45%, #8b6f47 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Calendrier
+            </h1>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-[#c9a870]/40" />
+              <p className="text-[10px] text-[#8b6f47] uppercase tracking-[0.3em] font-rajdhani font-bold">
+                {totalMonthActivities} séance{totalMonthActivities > 1 ? 's' : ''} ce mois
+              </p>
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-[#c9a870]/40" />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* ── À venir ───────────────────────────────────────────────────── */}
       {(() => {
