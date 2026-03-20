@@ -8,7 +8,6 @@ import {
   Trash2,
   CheckCircle2,
   Pencil,
-  Flame,
   AlertCircle,
   CalendarClock,
   ChevronDown,
@@ -473,11 +472,8 @@ export function GoalsPage() {
           <p className="text-xs text-[#a3a3a3] mt-1">Complétés</p>
         </Card>
         <Card className="p-4 text-center">
-          <div className="flex items-center justify-center gap-1">
-            <Flame className="w-5 h-5 text-orange-600" />
-            <p className="text-2xl font-black text-orange-600">{profile?.current_streak ?? 0}</p>
-          </div>
-          <p className="text-xs text-[#a3a3a3] mt-1">Streak actuel</p>
+          <p className="text-2xl font-black text-[#6b6b6b]">{cancelledGoals.length}</p>
+          <p className="text-xs text-[#a3a3a3] mt-1">Annulés</p>
         </Card>
       </motion.div>
 

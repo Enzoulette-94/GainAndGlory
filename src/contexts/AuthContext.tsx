@@ -28,7 +28,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadProfile = useCallback(async (userId: string) => {
     try {
-      const p = await profileService.getProfile(userId);
+      let p = await profileService.getProfile(userId);
+      // Vérification passive du streak : si la dernière activité date d'au moins 2 jours, on remet à 0
+      if (p && p.current_streak > 0 && p.last_activity_date) {
+        const today = new Date().toISOString().split('T')[0];
+        const last  = p.last_activity_date.split('T')[0];
+        const diffDays = Math.floor((new Date(today).getTime() - new Date(last).getTime()) / 86400000);
+        if (diffDays >= 2) {
+          p = await profileService.updateProfile(userId, { current_streak: 0 });
+        }
+      }
       setProfile(p);
     } catch {
       setProfile(null);

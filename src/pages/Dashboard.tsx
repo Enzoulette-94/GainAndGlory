@@ -119,16 +119,34 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
 
-      {/* ── LIGNE 1 : Actions rapides (gauche) + Greeting & XP (droite) ── */}
+      {/* ── LIGNE 1 : Greeting | Actions rapides | XP Bars ── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4"
+        className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-4"
       >
-        {/* Actions rapides */}
-        <div className="bg-[#0e0e0e] border border-white/5 p-4 flex flex-col gap-3">
+        {/* Greeting + Streak — order 1 sur mobile, colonne droite haut sur desktop */}
+        <div className="order-1 lg:order-2 flex items-start justify-between">
+          <div>
+            <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
+              {greeting}, {profile.username}
+            </h1>
+            <p className="text-[#a3a3a3] text-sm mt-0.5">
+              {getLevelTitle(profile.global_level)} · Niveau {profile.global_level}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-black/50 border border-orange-900/50 px-3 py-2 flex-shrink-0">
+            <span className="text-[11px] text-orange-500 uppercase tracking-wide font-rajdhani font-bold">Streak du moment</span>
+            <Flame className="w-4 h-4 text-orange-600" />
+            <span className="font-bold text-orange-500 font-rajdhani text-lg leading-none">{profile.current_streak}</span>
+            <span className="text-xs text-orange-500">jours</span>
+          </div>
+        </div>
+
+        {/* Actions rapides — order 2 sur mobile, colonne gauche sur desktop */}
+        <div className="order-2 lg:order-1 lg:row-span-2 bg-[#0e0e0e] border border-white/5 p-4 flex flex-col gap-3">
           <h2 className="font-rajdhani text-xs font-bold text-[#8b6f47] uppercase tracking-widest">Nouvelle session</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1">
+          <div className="grid grid-cols-2 gap-2 flex-1">
             <QuickAction
               to="/musculation/new"
               label="Muscu"
@@ -164,29 +182,12 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Greeting + Streak + XP Bars */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
-                {greeting}, {profile.username}
-              </h1>
-              <p className="text-[#a3a3a3] text-sm mt-0.5">
-                {getLevelTitle(profile.global_level)} · Niveau {profile.global_level}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 bg-black/50 border border-orange-900/50 px-3 py-2 flex-shrink-0">
-              <Flame className="w-4 h-4 text-orange-600" />
-              <span className="font-bold text-orange-500 font-rajdhani text-lg">{profile.current_streak}</span>
-              <span className="text-xs text-orange-500">jours</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-            <XPBar profile={profile} discipline="musculation" />
-            <XPBar profile={profile} discipline="running" />
-            <XPBar profile={profile} discipline="calisthenics" />
-            <XPBar profile={profile} discipline="crossfit" />
-          </div>
+        {/* XP Bars — order 3 sur mobile, colonne droite bas sur desktop */}
+        <div className="order-3 lg:order-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <XPBar profile={profile} discipline="musculation" />
+          <XPBar profile={profile} discipline="running" />
+          <XPBar profile={profile} discipline="calisthenics" />
+          <XPBar profile={profile} discipline="crossfit" />
         </div>
       </motion.div>
 
