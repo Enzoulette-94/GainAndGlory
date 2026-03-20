@@ -688,16 +688,66 @@ export function TeamGoalsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
-        <div className="p-2.5 border border-[#c9a870]/30">
-          <Swords className="w-6 h-6 text-[#c9a870]" />
+      {/* Header — guerre en équipe */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden -mx-4 px-6 py-8 sm:mx-0 sm:px-8"
+        style={{ background: 'linear-gradient(135deg, #0d0500 0%, #120800 50%, #0d0500 100%)' }}
+      >
+        {/* Lignes rouges */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-700/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent" />
+
+        {/* Épées en watermark */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none">
+          <Swords className="w-44 h-44 text-red-400" />
         </div>
-        <div>
-          <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
-            Objectifs de l'équipe
-          </h1>
-          <p className="text-[#a3a3a3] text-sm mt-0.5">Défis collectifs — rejoins la troupe</p>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none select-none rotate-12">
+          <Swords className="w-24 h-24 text-red-400" />
+        </div>
+
+        <div className="relative flex flex-col items-center text-center gap-3">
+          {/* Icône */}
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+            className="flex items-center justify-center w-14 h-14 border-2 border-red-800/50 bg-red-900/10"
+          >
+            <Swords className="w-7 h-7 text-red-500" />
+          </motion.div>
+
+          {/* Titre */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <h1
+              className="font-rajdhani font-black uppercase leading-none tracking-[0.2em]"
+              style={{
+                fontSize: 'clamp(1.8rem, 7vw, 3.5rem)',
+                background: 'linear-gradient(180deg, #ff6b6b 0%, #dc2626 45%, #7f1d1d 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              En avant l'équipe
+            </h1>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-red-800/40" />
+              <p className="text-[10px] text-red-900 uppercase tracking-[0.3em] font-rajdhani font-bold">
+                Défis collectifs — combats aux côtés de tes frères
+              </p>
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-red-800/40" />
+            </div>
+          </motion.div>
+
+          {/* Compteurs */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="flex items-center gap-4 text-[10px] text-[#4a3a3a] uppercase tracking-widest font-rajdhani"
+          >
+            <span>{challenges.filter(c => c.status === 'active').length} défi{challenges.filter(c => c.status === 'active').length > 1 ? 's' : ''} actif{challenges.filter(c => c.status === 'active').length > 1 ? 's' : ''}</span>
+            <span className="text-red-900/50">·</span>
+            <span>{myChallenges.length} participation{myChallenges.length > 1 ? 's' : ''}</span>
+          </motion.div>
         </div>
       </motion.div>
 
