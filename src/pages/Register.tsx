@@ -3,14 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Shield, Mail, Lock, User, UserPlus } from 'lucide-react';
+import { Shield, Mail, Lock, User, UserPlus, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { authService } from '../services/auth.service';
 import { profileService } from '../services/profile.service';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 
+const ACCESS_KEY = import.meta.env.VITE_ACCESS_KEY as string;
+
 const schema = z.object({
+  accessKey: z.string().min(1, 'Clé d\'accès requise'),
   username: z.string().min(3, 'Min 3 caractères').max(20, 'Max 20 caractères')
     .regex(/^[a-zA-Z0-9_]+$/, 'Lettres, chiffres et _ uniquement'),
   email: z.string().email('Email invalide'),
@@ -19,6 +22,9 @@ const schema = z.object({
 }).refine(d => d.password === d.confirmPassword, {
   message: 'Les mots de passe ne correspondent pas',
   path: ['confirmPassword'],
+}).refine(d => d.accessKey === ACCESS_KEY, {
+  message: 'Clé d\'accès invalide',
+  path: ['accessKey'],
 });
 
 type FormData = z.infer<typeof schema>;
@@ -87,6 +93,15 @@ export function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <Input
+              label="Clé d'accès"
+              type="password"
+              placeholder="••••••••••••"
+              icon={<KeyRound className="w-4 h-4" />}
+              error={errors.accessKey?.message}
+              hint="Demande la clé à un administrateur"
+              {...register('accessKey')}
+            />
             <Input
               label="Pseudo"
               placeholder="ton_pseudo"
