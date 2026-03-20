@@ -1,0 +1,27 @@
+-- ============================================================
+-- GAIN & GLORY — Seed complet v2
+-- Exécuter les fichiers dans l'ordre dans l'éditeur SQL Supabase
+-- ============================================================
+--
+-- Ordre d'exécution :
+--   01_cleanup.sql        → Nettoie toutes les tables
+--   02_users.sql          → Auth users + Profiles (avec cali/crossfit)
+--   03_exercises.sql      → Exercices musculation par défaut
+--   04_workouts.sql       → Séances muscu + sets (DO $$ block)
+--   05_running.sql        → Séances running
+--   06_calisthenics.sql   → Séances calisthénie + profile_skills
+--   07_crossfit.sql       → Séances crossfit (5 types de WOD)
+--   08_weight_goals.sql   → Pesées + Objectifs personnels
+--   09_challenges_events.sql → Défis communs + Événements
+--   10_records.sql        → Records (Hall of Fame)
+--   11_badges.sql         → Définitions badges + User badges
+--   12_feed.sql           → Fil d'activité (tous types + badges)
+--
+-- Comptes de test :
+--   admin@gainandglory.com   / Admin1234!   (Admin, niveau 12, multi-sport)
+--   atlas@gainandglory.com   / Password123! (Atlas, niveau 11, powerlifter)
+--   spartacus@gainandglory.com / Password123! (Spartacus, niveau 10, runner)
+--   valkyrie@gainandglory.com  / Password123! (Valkyrie, niveau 8, calisthenics)
+--   titan@gainandglory.com   / Password123! (Titan, niveau 7, muscu+crossfit)
+--   rookie@gainandglory.com  / Password123! (Rookie, niveau 3, débutant)
+-- ============================================================
