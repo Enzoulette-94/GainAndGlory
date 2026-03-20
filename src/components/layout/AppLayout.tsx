@@ -34,8 +34,9 @@ export function AppLayout() {
         className="fixed inset-0 z-0 pointer-events-none bg-[#080808]"
         style={{
           backgroundImage: 'url(/logo.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: '65% 35%',
+          backgroundSize: '55%',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
         }}
       >
         <div className="absolute inset-0 bg-black/85" />
