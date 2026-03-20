@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, User, LogOut, Settings, ChevronDown, Shield, Menu } from 'lucide-react';
+import { Bell, User, LogOut, Settings, ChevronDown, Shield, Menu, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -14,6 +14,25 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
   const { unreadCount } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
+  const [showAlreadyInstalled, setShowAlreadyInstalled] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (installPrompt) {
+      (installPrompt as any).prompt();
+      const { outcome } = await (installPrompt as any).userChoice;
+      if (outcome === 'accepted') setInstallPrompt(null);
+    } else {
+      setShowAlreadyInstalled(true);
+    }
+    setShowUserMenu(false);
+  };
 
   const handleSignOut = async () => {
     await authService.signOut();
@@ -126,6 +145,13 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
                         Paramètres
                       </Link>
                       <button
+                        onClick={handleInstall}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#c9a870] hover:bg-[#c9a870]/10 transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        Télécharger Gain &amp; Glory
+                      </button>
+                      <button
                         onClick={handleSignOut}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-900/15 transition-colors"
                       >
@@ -140,6 +166,50 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
           </div>
         </div>
       </div>
+
+      {/* Modale déjà installé */}
+      <AnimatePresence>
+        {showAlreadyInstalled && (
+          <>
+            <div className="fixed inset-0 z-[200] bg-black/70" onClick={() => setShowAlreadyInstalled(false)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="fixed z-[201] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#111] border border-[#c9a870]/30 p-6 shadow-2xl"
+            >
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-14 h-14 flex items-center justify-center border-2 border-[#c9a870]/40 bg-[#c9a870]/5">
+                  <Download className="w-7 h-7 text-[#c9a870]" />
+                </div>
+                <div>
+                  <h3 className="font-rajdhani font-black text-[#f5f5f5] uppercase tracking-wide text-lg">
+                    Déjà installée !
+                  </h3>
+                  <p className="text-sm text-[#a3a3a3] mt-1">
+                    Gain &amp; Glory est déjà présent sur votre bureau ou téléphone. Êtes-vous sûr de vouloir relancer l'installation ?
+                  </p>
+                </div>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setShowAlreadyInstalled(false)}
+                    className="flex-1 py-2 border border-white/10 text-[#6b6b6b] text-sm font-rajdhani hover:bg-white/5 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => setShowAlreadyInstalled(false)}
+                    className="flex-1 py-2 bg-[#c9a870]/10 border border-[#c9a870]/50 text-[#c9a870] text-sm font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 transition-all"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
