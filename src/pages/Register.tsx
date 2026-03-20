@@ -53,7 +53,7 @@ export function RegisterPage() {
       {/* Background spartiate */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/spartan.avif"
+          src="/logo.png"
           alt=""
           className="w-full h-full object-cover object-center"
         />

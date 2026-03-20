@@ -33,7 +33,7 @@ export function AppLayout() {
       <div
         className="fixed inset-0 z-0 pointer-events-none bg-[#080808]"
         style={{
-          backgroundImage: 'url(/spartan.avif)',
+          backgroundImage: 'url(/logo.png)',
           backgroundSize: 'cover',
           backgroundPosition: '65% 35%',
         }}

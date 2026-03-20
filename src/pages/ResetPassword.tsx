@@ -50,7 +50,7 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <img src="/spartan.avif" alt="" className="w-full h-full object-cover object-center" />
+        <img src="/logo.png" alt="" className="w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-black/70" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60" />
       </div>
