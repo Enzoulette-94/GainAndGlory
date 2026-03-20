@@ -18,14 +18,98 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode; color: string; bord
   { id: 'crossfit',     label: 'Crossfit',    icon: <Flame className="w-4 h-4" />,            color: 'text-orange-400', border: 'border-orange-700/50' },
 ];
 
+const TYPE_CONFIG = {
+  workout: {
+    label: 'SÉANCE MUSCU',
+    borderColor: 'border-l-red-800/70',
+    bgGradient: 'bg-gradient-to-br from-red-950/30 via-[#111] to-[#111]',
+    accentClass: 'text-red-400',
+    dimClass: 'text-red-700',
+    borderClass: 'border-red-700/50',
+    rowBorder: 'border-white/5',
+    rowBg: 'bg-white/[0.02]',
+    icon: '💪',
+  },
+  run: {
+    label: 'COURSE',
+    borderColor: 'border-l-blue-800/70',
+    bgGradient: 'bg-gradient-to-br from-blue-950/30 via-[#111] to-[#111]',
+    accentClass: 'text-blue-400',
+    dimClass: 'text-blue-700',
+    borderClass: 'border-blue-700/50',
+    rowBorder: 'border-white/5',
+    rowBg: 'bg-white/[0.02]',
+    icon: '🏃',
+  },
+  calisthenics: {
+    label: 'CALISTHÉNIE',
+    borderColor: 'border-l-violet-800/70',
+    bgGradient: 'bg-gradient-to-br from-violet-950/30 via-[#111] to-[#111]',
+    accentClass: 'text-violet-400',
+    dimClass: 'text-violet-700',
+    borderClass: 'border-violet-700/50',
+    rowBorder: 'border-violet-900/30',
+    rowBg: 'bg-violet-900/10',
+    icon: '⚡',
+  },
+  crossfit: {
+    label: 'CROSSFIT',
+    borderColor: 'border-l-orange-800/70',
+    bgGradient: 'bg-gradient-to-br from-orange-950/30 via-[#111] to-[#111]',
+    accentClass: 'text-orange-400',
+    dimClass: 'text-orange-700',
+    borderClass: 'border-orange-700/50',
+    rowBorder: 'border-white/5',
+    rowBg: 'bg-white/[0.02]',
+    icon: '🔥',
+  },
+} as const;
+
+function fmtDuration(sec: number) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m} min`;
+}
+
+function fmtPace(distKm: number, durSec: number) {
+  if (!distKm || !durSec) return '—';
+  const p = durSec / 60 / distKm;
+  return `${Math.floor(p)}:${String(Math.round((p % 1) * 60)).padStart(2, '0')}/km`;
+}
+
 function SessionCard({ session, onDelete }: { session: SavedSession; onDelete: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [copying, setCopying] = useState(false);
   const navigate = useNavigate();
 
-  const name = session.custom_name ?? session.original_name ?? 'Séance sans nom';
-  const tab = TABS.find(t => t.id === session.type)!;
+  const cfg = TYPE_CONFIG[session.type];
+  const name = session.custom_name ?? session.original_name ?? null;
+
+  // Compute metrics per type
+  let m1Label = '', m1Value = '—';
+  let m2Label = 'EXERCICES', m2Value = String(session.exercises.length);
+  let m3Label = '', m3Value = '—';
+
+  if (session.type === 'workout') {
+    const tonnage = session.exercises.reduce((s, ex) => s + (ex.maxWeight ?? 0) * (ex.reps || 0), 0);
+    m1Label = 'TONNAGE'; m1Value = tonnage > 0 ? `${Math.round(tonnage)} kg` : '—';
+    m3Label = 'SÉRIES';  m3Value = String(session.exercises.reduce((s, ex) => s + (ex.sets || 0), 0));
+  } else if (session.type === 'run') {
+    const ex = session.exercises[0];
+    m1Label = 'DISTANCE'; m1Value = ex?.distance != null ? `${ex.distance} km` : '—';
+    m2Label = 'DURÉE';    m2Value = ex?.duration != null ? fmtDuration(ex.duration) : '—';
+    m3Label = 'ALLURE';   m3Value = (ex?.distance && ex?.duration) ? fmtPace(ex.distance, ex.duration) : '—';
+  } else if (session.type === 'calisthenics') {
+    const totalReps = session.exercises.reduce((s, ex) => s + (ex.reps || 0), 0);
+    m1Label = 'REPS TOTAL'; m1Value = totalReps > 0 ? String(totalReps) : '—';
+    m3Label = 'SÉRIES';     m3Value = String(session.exercises.reduce((s, ex) => s + (ex.sets || 0), 0));
+  } else if (session.type === 'crossfit') {
+    const maxW = Math.max(...session.exercises.map(ex => ex.maxWeight ?? 0), 0);
+    const totalReps = session.exercises.reduce((s, ex) => s + (ex.reps || 0), 0);
+    m1Label = 'CHARGE MAX';  m1Value = maxW > 0 ? `${maxW} kg` : '—';
+    m3Label = 'TOTAL REPS';  m3Value = totalReps > 0 ? String(totalReps) : '—';
+  }
 
   async function handleCopy() {
     if (copying) return;
@@ -82,47 +166,31 @@ function SessionCard({ session, onDelete }: { session: SavedSession; onDelete: (
     }
   }
 
+  const visibleExercises = expanded ? session.exercises : session.exercises.slice(0, 3);
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      className="border border-white/5 bg-[#0f0f0f]"
+      className={`border-l-4 ${cfg.borderColor} ${cfg.bgGradient} border border-white/5 border-l-0`}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className={`flex-shrink-0 ${tab.color}`}>{tab.icon}</div>
-        <div className="flex-1 min-w-0">
-          <p className="font-rajdhani font-bold text-[#f5f5f5] text-sm tracking-wide truncate">{name}</p>
-          <p className="text-[10px] text-[#6b6b6b] mt-0.5">
-            {session.source_username && <span className="text-[#a3a3a3]">par {session.source_username} · </span>}
-            {formatDate(session.saved_at, { day: 'numeric', month: 'short', year: 'numeric' })}
-          </p>
+      {/* Bandeau type */}
+      <div className={`px-4 py-2 border-b border-white/5 flex items-center justify-between`}>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">{cfg.icon}</span>
+          <span className={`text-[10px] font-rajdhani font-bold tracking-widest uppercase ${cfg.accentClass}`}>
+            {cfg.label}
+          </span>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {session.type !== 'run' && (
-            <button
-              onClick={handleCopy}
-              disabled={copying}
-              title="Réutiliser cette séance"
-              className={`p-1 transition-colors ${tab.color} opacity-60 hover:opacity-100 disabled:opacity-30`}
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            onClick={() => setExpanded(v => !v)}
-            className="text-[#6b6b6b] hover:text-[#f5f5f5] transition-colors p-1"
-          >
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+        <div className="flex items-center gap-2">
           {!confirming ? (
             <button
               onClick={() => setConfirming(true)}
-              className="text-[#6b6b6b] hover:text-red-400 transition-colors p-1"
+              className="text-[#4a4a4a] hover:text-red-400 transition-colors p-1"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           ) : (
             <div className="flex items-center gap-1">
@@ -143,67 +211,104 @@ function SessionCard({ session, onDelete }: { session: SavedSession; onDelete: (
         </div>
       </div>
 
-      {/* Exercices résumés (toujours visibles) */}
-      <div className="px-4 pb-3 space-y-0.5">
-        {session.type === 'workout' && session.exercises.slice(0, expanded ? undefined : 3).map((ex, i) => (
-          <div key={i} className="flex items-baseline gap-1.5 text-xs">
-            <span className="text-[#d4d4d4] font-medium">{ex.name}</span>
-            <span className="text-[#6b6b6b]">·</span>
-            <span className="text-[#a3a3a3] font-rajdhani">
-              {ex.sets > 1 ? `${ex.sets} × ${ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps} reps` : `${ex.reps} reps`}
-            </span>
-            {ex.maxWeight != null && ex.maxWeight > 0 && (
-              <>
-                <span className="text-[#4a4a4a]">·</span>
-                <span className="font-rajdhani font-bold text-[#c9a870]">{ex.maxWeight} kg</span>
-              </>
-            )}
-          </div>
-        ))}
-
-        {session.type === 'run' && (
-          <div className="text-xs text-[#a3a3a3] font-rajdhani">
-            {session.exercises[0]?.distance != null && <span>{session.exercises[0].distance} km</span>}
-            {session.exercises[0]?.duration != null && <span> · {Math.floor(session.exercises[0].duration / 60)} min</span>}
-          </div>
+      {/* Titre + date */}
+      <div className="px-4 pt-3 pb-2">
+        {name && (
+          <p className="font-rajdhani font-bold text-[#f5f5f5] text-base tracking-wide uppercase leading-tight">
+            {name}
+          </p>
         )}
+        <p className="text-[10px] text-[#6b6b6b] mt-0.5">
+          {session.source_username && (
+            <span className="text-[#a3a3a3]">enregistré depuis {session.source_username} · </span>
+          )}
+          {formatDate(session.saved_at, { day: 'numeric', month: 'short', year: 'numeric' })}
+        </p>
+      </div>
 
-        {session.type === 'calisthenics' && session.exercises.slice(0, expanded ? undefined : 3).map((ex, i) => (
-          <div key={i} className="flex items-baseline gap-1.5 text-xs">
-            <span className="text-[#d4d4d4] font-medium">{ex.name}</span>
-            {ex.reps > 0 && (
-              <>
-                <span className="text-[#6b6b6b]">·</span>
-                <span className="text-[#a3a3a3] font-rajdhani">{ex.reps} reps</span>
-              </>
-            )}
+      {/* Métriques */}
+      <div className="grid grid-cols-3 gap-px border-t border-b border-white/5 mx-0">
+        {[
+          { label: m1Label, value: m1Value },
+          { label: m2Label, value: m2Value },
+          { label: m3Label, value: m3Value },
+        ].map((m, i) => (
+          <div key={i} className="px-3 py-2.5 text-center">
+            <p className={`font-rajdhani font-bold text-base leading-none truncate ${cfg.accentClass}`}>{m.value}</p>
+            <p className="text-[9px] text-[#6b6b6b] uppercase tracking-widest mt-0.5 truncate">{m.label || '\u00A0'}</p>
           </div>
         ))}
+      </div>
 
-        {session.type === 'crossfit' && session.exercises.slice(0, expanded ? undefined : 3).map((ex, i) => (
-          <div key={i} className="flex items-baseline gap-1.5 text-xs">
-            <span className="text-[#d4d4d4] font-medium">{ex.name}</span>
-            {ex.reps > 0 && (
-              <>
-                <span className="text-[#6b6b6b]">·</span>
-                <span className="text-[#a3a3a3] font-rajdhani">{ex.reps} reps</span>
-              </>
-            )}
-            {ex.maxWeight != null && ex.maxWeight > 0 && (
-              <>
-                <span className="text-[#4a4a4a]">·</span>
-                <span className="font-rajdhani font-bold text-orange-400">{ex.maxWeight} kg</span>
-              </>
-            )}
-          </div>
-        ))}
+      {/* Exercices */}
+      <AnimatePresence initial={false}>
+        <div className="divide-y divide-white/5">
+          {visibleExercises.map((ex, i) => (
+            <motion.div
+              key={i}
+              initial={expanded && i >= 3 ? { opacity: 0, height: 0 } : false}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`flex items-baseline gap-2 px-4 py-2 ${cfg.rowBg}`}
+            >
+              <span className={`text-[10px] font-rajdhani font-bold w-4 text-right flex-shrink-0 ${cfg.dimClass}`}>
+                {i + 1}
+              </span>
+              <span className="text-xs text-[#d4d4d4] font-medium flex-1 min-w-0 truncate">{ex.name}</span>
+              <span className={`text-xs font-rajdhani font-bold flex-shrink-0 ${cfg.accentClass}`}>
+                {session.type === 'workout' && (
+                  <>
+                    {ex.sets > 1
+                      ? `${ex.sets}×${Math.round(ex.reps / ex.sets)}`
+                      : `${ex.reps} reps`}
+                    {ex.maxWeight != null && ex.maxWeight > 0 && (
+                      <span className="text-[#c9a870] ml-1">{ex.maxWeight} kg</span>
+                    )}
+                  </>
+                )}
+                {session.type === 'calisthenics' && ex.reps > 0 && `${ex.reps} reps`}
+                {session.type === 'crossfit' && (
+                  <>
+                    {ex.reps > 0 && `${ex.reps} reps`}
+                    {ex.maxWeight != null && ex.maxWeight > 0 && (
+                      <span className="text-orange-400 ml-1">{ex.maxWeight} kg</span>
+                    )}
+                  </>
+                )}
+                {session.type === 'run' && ex.distance != null && `${ex.distance} km`}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </AnimatePresence>
 
-        {!expanded && session.exercises.length > 3 && session.type !== 'run' && (
+      {!expanded && session.exercises.length > 3 && session.type !== 'run' && (
+        <p className="text-[10px] text-[#4a4a4a] font-rajdhani px-4 py-1.5">
+          +{session.exercises.length - 3} exercice{session.exercises.length - 3 > 1 ? 's' : ''}…
+        </p>
+      )}
+
+      {/* Footer */}
+      <div className="px-4 py-2.5 border-t border-white/5 flex items-center gap-3">
+        {session.type !== 'run' && session.exercises.length > 3 && (
           <button
-            onClick={() => setExpanded(true)}
-            className="text-[10px] text-[#4a4a4a] hover:text-[#a3a3a3] transition-colors font-rajdhani mt-0.5"
+            onClick={() => setExpanded(v => !v)}
+            className={`flex items-center gap-1 text-[10px] font-rajdhani font-bold tracking-widest uppercase transition-colors ${cfg.accentClass} opacity-60 hover:opacity-100`}
           >
-            +{session.exercises.length - 3} exercice{session.exercises.length - 3 > 1 ? 's' : ''}…
+            {expanded
+              ? <><ChevronUp className="w-3 h-3" /> RÉDUIRE</>
+              : <><ChevronDown className="w-3 h-3" /> VOIR DÉTAILS</>
+            }
+          </button>
+        )}
+        {session.type !== 'run' && (
+          <button
+            onClick={handleCopy}
+            disabled={copying}
+            className={`flex items-center gap-1 text-[10px] font-rajdhani font-bold tracking-widest uppercase transition-colors ${cfg.accentClass} opacity-60 hover:opacity-100 disabled:opacity-30 ml-auto`}
+          >
+            <Copy className="w-3 h-3" />
+            {copying ? 'COPIE...' : 'RÉUTILISER'}
           </button>
         )}
       </div>
@@ -233,7 +338,7 @@ export function SavedSessionsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Bookmark className="w-5 h-5 text-[#c9a870]" />
@@ -247,15 +352,16 @@ export function SavedSessionsPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-rajdhani font-semibold uppercase tracking-wide border-b-2 transition-colors -mb-px ${
+            className={`flex items-center gap-1.5 px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-rajdhani font-semibold uppercase tracking-wide border-b-2 transition-colors -mb-px flex-1 justify-center sm:flex-none sm:justify-start ${
               tab === t.id
                 ? `${t.color} border-current`
                 : 'text-[#6b6b6b] border-transparent hover:text-[#a3a3a3]'
             }`}
           >
             {t.icon}
-            {t.label}
-            <span className="text-[10px] font-normal opacity-60">
+            <span className="hidden sm:inline">{t.label}</span>
+            <span className="sm:hidden text-[9px]">{t.label.slice(0, 4)}</span>
+            <span className="text-[9px] sm:text-[10px] font-normal opacity-60">
               {sessions.filter(s => s.type === t.id).length}
             </span>
           </button>

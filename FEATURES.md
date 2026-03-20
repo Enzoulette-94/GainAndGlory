@@ -246,42 +246,47 @@
 
 ### Navigation mensuelle
 - Flèches précédent/suivant
-- Bouton "Aujourd'hui"
+- Bouton cliquable affichant la date complète (ex. "Vendredi 20 mars 2026") → retour au mois courant
 - Affichage mois + année
+
+### Section "À venir ce mois" (hero cards)
+- Affiché en haut, avant la grille
+- Fusion : événements sportifs + échéances d'objectifs + fin de défis équipe
+- Trié par date croissante
+- Carte hero par item : gradient coloré selon le type, bordure gauche colorée, icône catégorie
+- Countdown **J-X** en gros (text-3xl), rouge si ≤ 7 jours, "Auj." si aujourd'hui
+- Sous-titre : sous-type (objectif) ou "Fin du défi"
+
+### Code couleur (légende)
+- Affiché avant la grille (repère visuel immédiat)
+- 8 types : Muscu (rouge), Course (bleu), Calisthénie (violet), Crossfit (orange), Pesée (emerald), Objectif (or), Défi équipe (rose), Événement (amber)
+- Icône + pastille couleur par type
 
 ### Grille calendrier
 - 7 colonnes Lun–Dim
-- Jour courant surligné (anneau doré)
-- Indicateurs colorés par activité :
-  - 🔴 Rouge = séance muscu
-  - 🔵 Bleu = course
-  - 🟢 Vert = pesée
-  - 🟡 Or = échéance d'objectif
-  - 🩷 Rose = défi équipe (début/fin/en cours)
-  - 🟣 Violet = événement sportif
+- Cellules hauteur fixe `h-[72px]`
+- Jour courant : fond or/10 + anneau or/30 + texte "**Aujourd'hui**" en rouge (gras, uppercase)
+- Jours de week-end : légèrement atténués
+- Jours futurs sans activité : opacité 20%
+- Par cellule active : icônes sport (badges tintés) + strips couleur en bas
 - Clic sur un jour → modal détail
 
 ### Modal détail d'un jour
-- Toutes les séances muscu (tonnage, exercices, ressenti)
-- Toutes les courses (distance, durée, allure, type, ressenti)
-- Toutes les pesées
-- Échéances d'objectifs personnels
-- Début/fin de défis équipe
-- Événements sportifs (titre, type, description)
-
-### Aperçu mensuel
-- Objectifs personnels avec échéance ce mois (barre de progression, jours restants)
-- Défis d'équipe actifs ce mois (titre, plage de dates, jours restants)
-- Événements sportifs ce mois (titre, type, countdown J-X, lien → `/events`)
+- Pills des types actifs (icône + label)
+- Séances muscu (tonnage, nb exercices, ressenti)
+- Courses (distance, durée, allure, type, ressenti)
+- Séances calisthénie (nom, nb exercices, ressenti)
+- Séances crossfit (nom/WOD type, nb exercices, ressenti)
+- Pesées (poids en kg)
+- Échéances d'objectifs (titre, progression %)
+- Fin de défis équipe
+- Événements (titre, type, description)
 
 ### Statistiques du mois
-- Nombre de séances muscu
-- Nombre de courses
-- Distance totale
-- Tonnage total
+- 4 cards : séances Muscu / Course / Calisthénie / Crossfit avec compteur et icône
 
-### Légende
-- Code couleur de tous les types d'activité (6 entrées dont Événement violet)
+### Liens rapides
+- Liens discrets → /goals, /team-goals, /events si items présents ce mois
 
 ---
 

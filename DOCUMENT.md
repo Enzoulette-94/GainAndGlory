@@ -1,6 +1,6 @@
 # Gain & Glory — Documentation Technique
 
-> Dernière mise à jour : feat(feed): affichage calisthénie détaillé + XP cali dashboard/profile
+> Dernière mise à jour : refactor(calendar): refonte visuelle — hero cards "À venir", légende couleur, icônes cellules, strips, stats 4 sports
 
 ---
 
@@ -75,7 +75,7 @@ src/
 │   ├── Running.tsx             # Liste des courses (édition/suppression)
 │   ├── RunSession.tsx          # Formulaire nouvelle course
 │   ├── Weight.tsx              # Suivi du poids + graphique (édition/suppression)
-│   ├── Calendar.tsx            # Calendrier d'activité (muscu, course, pesée, objectifs, défis, événements)
+│   ├── Calendar.tsx            # Calendrier d'activité (8 types : muscu, course, cali, crossfit, pesée, objectif, défi, événement) — hero cards "À venir", légende couleur, icônes + strips par cellule
 │   ├── Goals.tsx               # Objectifs personnels
 │   ├── Community.tsx           # Feed social (muscu/course/cali/badge/level-up, likes, commentaires, bookmark)
 │   ├── TeamGoals.tsx           # Objectifs par équipes
