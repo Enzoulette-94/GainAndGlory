@@ -7,12 +7,14 @@ import type { NotificationType } from '../../types/enums';
 
 const notifIcons: Record<NotificationType, string> = {
   flash_challenge: '⚡',
-  record_beaten: '📊',
+  record_beaten: '🏆',
   badge_unlocked: '🏅',
   level_up: '⬆️',
   event_created: '📅',
   like: '❤️',
   comment: '💬',
+  new_session: '💪',
+  team_goal_created: '⚔️',
 };
 
 interface NotificationCenterProps {

@@ -23,6 +23,7 @@ import {
 import type { Shoe } from '../types/models';
 import type { Feedback, RunType, WeatherCondition } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
+import { notificationService } from '../services/notification.service';
 import { badgesService } from '../services/badges.service';
 import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
 import { LevelUpModal } from '../components/xp-system/LevelUpModal';
@@ -158,6 +159,12 @@ export function RunSessionPage() {
         sessionName.trim() || undefined,
         feedback || undefined,
       );
+
+      notificationService.broadcastToAll(profile.id, 'new_session', {
+        message: `🏃 ${profile.username} vient de terminer une séance de course !`,
+        discipline: 'running',
+        session_id: session.id,
+      });
 
       // Check badges after session
       try {

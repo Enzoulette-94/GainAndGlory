@@ -3,6 +3,7 @@ import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbe
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
+import { notificationService } from '../services/notification.service';
 import { workoutService } from '../services/workout.service';
 import { calisthenicsService } from '../services/calisthenics.service';
 import { useAuth } from '../contexts/AuthContext';
@@ -714,6 +715,16 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       const newComment = await feedService.addComment(item.id, currentUserId, commentText.trim());
       setCommentText('');
       onCommentAdded(item.id, newComment as ActivityComment);
+
+      // Notify session owner (not if commenting on own post)
+      if (item.user_id !== currentUserId) {
+        const { data: commenter } = await (supabase as any).from('profiles').select('username').eq('id', currentUserId).single();
+        notificationService.notifyUser(item.user_id, 'comment', {
+          message: `💬 ${commenter?.username ?? 'Quelqu\'un'} a commenté ta séance !`,
+          feed_item_id: item.id,
+          commenter_id: currentUserId,
+        });
+      }
     } catch {
       // silently fail
     } finally {

@@ -15,6 +15,7 @@ import { Input, Textarea } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { CrossfitExercisePickerContent } from '../components/forms/CrossfitExercisePicker';
 import { CROSSFIT_WOD_TYPES, FEEDBACK_LABELS } from '../utils/constants';
+import { notificationService } from '../services/notification.service';
 import type { CrossfitSession as CrossfitSessionModel, CrossfitExercise, UserBadge } from '../types/models';
 import type { CrossfitWodType } from '../types/enums';
 import type { Feedback } from '../types/enums';
@@ -157,6 +158,12 @@ export function CrossfitSessionPage() {
         name.trim() || undefined,
         crossfitExercises.map(e => ({ name: e.name })),
       );
+
+      notificationService.broadcastToAll(profile.id, 'new_session', {
+        message: `🔥 ${profile.username} vient de terminer un WOD Crossfit !`,
+        discipline: 'crossfit',
+        session_id: session.id,
+      });
 
       // Auto-upsert records for exercises with weight
       for (const ex of crossfitExercises) {

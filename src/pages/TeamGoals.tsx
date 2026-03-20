@@ -3,6 +3,7 @@ import { Swords, Plus, Trophy, Target, Calendar, Users, Zap, Dumbbell, Footprint
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
+import { notificationService } from '../services/notification.service';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
@@ -455,6 +456,13 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
         status: 'active',
       });
       if (error) throw error;
+
+      const { data: creator } = await (supabase as any).from('profiles').select('username').eq('id', userId).single();
+      notificationService.broadcastToAll(userId, 'team_goal_created', {
+        message: `⚔️ ${creator?.username ?? 'Quelqu\'un'} a lancé un nouveau défi d'équipe : "${form.title.trim()}" !`,
+        title: form.title.trim(),
+      });
+
       setForm({ title: '', description: '', type: 'distance', target_value: '', exercise: '', start_date: today, end_date: '' });
       setMixteTargets([{ id: '1', metricType: 'kg', value: '', exercise: '' }]);
       setSuccess(true);

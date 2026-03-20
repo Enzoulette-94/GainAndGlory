@@ -22,6 +22,7 @@ import { FEEDBACK_LABELS, MUSCLE_GROUP_LABELS, MUSCLE_GROUP_DISPLAY, XP_REWARDS 
 import type { Exercise, WorkoutSession } from '../types/models';
 import type { Feedback } from '../types/enums';
 import { profileRecordsService } from '../services/profile-records.service';
+import { notificationService } from '../services/notification.service';
 import { badgesService } from '../services/badges.service';
 import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
 import { LevelUpModal } from '../components/xp-system/LevelUpModal';
@@ -261,6 +262,12 @@ export function MuscuSessionPage() {
         sessionName.trim() || undefined,
         exercisesSummary,
       );
+
+      notificationService.broadcastToAll(profile.id, 'new_session', {
+        message: `💪 ${profile.username} vient de terminer une séance de musculation !`,
+        discipline: 'musculation',
+        session_id: session.id,
+      });
 
       // Check badges after session
       try {

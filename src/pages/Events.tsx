@@ -23,6 +23,7 @@ import { Input, Textarea, Select } from '../components/common/Input';
 import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
 import { formatDate } from '../utils/calculations';
+import { notificationService } from '../services/notification.service';
 
 // ============================================================
 // TYPES
@@ -527,6 +528,12 @@ export function EventsPage() {
           )
         );
       }
+
+      notificationService.broadcastToAll(profile.id, 'event_created', {
+        message: `📅 ${profile.username} a ajouté un événement : "${form.title.trim()}" !`,
+        title: form.title.trim(),
+        event_date: form.event_date,
+      });
 
       setShowModal(false);
       showToast('Événement ajouté !', 'success');

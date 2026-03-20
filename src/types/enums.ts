@@ -56,7 +56,9 @@ export type NotificationType =
   | 'level_up'
   | 'event_created'
   | 'like'
-  | 'comment';
+  | 'comment'
+  | 'new_session'
+  | 'team_goal_created';
 
 export type HeartRateZone = 'Z1' | 'Z2' | 'Z3' | 'Z4' | 'Z5';
 

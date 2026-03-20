@@ -14,6 +14,7 @@ import { CALISTHENICS_SKILLS, FEEDBACK_LABELS } from '../utils/constants';
 import { profileRecordsService } from '../services/profile-records.service';
 import { feedService } from '../services/feed.service';
 import { badgesService } from '../services/badges.service';
+import { notificationService } from '../services/notification.service';
 import { BadgeUnlockModal } from '../components/xp-system/BadgeUnlockModal';
 import { LevelUpModal } from '../components/xp-system/LevelUpModal';
 import type { CaliExercise, CaliSet, ProfileSkill, CalisthenicsSession as CalisthenicsSessionModel, UserBadge } from '../types/models';
@@ -188,6 +189,11 @@ export function CalisthenicsSessionPage() {
         selectedSkills,
         feedExercises,
       );
+
+      notificationService.broadcastToAll(profile.id, 'new_session', {
+        message: `⚡ ${profile.username} vient de terminer une séance de calisthénie !`,
+        discipline: 'calisthenics',
+      });
 
       // Auto-détection des records par exercice
       for (const ex of caliExercises) {

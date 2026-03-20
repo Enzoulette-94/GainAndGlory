@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase-client';
 import { DEFAULT_EXERCISES } from '../utils/constants';
 import type { ProfileRecord } from '../types/models';
+import { notificationService } from './notification.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -72,10 +73,26 @@ export const profileRecordsService = {
       if (isBetter) {
         const { error } = await db.from('profile_records').update({ value: newValue, unit }).eq('id', existing.id);
         if (error) throw error;
+        // Broadcast PR beaten
+        const { data: profile } = await db.from('profiles').select('username').eq('id', userId).single();
+        notificationService.broadcastToAll(userId, 'record_beaten', {
+          message: `🏆 ${profile?.username ?? 'Quelqu\'un'} vient de battre son PR sur ${title} : ${newValue} ${unit} !`,
+          exercise: title,
+          value: newValue,
+          unit,
+        });
       }
     } else {
       const { error } = await db.from('profile_records').insert({ user_id: userId, title, value: newValue, unit, category });
       if (error) throw error;
+      // Broadcast new PR
+      const { data: profile } = await db.from('profiles').select('username').eq('id', userId).single();
+      notificationService.broadcastToAll(userId, 'record_beaten', {
+        message: `🏆 ${profile?.username ?? 'Quelqu\'un'} vient d'établir un nouveau PR sur ${title} : ${newValue} ${unit} !`,
+        exercise: title,
+        value: newValue,
+        unit,
+      });
     }
   },
 

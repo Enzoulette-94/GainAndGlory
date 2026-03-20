@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase-client';
 import { profileService } from './profile.service';
 import { getLevelFromXP, getStatusTitle } from '../utils/calculations';
 import { XP_REWARDS } from '../utils/constants';
+import { notificationService } from './notification.service';
 
 interface XPResult {
   xpGained: number;
@@ -70,6 +71,13 @@ export const xpService = {
           },
         });
       } catch { /* ignore */ }
+
+      // Broadcast to other users
+      notificationService.broadcastToAll(userId, 'level_up', {
+        message: `⬆️ ${newProfile.username} vient de passer niveau ${newLevel} !`,
+        level: newLevel,
+        username: newProfile.username,
+      });
     }
 
     return { xpGained: xp, newLevel, oldLevel, leveledUp };
