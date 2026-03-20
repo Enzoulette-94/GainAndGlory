@@ -10,12 +10,21 @@ vi.mock('../../lib/supabase-client', () => {
     delete: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
   };
   return {
     supabase: { from: vi.fn(() => mockChain) },
   };
 });
+
+// ─── Mock notification service ────────────────────────────────────────────────
+vi.mock('../../services/notification.service', () => ({
+  notificationService: {
+    broadcastToAll: vi.fn().mockResolvedValue(undefined),
+    notifyUser: vi.fn().mockResolvedValue(undefined),
+  },
+}));
 
 // ─── Données de test ─────────────────────────────────────────────────────────
 
@@ -261,6 +270,7 @@ describe('profileRecordsService', () => {
       (supabase.from as any).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
         insert: insertMock,
       });
@@ -278,6 +288,7 @@ describe('profileRecordsService', () => {
       (supabase.from as any).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
         maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-1', value: 80 }, error: null }),
         update: updateMock,
       });
@@ -308,6 +319,7 @@ describe('profileRecordsService', () => {
       (supabase.from as any).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
         maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-2', value: 5.5 }, error: null }),
         update: updateMock,
       });
@@ -323,6 +335,7 @@ describe('profileRecordsService', () => {
       (supabase.from as any).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
         insert: insertMock,
       });
@@ -340,6 +353,7 @@ describe('profileRecordsService', () => {
       (supabase.from as any).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
         maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'r-cali', value: 10 }, error: null }),
         update: updateMock,
       });
@@ -369,6 +383,7 @@ describe('profileRecordsService', () => {
       (supabase.from as any).mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { username: 'TestUser' }, error: null }),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
         insert: insertMock,
       });

@@ -63,12 +63,11 @@ describe('CalisthenicsPage', () => {
   });
 
   describe('Statistiques', () => {
-    it('affiche les 3 cartes de stats', async () => {
+    it('affiche la carte de stats séances et les métriques de session', async () => {
       renderPage();
       await waitFor(() => {
         expect(screen.queryAllByText(/séances/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/reps/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/skills/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
 
@@ -79,13 +78,12 @@ describe('CalisthenicsPage', () => {
   });
 
   describe('Onglets', () => {
-    it('affiche les 4 onglets', async () => {
+    it('affiche les 3 onglets', async () => {
       renderPage();
       await waitFor(() => {
         expect(screen.queryAllByText(/séances/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/graphiques/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/records/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/skills/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });

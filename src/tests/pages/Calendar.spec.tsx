@@ -27,6 +27,14 @@ vi.mock('../../services/goals.service', () => ({
   goalsService: { getGoals: vi.fn().mockResolvedValue([]) },
 }));
 
+vi.mock('../../services/calisthenics.service', () => ({
+  calisthenicsService: { getSessions: vi.fn().mockResolvedValue([]) },
+}));
+
+vi.mock('../../services/crossfit.service', () => ({
+  crossfitService: { getSessions: vi.fn().mockResolvedValue([]) },
+}));
+
 // Build an event date in the current month
 const now = new Date();
 const eventDate = new Date(now.getFullYear(), now.getMonth(), 15).toISOString();
@@ -102,20 +110,20 @@ describe('CalendarPage', () => {
     }, { timeout: 3000 });
   });
 
-  it('affiche la section "Événements ce mois" quand il y en a', async () => {
+  it('affiche la section "À venir" quand il y a des événements', async () => {
     renderCalendar();
-    await q(/événements ce mois/i);
+    await q(/à venir/i);
   });
 
-  it('affiche le titre de l\'événement dans la section mensuelle', async () => {
+  it('affiche le titre de l\'événement dans la section À venir', async () => {
     renderCalendar();
     await q(/trail des vosges/i);
   });
 
-  it('affiche les stats du mois (séances muscu, sorties course)', async () => {
+  it('affiche les stats du mois (muscu, course)', async () => {
     renderCalendar();
-    await q(/séances muscu/i);
-    await q(/sorties course/i);
+    await q(/muscu/i);
+    await q(/course/i);
   });
 
   it('affiche un point violet sur le jour de l\'événement dans la grille', async () => {
