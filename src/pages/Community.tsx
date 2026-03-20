@@ -853,12 +853,12 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         feedback: null,
       };
       case 'personal_record': return {
-        label: 'NOUVEAU RECORD ALL TIME',
-        borderColor: 'border-l-yellow-600/70',
-        labelColor: 'text-yellow-400',
-        bgGradient: 'bg-gradient-to-br from-yellow-950/40 via-[#111] to-[#111]',
-        bannerBg: 'bg-yellow-900/50 border-y border-yellow-700/40',
-        headerGradient: 'linear-gradient(to right, #1a1a1a, #111111)',
+        label: '⚡ RECORD ALL TIME',
+        borderColor: 'border-l-[#c9a870]',
+        labelColor: 'text-[#c9a870]',
+        bgGradient: 'bg-gradient-to-br from-[#1a1400] via-[#0f0e00] to-[#0a0a0a]',
+        bannerBg: 'bg-[#c9a870]/20 border-y border-[#c9a870]/40',
+        headerGradient: 'linear-gradient(135deg, #1a1200 0%, #110e00 60%, #0a0a0a 100%)',
         accentColor: '#c9a870',
         icon: '🏆',
         stats: c.title ? `${c.title} — ${c.value} ${c.unit}` : null,
@@ -908,7 +908,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="relative border border-white/5 bg-[#0d0d0d] overflow-hidden"
+      className={`relative overflow-hidden ${item.type === 'personal_record' ? 'border border-[#c9a870]/40 bg-[#0f0d00]' : 'border border-white/5 bg-[#0d0d0d]'}`}
     >
       {/* ═══ IDENTITY BANNER ═══ */}
       <div className="flex items-center gap-3 px-4 py-3" style={{ background: (typeConfig as any).headerGradient ?? 'linear-gradient(to right,#1a1a1a,#111111)' }}>
@@ -1155,8 +1155,63 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         </div>
       )}
 
+      {/* ── Personal Record — bloc grandiose ── */}
+      {item.type === 'personal_record' && c_content.title && (
+        <div className="relative overflow-hidden">
+          {/* Ligne dorée top */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/60 to-transparent" />
+          {/* Glow pulsant en fond */}
+          <motion.div
+            animate={{ opacity: [0.03, 0.10, 0.03] }}
+            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at 50% 50%, #c9a870 0%, transparent 70%)' }}
+          />
+          {/* Shimmer diagonal qui balaie */}
+          <motion.div
+            animate={{ x: ['-120%', '220%'] }}
+            transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.5, ease: 'easeInOut' }}
+            className="absolute inset-y-0 w-1/3 pointer-events-none"
+            style={{ background: 'linear-gradient(105deg, transparent 0%, rgba(201,168,112,0.12) 50%, transparent 100%)', skewX: '-15deg' }}
+          />
+          {/* Trophée watermark */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.05] pointer-events-none select-none">
+            <Trophy className="w-24 h-24 text-[#c9a870]" />
+          </div>
+          <div className="relative px-5 py-5 flex flex-col items-center text-center gap-2">
+            <span className="text-3xl">🏆</span>
+            <div>
+              <p
+                className="font-rajdhani font-black uppercase tracking-wide leading-tight"
+                style={{
+                  fontSize: 'clamp(1.2rem, 4vw, 1.8rem)',
+                  background: 'linear-gradient(180deg, #f5d990 0%, #c9a870 50%, #8b6f47 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                {c_content.title}
+              </p>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <div className="h-px w-8 bg-[#c9a870]/30" />
+                <p className="font-rajdhani font-black text-2xl text-[#c9a870] leading-none">
+                  {c_content.value} <span className="text-sm text-[#8b6f47] font-semibold">{c_content.unit}</span>
+                </p>
+                <div className="h-px w-8 bg-[#c9a870]/30" />
+              </div>
+            </div>
+            <span className="text-[10px] text-[#5a4a20] uppercase tracking-[0.3em] font-rajdhani font-bold">
+              Nouveau record personnel
+            </span>
+          </div>
+          {/* Ligne dorée bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/30 to-transparent" />
+        </div>
+      )}
+
       {/* Autres types */}
-      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && item.type !== 'badge' && typeConfig.stats && (
+      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && item.type !== 'badge' && item.type !== 'personal_record' && typeConfig.stats && (
         <div className="px-4 py-3">
           <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
         </div>
@@ -2085,19 +2140,51 @@ export function CommunityPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header — vitrine guerriers */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-3"
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden -mx-4 px-6 py-8 sm:mx-0 sm:px-8"
+        style={{ background: 'linear-gradient(135deg, #080808 0%, #0f0f0a 50%, #080808 100%)' }}
       >
-        <div className="p-2.5 border border-[#c9a870]/30">
-          <Users className="w-6 h-6 text-[#c9a870]" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a870]/20 to-transparent" />
+
+        {/* Watermark */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none">
+          <Users className="w-44 h-44 text-[#c9a870]" />
         </div>
-        <div>
-          <h1 className="font-rajdhani text-3xl font-bold tracking-wide uppercase text-[#c9a870]">
-            Les Monstres
-          </h1>
-          <p className="text-[#a3a3a3] text-sm mt-0.5">Ce que font les autres guerriers</p>
+
+        <div className="relative flex flex-col items-center text-center gap-3">
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+            className="flex items-center justify-center w-14 h-14 border-2 border-[#c9a870]/40 bg-[#c9a870]/5"
+          >
+            <Users className="w-7 h-7 text-[#c9a870]" />
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <h1
+              className="font-rajdhani font-black uppercase leading-none tracking-[0.25em]"
+              style={{
+                fontSize: 'clamp(1.8rem, 7vw, 3.5rem)',
+                background: 'linear-gradient(180deg, #f5d990 0%, #c9a870 45%, #8b6f47 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Les Monstres
+            </h1>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-[#c9a870]/40" />
+              <p className="text-[10px] text-[#8b6f47] uppercase tracking-[0.3em] font-rajdhani font-bold">
+                Ce que font les autres guerriers
+              </p>
+              <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-[#c9a870]/40" />
+            </div>
+          </motion.div>
+
         </div>
       </motion.div>
 
