@@ -16,6 +16,7 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
   const [showAlreadyInstalled, setShowAlreadyInstalled] = useState(false);
+  const [showInstallInstructions, setShowInstallInstructions] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); };
@@ -23,15 +24,23 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
+  const isInstalled = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true;
+
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
   const handleInstall = async () => {
+    setShowUserMenu(false);
     if (installPrompt) {
       (installPrompt as any).prompt();
       const { outcome } = await (installPrompt as any).userChoice;
       if (outcome === 'accepted') setInstallPrompt(null);
-    } else {
+    } else if (isInstalled()) {
       setShowAlreadyInstalled(true);
+    } else {
+      setShowInstallInstructions(true);
     }
-    setShowUserMenu(false);
   };
 
   const handleSignOut = async () => {
@@ -167,7 +176,7 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
         </div>
       </div>
 
-      {/* Modale déjà installé */}
+      {/* Modale déjà installée */}
       <AnimatePresence>
         {showAlreadyInstalled && (
           <>
@@ -188,23 +197,63 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
                     Déjà installée !
                   </h3>
                   <p className="text-sm text-[#a3a3a3] mt-1">
-                    Gain &amp; Glory est déjà présent sur votre bureau ou téléphone. Êtes-vous sûr de vouloir relancer l'installation ?
+                    Gain &amp; Glory est déjà présent sur ton écran d'accueil.
                   </p>
                 </div>
-                <div className="flex gap-3 w-full">
-                  <button
-                    onClick={() => setShowAlreadyInstalled(false)}
-                    className="flex-1 py-2 border border-white/10 text-[#6b6b6b] text-sm font-rajdhani hover:bg-white/5 transition-colors"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={() => setShowAlreadyInstalled(false)}
-                    className="flex-1 py-2 bg-[#c9a870]/10 border border-[#c9a870]/50 text-[#c9a870] text-sm font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 transition-all"
-                  >
-                    OK
-                  </button>
+                <button
+                  onClick={() => setShowAlreadyInstalled(false)}
+                  className="w-full py-2 bg-[#c9a870]/10 border border-[#c9a870]/50 text-[#c9a870] text-sm font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 transition-all"
+                >
+                  OK
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Modale instructions installation */}
+      <AnimatePresence>
+        {showInstallInstructions && (
+          <>
+            <div className="fixed inset-0 z-[200] bg-black/70" onClick={() => setShowInstallInstructions(false)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="fixed z-[201] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#111] border border-[#c9a870]/30 p-6 shadow-2xl"
+            >
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-14 h-14 flex items-center justify-center border-2 border-[#c9a870]/40 bg-[#c9a870]/5">
+                  <Download className="w-7 h-7 text-[#c9a870]" />
                 </div>
+                <div>
+                  <h3 className="font-rajdhani font-black text-[#f5f5f5] uppercase tracking-wide text-lg">
+                    Installer l'application
+                  </h3>
+                  {isIOS() ? (
+                    <div className="text-sm text-[#a3a3a3] mt-2 text-left space-y-2">
+                      <p className="font-semibold text-[#c9a870]">Sur iPhone / iPad :</p>
+                      <p>1. Appuie sur le bouton <span className="text-white font-bold">Partager</span> <span className="text-lg">⎋</span> en bas de Safari</p>
+                      <p>2. Fais défiler et appuie sur <span className="text-white font-bold">"Sur l'écran d'accueil"</span></p>
+                      <p>3. Confirme en appuyant sur <span className="text-white font-bold">Ajouter</span></p>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-[#a3a3a3] mt-2 text-left space-y-2">
+                      <p className="font-semibold text-[#c9a870]">Sur Android / Desktop :</p>
+                      <p>1. Ouvre ce site dans <span className="text-white font-bold">Chrome</span></p>
+                      <p>2. Appuie sur les <span className="text-white font-bold">3 points</span> en haut à droite</p>
+                      <p>3. Appuie sur <span className="text-white font-bold">"Ajouter à l'écran d'accueil"</span></p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowInstallInstructions(false)}
+                  className="w-full py-2 bg-[#c9a870]/10 border border-[#c9a870]/50 text-[#c9a870] text-sm font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/20 transition-all"
+                >
+                  Compris
+                </button>
               </div>
             </motion.div>
           </>
