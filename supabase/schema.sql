@@ -374,6 +374,7 @@ CREATE POLICY "comments_delete" ON activity_comments FOR DELETE USING (auth.uid(
 
 -- Notifications
 CREATE POLICY "notif_select" ON notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "notif_insert" ON notifications FOR INSERT WITH CHECK (true);
 CREATE POLICY "notif_update" ON notifications FOR UPDATE USING (auth.uid() = user_id);
 
 -- Notification preferences
