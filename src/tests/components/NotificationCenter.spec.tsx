@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 
 const mockNotifications = [
@@ -45,7 +46,7 @@ beforeEach(async () => {
   NotificationCenter = mod.NotificationCenter;
 });
 
-const renderCenter = () => render(<NotificationCenter onClose={vi.fn()} />);
+const renderCenter = () => render(<MemoryRouter><NotificationCenter onClose={vi.fn()} /></MemoryRouter>);
 
 describe('NotificationCenter', () => {
   it('se monte sans crash', () => {
@@ -108,7 +109,7 @@ describe('NotificationCenter — liste vide', () => {
   });
 
   it('affiche "Aucune notification" quand la liste est vide', () => {
-    render(<NotificationCenter onClose={vi.fn()} />);
+    render(<MemoryRouter><NotificationCenter onClose={vi.fn()} /></MemoryRouter>);
     expect(screen.getByText(/aucune notification/i)).toBeTruthy();
   });
 });

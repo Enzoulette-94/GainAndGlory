@@ -1,9 +1,31 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, BellOff, Check, CheckCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { formatRelativeTime } from '../../utils/calculations';
 import type { NotificationType } from '../../types/enums';
+import type { Notification } from '../../types/models';
+
+function getNotifUrl(notif: Notification): string {
+  switch (notif.type as NotificationType) {
+    case 'comment':
+    case 'like':
+    case 'new_session':
+    case 'flash_challenge':
+    case 'team_goal_created':
+      return '/community';
+    case 'record_beaten':
+      return '/hall-of-fame';
+    case 'level_up':
+    case 'badge_unlocked':
+      return '/profile';
+    case 'event_created':
+      return '/events';
+    default:
+      return '/community';
+  }
+}
 
 const notifIcons: Record<NotificationType, string> = {
   flash_challenge: '⚡',
@@ -23,6 +45,13 @@ interface NotificationCenterProps {
 
 export function NotificationCenter({ onClose }: NotificationCenterProps) {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const navigate = useNavigate();
+
+  function handleNotifClick(notif: Notification) {
+    markAsRead(notif.id);
+    navigate(getNotifUrl(notif));
+    onClose();
+  }
 
   return (
     <>
@@ -66,7 +95,8 @@ export function NotificationCenter({ onClose }: NotificationCenterProps) {
             notifications.map(notif => (
               <div
                 key={notif.id}
-                className={`flex items-start gap-3 px-4 py-3 hover:bg-[#1c1c1c] transition-colors border-b border-white/5 last:border-0 ${!notif.read ? 'bg-red-900/10' : ''}`}
+                onClick={() => handleNotifClick(notif)}
+                className={`flex items-start gap-3 px-4 py-3 hover:bg-[#1c1c1c] transition-colors border-b border-white/5 last:border-0 cursor-pointer ${!notif.read ? 'bg-red-900/10' : ''}`}
               >
                 <span className="text-lg flex-shrink-0 mt-0.5">
                   {notifIcons[notif.type as NotificationType] ?? '🔔'}
@@ -81,7 +111,7 @@ export function NotificationCenter({ onClose }: NotificationCenterProps) {
                 </div>
                 {!notif.read && (
                   <button
-                    onClick={() => markAsRead(notif.id)}
+                    onClick={(e) => { e.stopPropagation(); markAsRead(notif.id); }}
                     className="p-1 rounded-lg hover:bg-slate-700 text-red-400 transition-colors flex-shrink-0"
                   >
                     <Check className="w-3.5 h-3.5" />

@@ -716,11 +716,29 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       setCommentText('');
       onCommentAdded(item.id, newComment as ActivityComment);
 
+      const { data: commenter } = await (supabase as any).from('profiles').select('username').eq('id', currentUserId).single();
+      const commenterName = commenter?.username ?? 'Quelqu\'un';
+
       // Notify session owner (not if commenting on own post)
       if (item.user_id !== currentUserId) {
-        const { data: commenter } = await (supabase as any).from('profiles').select('username').eq('id', currentUserId).single();
         notificationService.notifyUser(item.user_id, 'comment', {
-          message: `💬 ${commenter?.username ?? 'Quelqu\'un'} a commenté ta séance !`,
+          message: `💬 ${commenterName} a commenté ta séance !`,
+          feed_item_id: item.id,
+          commenter_id: currentUserId,
+        });
+      }
+
+      // Notify other commenters on this post (excluding post owner and current user)
+      const otherCommenters = [
+        ...new Set(
+          (item.comments ?? [])
+            .map((c: any) => c.user_id)
+            .filter((id: string) => id !== currentUserId && id !== item.user_id)
+        ),
+      ];
+      for (const userId of otherCommenters) {
+        notificationService.notifyUser(userId as string, 'comment', {
+          message: `💬 ${commenterName} a aussi commenté une séance que tu suis !`,
           feed_item_id: item.id,
           commenter_id: currentUserId,
         });
