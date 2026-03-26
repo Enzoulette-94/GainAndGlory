@@ -120,6 +120,7 @@ export function DashboardPage() {
     <div className="space-y-6">
 
       {/* ── LIGNE 1 : Greeting | Actions rapides | XP Bars ── */}
+      <section aria-label="Accueil et actions rapides">
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -190,8 +191,10 @@ export function DashboardPage() {
           <XPBar profile={profile} discipline="crossfit" />
         </div>
       </motion.div>
+      </section>
 
       {/* ── LIGNE 2 : Motivation du jour ── */}
+      <section aria-label="Motivation du jour">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -201,8 +204,25 @@ export function DashboardPage() {
         <p className="font-rajdhani text-xs font-semibold text-[#8b6f47] uppercase tracking-wider mb-2">Motivation du jour</p>
         <p className="text-sm text-[#d4d4d4] italic leading-relaxed">"{getDailyQuote()}"</p>
       </motion.div>
+      </section>
+
+      {/* ── LIGNE 2b : Stats de la semaine ── */}
+      <section aria-label="Stats de la semaine">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+      >
+        <StatCard icon={<Dumbbell className="w-5 h-5" />} value={weekStats.workouts} label="Séances muscu" color="text-red-400" bg="bg-red-950/10 border-red-900/30" />
+        <StatCard icon={<PersonStanding className="w-5 h-5" />} value={weekStats.runs} label="Sorties course" color="text-blue-400" bg="bg-blue-950/10 border-blue-900/30" />
+        <StatCard icon={<Activity className="w-5 h-5" />} value={Math.round(weekStats.distance * 10) / 10} label="km cette semaine" color="text-green-400" bg="bg-green-950/10 border-green-900/30" />
+        <StatCard icon={<Flame className="w-5 h-5" />} value={Math.round(weekStats.tonnage)} label="kg soulevés" color="text-orange-400" bg="bg-orange-950/10 border-orange-900/30" />
+      </motion.div>
+      </section>
 
       {/* ── LIGNE 3 : Événements à venir | Dernières activités ── */}
+      <section aria-label="Événements et activités récentes">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -218,7 +238,7 @@ export function DashboardPage() {
             </Link>
           </div>
           {upcomingEvents.length === 0 ? (
-            <p className="text-xs text-[#6b6b6b] py-3">Aucun événement à venir</p>
+            <p className="text-xs text-[#6b6b6b] py-3"><em>Aucun événement</em> à venir</p>
           ) : (
             <div className="space-y-2">
               {upcomingEvents.map(event => {
@@ -254,45 +274,53 @@ export function DashboardPage() {
           </div>
           <div className="space-y-2">
             {lastWorkout && (
-              <ActivityPreview
-                icon={<Dumbbell className="w-4 h-4 text-red-400" />}
-                title="Séance musculation"
-                subtitle={lastWorkout.total_tonnage ? `${Math.round(lastWorkout.total_tonnage)} kg soulevés` : ''}
-                date={lastWorkout.date}
-                to="/musculation"
-              />
+              <article>
+                <ActivityPreview
+                  icon={<Dumbbell className="w-4 h-4 text-red-400" />}
+                  title="Séance musculation"
+                  subtitle={lastWorkout.total_tonnage ? `${Math.round(lastWorkout.total_tonnage)} kg soulevés` : ''}
+                  date={lastWorkout.date}
+                  to="/musculation"
+                />
+              </article>
             )}
             {lastRun && (
-              <ActivityPreview
-                icon={<PersonStanding className="w-4 h-4 text-blue-500" />}
-                title={`Course · ${formatDistance(lastRun.distance)}`}
-                subtitle={formatDuration(lastRun.duration)}
-                date={lastRun.date}
-                to="/running"
-              />
+              <article>
+                <ActivityPreview
+                  icon={<PersonStanding className="w-4 h-4 text-blue-500" />}
+                  title={`Course · ${formatDistance(lastRun.distance)}`}
+                  subtitle={formatDuration(lastRun.duration)}
+                  date={lastRun.date}
+                  to="/running"
+                />
+              </article>
             )}
             {lastWeight && (
-              <ActivityPreview
-                icon={<Scale className="w-4 h-4 text-green-600" />}
-                title={`Pesée · ${formatWeight(lastWeight.weight)}`}
-                subtitle={lastWeight.notes ?? ''}
-                date={lastWeight.date}
-                to="/weight"
-              />
+              <article>
+                <ActivityPreview
+                  icon={<Scale className="w-4 h-4 text-green-600" />}
+                  title={`Pesée · ${formatWeight(lastWeight.weight)}`}
+                  subtitle={lastWeight.notes ?? ''}
+                  date={lastWeight.date}
+                  to="/weight"
+                />
+              </article>
             )}
             {lastCali && (
-              <ActivityPreview
-                icon={<Zap className="w-4 h-4 text-violet-400" />}
-                title={lastCali.name ?? 'Séance calisthénie'}
-                subtitle={`${lastCali.total_reps} reps`}
-                date={lastCali.date}
-                to="/calisthenics"
-              />
+              <article>
+                <ActivityPreview
+                  icon={<Zap className="w-4 h-4 text-violet-400" />}
+                  title={lastCali.name ?? 'Séance calisthénie'}
+                  subtitle={`${lastCali.total_reps} reps`}
+                  date={lastCali.date}
+                  to="/calisthenics"
+                />
+              </article>
             )}
             {!lastWorkout && !lastRun && !lastWeight && !lastCali && (
               <div className="text-center py-8 text-[#6b6b6b]">
                 <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Commence à enregistrer tes activités !</p>
+                <p className="text-sm">Commence à <strong>enregistrer</strong> tes activités !</p>
                 <Link to="/musculation/new" className="text-red-400 text-sm mt-2 inline-block hover:text-red-300 transition-colors">
                   Première séance →
                 </Link>
@@ -301,8 +329,10 @@ export function DashboardPage() {
           </div>
         </div>
       </motion.div>
+      </section>
 
       {/* ── LIGNE 5 : Objectifs communs | Objectifs personnels ── */}
+      <section aria-label="Objectifs">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -318,7 +348,7 @@ export function DashboardPage() {
             </Link>
           </div>
           {activeChallenges.length === 0 ? (
-            <p className="text-xs text-[#6b6b6b] py-3">Aucun défi en cours</p>
+            <p className="text-xs text-[#6b6b6b] py-3"><em>Aucun défi</em> en cours</p>
           ) : (
             <div className="space-y-2">
               {activeChallenges.map(c => {
@@ -354,7 +384,7 @@ export function DashboardPage() {
             </Link>
           </div>
           {personalGoals.length === 0 ? (
-            <p className="text-xs text-[#6b6b6b] py-3">Aucun objectif actif</p>
+            <p className="text-xs text-[#6b6b6b] py-3"><em>Aucun objectif</em> actif</p>
           ) : (
             <div className="space-y-2">
               {personalGoals.map(goal => {
@@ -387,6 +417,7 @@ export function DashboardPage() {
           )}
         </div>
       </motion.div>
+      </section>
 
     </div>
   );
@@ -395,11 +426,38 @@ export function DashboardPage() {
 function StatCard({ icon, value, label, color, bg }: {
   icon: React.ReactNode; value: string | number; label: string; color: string; bg: string;
 }) {
+  // On stocke la valeur affichée (commence à 0)
+  const [displayed, setDisplayed] = useState(0);
+  const target = typeof value === 'number' ? value : parseFloat(value) || 0;
+
+  useEffect(() => {
+    if (target === 0) return;
+
+    // On incrémente progressivement jusqu'à la valeur cible
+    const steps = 30;
+    const increment = target / steps;
+    let current = 0;
+
+    const interval = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setDisplayed(target);
+        clearInterval(interval);
+      } else {
+        setDisplayed(Math.round(current));
+      }
+    }, 30); // toutes les 30ms → animation de ~900ms au total
+
+    return () => clearInterval(interval); // nettoyage si le composant disparaît
+  }, [target]);
+
   return (
     <div className={`flex items-center gap-3 p-4 rounded border ${bg}`}>
       <div className={color}>{icon}</div>
       <div>
-        <p className={`text-lg font-bold ${color}`}>{value}</p>
+        <p className={`text-lg font-bold ${color}`}>
+          {typeof value === 'number' ? displayed : value}
+        </p>
         <p className="text-xs text-[#a3a3a3]">{label}</p>
       </div>
     </div>
