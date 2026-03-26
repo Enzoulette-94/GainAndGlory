@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Bell, User, LogOut, Settings, ChevronDown, Shield, Menu, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -43,8 +43,11 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
     }
   };
 
+  const navigate = useNavigate();
+
   const handleSignOut = async () => {
     await authService.signOut();
+    navigate('/');
   };
 
   const statusTitle = profile ? getStatusTitle(profile.global_level) : null;
@@ -62,7 +65,7 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link to="/dashboard" className="flex items-center gap-1.5 group">
+          <Link to="/dashboard" aria-label="Accueil — Gain & Glory" className="flex items-center gap-1.5 group">
             <Shield className="w-4 h-4 text-[#c9a870]" />
             <span className="font-rajdhani font-bold text-[#c9a870] text-sm tracking-wide uppercase">G&G</span>
           </Link>
@@ -106,7 +109,7 @@ export function Header({ onMenuOpen }: { onMenuOpen?: () => void }) {
             >
               <div className="w-8 h-8 border border-[#c9a870]/50 bg-[#1c1c1c] overflow-hidden flex items-center justify-center">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-xs font-bold text-[#c9a870] font-rajdhani">
                     {profile?.username?.[0]?.toUpperCase() ?? 'U'}

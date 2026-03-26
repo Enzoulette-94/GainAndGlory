@@ -12,6 +12,9 @@ function RequireAdmin() {
   return <Outlet />;
 }
 
+// Landing
+import { LandingPage } from './pages/LandingPage';
+
 // Pages auth
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
@@ -47,6 +50,9 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<Loader fullScreen text="Chargement..." />}>
           <Routes>
+            {/* Landing */}
+            <Route path="/" element={<LandingPage />} />
+
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -55,7 +61,6 @@ export default function App() {
 
             {/* App protégée */}
             <Route element={<AppLayout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
 
               <Route path="/musculation" element={<MusculationPage />} />
