@@ -510,15 +510,16 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
   const [category, setCategory] = useState<'musculation' | 'course' | 'calisthenics' | 'crossfit'>('musculation');
   const [title, setTitle] = useState('');
   const [value, setValue] = useState('');
-  const [unit, setUnit] = useState<'kg' | 'reps' | 's'>('kg');
+  const [unit, setUnit] = useState<'kg' | 'reps' | 's' | 'kg lestés'>('kg');
   const [distance, setDistance] = useState('');
+  const [caliWeightKg, setCaliWeightKg] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   function reset() {
     setCategory('musculation'); setTitle(''); setValue('');
-    setUnit('kg'); setDistance(''); setError(null); setSuccess(false);
+    setUnit('kg'); setDistance(''); setCaliWeightKg(''); setError(null); setSuccess(false);
   }
 
   function handleClose() { reset(); onClose(); }
@@ -530,7 +531,11 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
     const num = parseFloat(value.replace(',', '.'));
     if (isNaN(num) || num <= 0) { setError('Valeur numérique invalide.'); return; }
 
-    const finalUnit = category === 'course' ? `${distance.trim()} km` : unit;
+    const weightNum = caliWeightKg.trim() ? parseFloat(caliWeightKg.replace(',', '.')) : 0;
+    const caliUnit = category === 'calisthenics' && unit === 'reps' && weightNum > 0
+      ? `reps — ${weightNum} kg lestés`
+      : unit;
+    const finalUnit = category === 'course' ? `${distance.trim()} km` : caliUnit;
     const ascending = category === 'course';
 
     setSaving(true); setError(null);
@@ -594,7 +599,7 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => { setCategory(cat.id); setUnit(cat.id === 'calisthenics' ? 'reps' : 'kg'); setError(null); }}
+                  onClick={() => { setCategory(cat.id); setUnit(cat.id === 'calisthenics' ? 'reps' : 'kg'); setCaliWeightKg(''); setError(null); }}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${idx > 0 ? 'border-l border-white/10' : ''} ${category === cat.id ? cat.active : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}
                 >
                   {cat.icon}
@@ -652,15 +657,40 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                   <div>
                     <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">Unité</p>
                     <div className="flex rounded overflow-hidden border border-white/10 h-10">
-                      {(['reps', 's'] as const).map((u, i) => (
-                        <button key={u} type="button" onClick={() => setUnit(u as 'reps' | 's')}
-                          className={`flex-1 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-violet-500/15 text-violet-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
+                      {(['reps', 's', 'kg lestés'] as const).map((u, i) => (
+                        <button key={u} type="button" onClick={() => { setUnit(u); if (u !== 'reps') setCaliWeightKg(''); }}
+                          className={`flex-1 text-xs font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-violet-500/15 text-violet-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
                           {u}
                         </button>
                       ))}
                     </div>
                   </div>
                 </div>
+                {/* Poids lesté optionnel quand unit = reps */}
+                {unit === 'reps' && (
+                  <div>
+                    <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">
+                      Poids lesté <span className="normal-case text-[#5a5a5a]">(optionnel)</span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={caliWeightKg}
+                        onChange={e => setCaliWeightKg(e.target.value)}
+                        placeholder="ex: 10"
+                        className="w-24 bg-[#1a1a1a] border border-violet-500/30 rounded px-3 py-2 text-sm text-violet-300 placeholder-[#4a4a4a] focus:outline-none focus:border-violet-400/60"
+                      />
+                      <span className="text-sm text-violet-400/60">kg lestés</span>
+                      {caliWeightKg && value && (
+                        <span className="text-xs text-[#6b6b6b] ml-auto">
+                          → {value} reps — {caliWeightKg} kg lestés
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </>
             )}
 

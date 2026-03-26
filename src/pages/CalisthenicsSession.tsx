@@ -205,9 +205,24 @@ export function CalisthenicsSessionPage() {
         if (ex.set_type === 'reps') {
           const maxReps = Math.max(...ex.sets.map(s => s.reps ?? 0));
           if (maxReps > 0) {
-            await profileRecordsService.upsertRecord(
-              profile.id, ex.name, maxReps, 'reps', 'calisthenics', false,
-            );
+            // Si l'exercice est lesté, on cherche la meilleure combinaison reps + poids
+            const hasWeight = ex.sets.some(s => s.weight_kg != null && s.weight_kg > 0);
+            if (hasWeight) {
+              // PR lesté : on prend le set avec le plus de reps parmi ceux avec poids
+              const bestWeightedSet = ex.sets
+                .filter(s => (s.reps ?? 0) > 0 && (s.weight_kg ?? 0) > 0)
+                .sort((a, b) => (b.reps ?? 0) - (a.reps ?? 0))[0];
+              if (bestWeightedSet) {
+                const prUnit = `reps — ${bestWeightedSet.weight_kg} kg lestés`;
+                await profileRecordsService.upsertRecord(
+                  profile.id, ex.name, bestWeightedSet.reps!, prUnit, 'calisthenics', false,
+                );
+              }
+            } else {
+              await profileRecordsService.upsertRecord(
+                profile.id, ex.name, maxReps, 'reps', 'calisthenics', false,
+              );
+            }
           }
         } else {
           // timed : meilleur hold = plus long
