@@ -26,7 +26,8 @@ interface ExerciseBlock {
   id: string;
   name: string;
   set_type: 'reps' | 'timed';
-  sets: { reps: string; hold_seconds: string }[];
+  has_weight: boolean;
+  sets: { reps: string; hold_seconds: string; weight_kg: string }[];
 }
 
 // ─── Composant principal ──────────────────────────────────────────────────────
@@ -47,9 +48,11 @@ export function CalisthenicsSessionPage() {
         id: Math.random().toString(36).slice(2),
         name: ex.name,
         set_type: ex.set_type,
+        has_weight: ex.sets.some(s => s.weight_kg != null && s.weight_kg > 0),
         sets: ex.sets.map(s => ({
           reps: s.reps != null ? String(s.reps) : '',
           hold_seconds: s.hold_seconds != null ? String(s.hold_seconds) : '',
+          weight_kg: s.weight_kg != null ? String(s.weight_kg) : '',
         })),
       }));
     }
@@ -80,7 +83,8 @@ export function CalisthenicsSessionPage() {
         id: Math.random().toString(36).slice(2),
         name: '',
         set_type: 'reps',
-        sets: [{ reps: '', hold_seconds: '' }],
+        has_weight: false,
+        sets: [{ reps: '', hold_seconds: '', weight_kg: '' }],
       },
     ]);
   }
@@ -96,7 +100,7 @@ export function CalisthenicsSessionPage() {
   function addSet(exerciseId: string) {
     setExercises(prev => prev.map(e =>
       e.id === exerciseId
-        ? { ...e, sets: [...e.sets, { reps: '', hold_seconds: '' }] }
+        ? { ...e, sets: [...e.sets, { reps: '', hold_seconds: '', weight_kg: '' }] }
         : e
     ));
   }
@@ -109,7 +113,7 @@ export function CalisthenicsSessionPage() {
     ));
   }
 
-  function updateSet(exerciseId: string, setIndex: number, field: 'reps' | 'hold_seconds', value: string) {
+  function updateSet(exerciseId: string, setIndex: number, field: 'reps' | 'hold_seconds' | 'weight_kg', value: string) {
     setExercises(prev => prev.map(e =>
       e.id === exerciseId
         ? {
@@ -145,6 +149,7 @@ export function CalisthenicsSessionPage() {
           sets: e.sets.map(s => ({
             reps: e.set_type === 'reps' ? (parseInt(s.reps) || null) : null,
             hold_seconds: e.set_type === 'timed' ? (parseInt(s.hold_seconds) || null) : null,
+            weight_kg: e.has_weight ? (parseFloat(s.weight_kg) || null) : null,
           })) as CaliSet[],
         }));
 
@@ -425,7 +430,7 @@ interface ExerciseBlockProps {
   onRemove: () => void;
   onAddSet: () => void;
   onRemoveSet: (idx: number) => void;
-  onUpdateSet: (idx: number, field: 'reps' | 'hold_seconds', value: string) => void;
+  onUpdateSet: (idx: number, field: 'reps' | 'hold_seconds' | 'weight_kg', value: string) => void;
   onOpenPicker: () => void;
 }
 
@@ -473,6 +478,18 @@ function ExerciseBlockComponent({ exercise, index, onUpdate, onRemove, onAddSet,
             Temps
           </button>
         </div>
+        {/* Toggle lesté */}
+        <button
+          onClick={() => onUpdate('has_weight', !exercise.has_weight)}
+          title="Ajouter poids lesté"
+          className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+            exercise.has_weight
+              ? 'border-violet-500/50 bg-violet-600/20 text-violet-300'
+              : 'border-white/10 text-[#4a4a4a] hover:text-[#a3a3a3] hover:border-white/20'
+          }`}
+        >
+          +kg
+        </button>
         <button onClick={onRemove} className="p-1.5 text-[#4a4a4a] hover:text-red-400 transition-colors">
           <X className="w-4 h-4" />
         </button>
@@ -503,6 +520,20 @@ function ExerciseBlockComponent({ exercise, index, onUpdate, onRemove, onAddSet,
                   className="w-20 bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-violet-500/50 text-center"
                 />
                 <span className="text-xs text-[#4a4a4a]">s</span>
+              </div>
+            )}
+            {exercise.has_weight && (
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={set.weight_kg}
+                  onChange={e => onUpdateSet(setIdx, 'weight_kg', e.target.value)}
+                  placeholder="kg"
+                  className="w-16 bg-[#1a1a1a] border border-violet-500/30 rounded-lg px-2 py-1 text-sm text-violet-300 placeholder-[#4a4a4a] focus:outline-none focus:border-violet-400/60 text-center"
+                />
+                <span className="text-xs text-violet-400/60">kg</span>
               </div>
             )}
             {exercise.sets.length > 1 && (

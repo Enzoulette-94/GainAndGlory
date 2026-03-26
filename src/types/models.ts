@@ -127,6 +127,7 @@ export interface WeightEntry {
 export interface CaliSet {
   reps: number | null;
   hold_seconds: number | null;
+  weight_kg?: number | null;
 }
 
 export interface CaliExercise {

@@ -123,13 +123,13 @@ export const XP_REWARDS = {
 
 export const CALISTHENICS_GROUPS = [
   { id: 'traction',  label: 'Traction / Tirage', emoji: '🔼',
-    exercises: ['Pull-up', 'Chin-up', 'Muscle-up', 'Front lever', 'Australian pull-up', 'One arm pull-up'] },
+    exercises: ['Pull-up', 'Chin-up', 'Muscle-up', 'Front lever', 'Australian pull-up', 'One arm pull-up', 'Reverse DL'] },
   { id: 'poussee',   label: 'Poussée',            emoji: '💪',
-    exercises: ['Dip', 'Pike push-up', 'HSPU', 'Archer push-up', 'Ring push-up', 'Planche push-up', 'Push-up'] },
+    exercises: ['Dip', 'Pike push-up', 'HSPU', 'Archer push-up', 'Ring push-up', 'Planche push-up', 'Push-up', 'Pompes inclinées', 'Pompes déclinées', 'Pompes spartiates', 'Skull Crusher'] },
   { id: 'core',      label: 'Core / Gainage',     emoji: '🔥',
     exercises: ['L-sit', 'Planche', 'Dragon flag', 'Hollow body', 'V-sit', 'Tuck planche', 'Ab wheel'] },
   { id: 'jambes',    label: 'Jambes',              emoji: '🦵',
-    exercises: ['Pistol squat', 'Shrimp squat', 'Nordic curl', 'Jump squat'] },
+    exercises: ['Pistol squat', 'Shrimp squat', 'Nordic curl', 'Jump squat', 'Corde à sauter', 'Montée de talons (mollets)'] },
   { id: 'isometrie', label: 'Isométrie / Tenu',   emoji: '⏱',
     exercises: ['Front lever hold', 'Back lever hold', 'Human flag', 'Ring support hold'] },
 ] as const;
@@ -147,6 +147,8 @@ export const CALISTHENICS_EXERCISES = [
   'Back Lever', 'Planche', 'Dragon Flag', 'Pistol Squat', 'Burpee',
   'Tuck Planche', 'Inverted Row', 'Ring Dip', 'Ring Row',
   'Archer Push-up', 'Pseudo Planche Push-up', 'Hollow Body Hold', 'Superman Hold',
+  'Pompes inclinées', 'Pompes déclinées', 'Pompes spartiates', 'Skull Crusher',
+  'Corde à sauter', 'Montée de talons (mollets)', 'Reverse DL',
 ];
 
 export const CALISTHENICS_SKILLS = [
