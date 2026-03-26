@@ -40,6 +40,7 @@ interface RecordGroup {
   unit: string;
   category: 'musculation' | 'course' | 'calisthenics' | 'crossfit';
   ascending: boolean;
+  weighted: boolean;
   entries: RecordEntry[];
 }
 
@@ -347,7 +348,7 @@ function useRecordsRanking() {
           .order('title');
         if (err) throw err;
 
-        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' | 'crossfit'; entries: RecordEntry[] }> = {};
+        const groupMap: Record<string, { title: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' | 'crossfit'; weighted: boolean; entries: RecordEntry[] }> = {};
 
         for (const rec of (records ?? []) as any[]) {
           const cat: 'musculation' | 'course' | 'calisthenics' | 'crossfit' =
@@ -355,9 +356,14 @@ function useRecordsRanking() {
             : rec.category === 'calisthenics' ? 'calisthenics'
             : rec.category === 'crossfit' ? 'crossfit'
             : 'musculation';
-          const key = `${cat}::${rec.title.trim().toLowerCase()}`;
+          const isWeighted = cat === 'calisthenics' && String(rec.unit).includes('kg lestés');
+          // Les PRs lestés sont groupés par titre + unité exacte (car 10kg ≠ 20kg)
+          // Les PRs non lestés sont groupés par titre seulement
+          const key = isWeighted
+            ? `${cat}::weighted::${rec.title.trim().toLowerCase()}::${String(rec.unit).trim().toLowerCase()}`
+            : `${cat}::${rec.title.trim().toLowerCase()}`;
           if (!groupMap[key]) {
-            groupMap[key] = { title: rec.title.trim(), unit: rec.unit, category: cat, entries: [] };
+            groupMap[key] = { title: rec.title.trim(), unit: rec.unit, category: cat, weighted: isWeighted, entries: [] };
           }
 
           const prof = rec.profiles;
@@ -390,7 +396,7 @@ function useRecordsRanking() {
           const sorted = [...group.entries]
             .sort((a, b) => ascending ? a.numericValue - b.numericValue : b.numericValue - a.numericValue)
             .slice(0, 5);
-          return { title: group.title, unit: group.unit, category: group.category, ascending, entries: sorted };
+          return { title: group.title, unit: group.unit, category: group.category, weighted: group.weighted, ascending, entries: sorted };
         });
 
         result.sort((a, b) => b.entries.length - a.entries.length || a.title.localeCompare(b.title));
@@ -950,15 +956,31 @@ export function HallOfFamePage() {
           )}
 
           {/* Calisthénie */}
-          {records.groups.filter(g => g.category === 'calisthenics').length > 0 && (
+          {records.groups.filter(g => g.category === 'calisthenics' && !g.weighted).length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-violet-400" />
                 <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-violet-400">Calisthénie</h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {records.groups.filter(g => g.category === 'calisthenics').map(group => (
+                {records.groups.filter(g => g.category === 'calisthenics' && !g.weighted).map(group => (
                   <RecordGroupCard key={`cali-${group.title}`} group={group} currentUserId={currentUserId} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Calisthénie lestée */}
+          {records.groups.filter(g => g.category === 'calisthenics' && g.weighted).length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="w-4 h-4 text-violet-400" />
+                <span className="text-violet-400 text-sm">⚖</span>
+                <h3 className="font-rajdhani font-bold text-sm tracking-widest uppercase text-violet-400">Calisthénie lestée</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {records.groups.filter(g => g.category === 'calisthenics' && g.weighted).map(group => (
+                  <RecordGroupCard key={`cali-weighted-${group.title}-${group.unit}`} group={group} currentUserId={currentUserId} />
                 ))}
               </div>
             </div>
