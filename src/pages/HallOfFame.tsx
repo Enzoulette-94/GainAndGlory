@@ -532,8 +532,8 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
     if (isNaN(num) || num <= 0) { setError('Valeur numérique invalide.'); return; }
 
     const weightNum = caliWeightKg.trim() ? parseFloat(caliWeightKg.replace(',', '.')) : 0;
-    const caliUnit = category === 'calisthenics' && unit === 'reps' && weightNum > 0
-      ? `reps — ${weightNum} kg lestés`
+    const caliUnit = category === 'calisthenics' && (unit === 'reps' || unit === 's') && weightNum > 0
+      ? `${unit} — ${weightNum} kg lestés`
       : unit;
     const finalUnit = category === 'course' ? `${distance.trim()} km` : caliUnit;
     const ascending = category === 'course';
@@ -666,8 +666,8 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                     </div>
                   </div>
                 </div>
-                {/* Poids lesté optionnel quand unit = reps */}
-                {unit === 'reps' && (
+                {/* Poids lesté optionnel quand unit = reps ou s */}
+                {(unit === 'reps' || unit === 's') && (
                   <div>
                     <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">
                       Poids lesté <span className="normal-case text-[#5a5a5a]">(optionnel)</span>
@@ -685,7 +685,7 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                       <span className="text-sm text-violet-400/60">kg lestés</span>
                       {caliWeightKg && value && (
                         <span className="text-xs text-[#6b6b6b] ml-auto">
-                          → {value} reps — {caliWeightKg} kg lestés
+                          → {value} {unit} — {caliWeightKg} kg lestés
                         </span>
                       )}
                     </div>
