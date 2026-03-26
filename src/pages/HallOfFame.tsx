@@ -657,9 +657,9 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                   <div>
                     <p className="text-xs text-[#a3a3a3] uppercase tracking-wide font-medium mb-1.5">Unité</p>
                     <div className="flex rounded overflow-hidden border border-white/10 h-10">
-                      {(['reps', 's', 'kg lestés'] as const).map((u, i) => (
+                      {(['reps', 's'] as const).map((u, i) => (
                         <button key={u} type="button" onClick={() => { setUnit(u); if (u !== 'reps') setCaliWeightKg(''); }}
-                          className={`flex-1 text-xs font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-violet-500/15 text-violet-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
+                          className={`flex-1 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-white/10' : ''} ${unit === u ? 'bg-violet-500/15 text-violet-400' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>
                           {u}
                         </button>
                       ))}
