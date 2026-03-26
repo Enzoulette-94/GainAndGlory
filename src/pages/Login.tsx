@@ -62,7 +62,7 @@ export function LoginPage() {
             </h1>
           </div>
           <p className="text-[#a3a3a3] font-inter text-sm tracking-wide">
-            Reprends ta progression
+            Reprends ta <strong>progression</strong>
           </p>
         </div>
 
@@ -113,7 +113,7 @@ export function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-[#a3a3a3]">
-            Pas encore de compte ?{' '}
+            <em>Pas encore de compte ?</em>{' '}
             <Link
               to="/register"
               className="text-[#c9a870] hover:text-[#dfc99e] font-medium transition-colors"

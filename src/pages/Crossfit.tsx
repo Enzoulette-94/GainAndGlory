@@ -153,7 +153,7 @@ export function CrossfitPage() {
       {/* Banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-orange-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-orange-900/20 p-6 -mx-4">
         <Flame className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-orange-900/10 pointer-events-none" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-400/50 mb-2">WOD & entraînements fonctionnels</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-400/50 mb-2"><strong>WOD</strong> & <em>entraînements fonctionnels</em></p>
         <h1 className="font-rajdhani text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
           CROSSFIT
         </h1>
@@ -192,19 +192,19 @@ export function CrossfitPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         <Card className="p-3 sm:p-4 text-center">
           <p className="text-xl sm:text-2xl font-rajdhani font-bold text-orange-400">{totalSessions}</p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Séances</p>
+          <p className="text-xs text-[#6b6b6b] mt-0.5"><strong>Séances</strong></p>
         </Card>
         <Card className="p-3 sm:p-4 text-center">
           <p className="text-xl sm:text-2xl font-rajdhani font-bold text-orange-400">
             {allSessions.reduce((sum, s) => sum + s.exercises.length, 0)}
           </p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Exercices</p>
+          <p className="text-xs text-[#6b6b6b] mt-0.5"><strong>Exercices</strong></p>
         </Card>
         <Card className="p-3 sm:p-4 text-center">
           <p className="text-xl sm:text-2xl font-rajdhani font-bold text-orange-400">
             {Object.keys(exerciseRecords).length}
           </p>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">Records</p>
+          <p className="text-xs text-[#6b6b6b] mt-0.5"><strong>Records</strong></p>
         </Card>
       </div>
 
@@ -252,7 +252,7 @@ export function CrossfitPage() {
           {displayedSessions.length === 0 ? (
             <Card className="p-8 text-center">
               <Flame className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
-              <p className="text-[#6b6b6b]">Aucune séance enregistrée</p>
+              <p className="text-[#6b6b6b]"><em>Aucune séance</em> enregistrée</p>
               <Link to="/crossfit/new" className="mt-3 inline-block">
                 <Button size="sm" className="bg-orange-600 hover:bg-orange-500 text-white border-0">
                   <Plus className="w-4 h-4 mr-1" />
@@ -297,7 +297,7 @@ export function CrossfitPage() {
         <Card className="p-4">
           <CardHeader title="Séances par type de WOD" />
           {chartData.length === 0 ? (
-            <p className="text-[#6b6b6b] text-sm text-center py-8">Pas encore de données</p>
+            <p className="text-[#6b6b6b] text-sm text-center py-8"><em>Pas encore</em> de données</p>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={chartData}>
@@ -318,7 +318,7 @@ export function CrossfitPage() {
           {Object.keys(exerciseRecords).length === 0 ? (
             <Card className="p-8 text-center">
               <Trophy className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
-              <p className="text-[#6b6b6b]">Aucun record à afficher</p>
+              <p className="text-[#6b6b6b]"><em>Aucun record</em> à afficher</p>
             </Card>
           ) : (
             Object.entries(exerciseRecords)
@@ -331,7 +331,7 @@ export function CrossfitPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-rajdhani font-bold text-orange-400">{record.maxWeight}</p>
-                    <p className="text-xs text-[#6b6b6b]">kg max</p>
+                    <p className="text-xs text-[#6b6b6b]"><strong>kg</strong> max</p>
                   </div>
                 </Card>
               ))
@@ -507,31 +507,31 @@ function SessionCard({ session, onDelete }: { session: CrossfitSession; onDelete
         <div className="grid grid-cols-2 gap-2">
           {session.total_duration != null && (
             <div className="border border-white/5 px-3 py-2">
-              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Durée totale</p>
+              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide"><strong>Durée totale</strong></p>
               <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{session.total_duration} min</p>
             </div>
           )}
           {session.round_duration != null && (
             <div className="border border-white/5 px-3 py-2">
-              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Durée / round</p>
+              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide"><strong>Durée</strong> / round</p>
               <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{session.round_duration}s</p>
             </div>
           )}
           {session.target_rounds != null && (
             <div className="border border-white/5 px-3 py-2">
-              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Rounds cibles</p>
+              <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">Rounds <em>cibles</em></p>
               <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{session.target_rounds}</p>
             </div>
           )}
           {session.result_rounds != null && (
             <div className="border border-orange-900/30 px-3 py-2">
-              <p className="text-xs text-orange-400 uppercase tracking-wide">Rounds réalisés</p>
+              <p className="text-xs text-orange-400 uppercase tracking-wide">Rounds <strong>réalisés</strong></p>
               <p className="text-sm font-rajdhani font-bold text-orange-300">{session.result_rounds}</p>
             </div>
           )}
           {session.result_reps != null && (
             <div className="border border-orange-900/30 px-3 py-2">
-              <p className="text-xs text-orange-400 uppercase tracking-wide">Reps totales</p>
+              <p className="text-xs text-orange-400 uppercase tracking-wide"><strong>Reps</strong> totales</p>
               <p className="text-sm font-rajdhani font-bold text-orange-300">{session.result_reps}</p>
             </div>
           )}

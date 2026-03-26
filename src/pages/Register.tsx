@@ -81,7 +81,7 @@ export function RegisterPage() {
             </h1>
           </div>
           <p className="text-[#a3a3a3] font-inter text-sm tracking-wide">
-            Commence ton aventure sportive
+            Commence ton <strong>aventure sportive</strong>
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export function RegisterPage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-[#a3a3a3]">
-            Déjà un compte ?{' '}
+            <em>Déjà un compte ?</em>{' '}
             <Link
               to="/login"
               className="text-[#c9a870] hover:text-[#dfc99e] font-medium transition-colors"

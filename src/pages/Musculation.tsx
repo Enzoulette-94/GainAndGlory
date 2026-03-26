@@ -262,7 +262,7 @@ export function MusculationPage() {
         className="relative overflow-hidden bg-gradient-to-br from-red-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-red-900/20 p-6 -mx-4 sm:mx-0"
       >
         <Dumbbell className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-red-900/10 pointer-events-none" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/50 mb-2">Musculation</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400/50 mb-2"><strong>Musculation</strong></p>
         <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
           MUSCU
         </h1>
@@ -311,7 +311,7 @@ export function MusculationPage() {
             </div>
             <div>
               <p className="text-2xl font-black text-red-400">{totalSessions}</p>
-              <p className="text-xs text-[#a3a3a3]">Séances totales</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Séances</strong> totales</p>
             </div>
           </div>
         </Card>
@@ -326,7 +326,7 @@ export function MusculationPage() {
                   ? `${formatNumber(totalTonnage / 1000, 1)}t`
                   : `${formatNumber(totalTonnage)}kg`}
               </p>
-              <p className="text-xs text-[#a3a3a3]">Tonnage total</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Tonnage</strong> total</p>
             </div>
           </div>
         </Card>
@@ -973,7 +973,7 @@ function SessionCard({
                 <p className="text-sm text-[#a3a3a3] italic border-l-2 border-[#c9a870]/30 pl-3">{session.notes}</p>
               )}
 
-              {groups.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
+              {groups.length === 0 && <p className="text-sm text-[#6b6b6b]"><em>Aucun exercice</em> enregistré.</p>}
               <div className="space-y-3">
                 {groups.map((group, gi) => (
                   <div key={gi} className="border border-white/5">

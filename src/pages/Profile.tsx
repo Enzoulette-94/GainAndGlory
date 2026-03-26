@@ -268,6 +268,17 @@ export function ProfilePage() {
   return (
     <div className="space-y-6 pb-6">
 
+      {/* ── NAVIGATION ANCRES ───────────────────────────────────────────── */}
+      <nav aria-label="Navigation intra-page" className="flex items-center gap-3 flex-wrap text-xs font-rajdhani font-bold uppercase tracking-widest">
+        <a href="#performances" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Performances</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#progression" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Progression</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#statistiques" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Statistiques</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#badges" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Badges</a>
+      </nav>
+
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -275,15 +286,16 @@ export function ProfilePage() {
         transition={{ duration: 0.35 }}
       >
         <Card className="p-6">
-          <div className="flex items-start gap-5">
+          <article className="flex items-start gap-5">
 
             {/* Avatar */}
+            <figure className="flex-shrink-0 m-0">
             <button
               onClick={() => { setEditOpen(true); setEditUsername(profile.username); setEditError(''); setAvatarError(''); }}
               className="flex-shrink-0 relative w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-[#c9a870]/40 hover:border-[#c9a870]/80 bg-[#1c1c1c] flex items-center justify-center group transition-colors"
             >
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-[#c9a870] font-bold text-2xl">{getInitials(profile.username)}</span>
               )}
@@ -291,9 +303,10 @@ export function ProfilePage() {
                 <Camera className="w-5 h-5 text-white" />
               </div>
             </button>
+            </figure>
 
             {/* Info */}
-            <div className="flex-1 min-w-0">
+            <address className="flex-1 min-w-0 not-italic">
               <h1 className="text-2xl font-black text-white truncate">{profile.username}</h1>
 
               <span className="inline-block mt-1 px-2.5 py-0.5 text-xs font-semibold bg-transparent text-[#c9a870] border border-[#c9a870]/30">
@@ -301,7 +314,7 @@ export function ProfilePage() {
               </span>
 
               <p className="text-xs text-[#6b6b6b] mt-2">Membre depuis {memberSince}</p>
-            </div>
+            </address>
 
             {/* Edit button */}
             <Button
@@ -313,11 +326,12 @@ export function ProfilePage() {
             >
               Modifier
             </Button>
-          </div>
+          </article>
         </Card>
       </motion.div>
 
       {/* ── PERFORMANCES MANUELLES ──────────────────────────────────── */}
+      <div id="performances">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -340,7 +354,7 @@ export function ProfilePage() {
         ) : records.length === 0 ? (
           <Card className="p-6 text-center">
             <Trophy className="w-8 h-8 text-[#4a4a4a] mx-auto mb-2" />
-            <p className="text-[#6b6b6b] text-sm">Aucune performance enregistrée</p>
+            <p className="text-[#6b6b6b] text-sm"><em>Aucune performance</em> enregistrée</p>
             <div className="flex justify-center gap-4 mt-2">
               <button onClick={() => openAddRecord('musculation')} className="text-xs text-[#c9a870]/70 hover:text-[#c9a870] transition-colors flex items-center gap-1">
                 <Dumbbell className="w-3 h-3" /> Musculation
@@ -496,8 +510,10 @@ export function ProfilePage() {
           </div>
         )}
       </motion.div>
+      </div>
 
       {/* ── XP BARS ─────────────────────────────────────────────────────── */}
+      <div id="progression">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -538,8 +554,10 @@ export function ProfilePage() {
           />
         </Card>
       </motion.div>
+      </div>
 
       {/* ── STATS ───────────────────────────────────────────────────────── */}
+      <div id="statistiques">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -557,7 +575,7 @@ export function ProfilePage() {
                 <Dumbbell className="w-4 h-4 text-red-400" />
               </div>
               <p className="text-2xl font-black text-white">{stats?.muscuCount ?? 0}</p>
-              <p className="text-xs text-[#a3a3a3]">Séances muscu</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Séances</strong> muscu</p>
             </Card>
 
             <Card className="p-4 flex flex-col gap-2">
@@ -565,7 +583,7 @@ export function ProfilePage() {
                 <Timer className="w-4 h-4 text-blue-500" />
               </div>
               <p className="text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
-              <p className="text-xs text-[#a3a3a3]">Séances course</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Séances</strong> course</p>
             </Card>
 
             <Card className="p-4 flex flex-col gap-2">
@@ -575,7 +593,7 @@ export function ProfilePage() {
               <p className="text-2xl font-black text-white">
                 {stats ? formatDistance(stats.totalDistance) : '0 km'}
               </p>
-              <p className="text-xs text-[#a3a3a3]">Distance totale</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Distance</strong> totale</p>
             </Card>
 
             <Card className="p-4 flex flex-col gap-2">
@@ -583,7 +601,7 @@ export function ProfilePage() {
                 <Flame className="w-4 h-4 text-orange-600" />
               </div>
               <p className="text-2xl font-black text-white">{profile.current_streak}</p>
-              <p className="text-xs text-[#a3a3a3]">Jours consécutifs</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Jours consécutifs</strong></p>
               <p className="text-xs text-[#4a4a4a]">
                 Record : {profile.longest_streak} jours
               </p>
@@ -592,8 +610,10 @@ export function ProfilePage() {
           </div>
         )}
       </motion.div>
+      </div>
 
       {/* ── BADGES ──────────────────────────────────────────────────────── */}
+      <div id="badges">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -607,8 +627,8 @@ export function ProfilePage() {
           <Loader size="sm" />
         ) : badges.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-[#6b6b6b] text-sm">Aucun badge encore...</p>
-            <p className="text-[#4a4a4a] text-xs mt-1">Continue a t'entrainer pour en debloquer !</p>
+            <p className="text-[#6b6b6b] text-sm"><em>Aucun badge</em> encore...</p>
+            <p className="text-[#4a4a4a] text-xs mt-1">Continue à t'<strong>entraîner</strong> pour en débloquer !</p>
           </Card>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -648,6 +668,7 @@ export function ProfilePage() {
           </div>
         )}
       </motion.div>
+      </div>
 
       {/* ── RECORD MODAL ────────────────────────────────────────────────── */}
       <Modal
@@ -859,7 +880,7 @@ export function ProfilePage() {
                 className="relative w-16 h-16 rounded-full overflow-hidden border border-[#c9a870]/30 hover:border-[#c9a870]/70 bg-[#1c1c1c] flex items-center justify-center group transition-colors flex-shrink-0"
               >
                 {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-[#c9a870] font-bold text-lg">{getInitials(profile.username)}</span>
                 )}
@@ -880,7 +901,7 @@ export function ProfilePage() {
                 >
                   Changer la photo
                 </button>
-                <p className="text-xs text-[#6b6b6b] mt-0.5">JPG, PNG — max 2 Mo</p>
+                <p className="text-xs text-[#6b6b6b] mt-0.5">JPG, PNG — <em>max 2 Mo</em></p>
                 {avatarError && <p className="text-xs text-red-400 mt-1">{avatarError}</p>}
               </div>
             </div>

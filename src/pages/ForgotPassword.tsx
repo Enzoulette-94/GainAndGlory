@@ -49,7 +49,7 @@ export function ForgotPasswordPage() {
             </h1>
           </div>
           <p className="text-[#a3a3a3] font-inter text-sm tracking-wide">
-            Réinitialisation du mot de passe
+            Réinitialisation du <strong>mot de passe</strong>
           </p>
         </div>
 
@@ -59,7 +59,7 @@ export function ForgotPasswordPage() {
               <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
               <p className="text-[#f5f5f5] font-medium">Email envoyé !</p>
               <p className="text-[#a3a3a3] text-sm">
-                Vérifie ta boîte mail (<span className="text-[#c9a870]">{email}</span>) et clique sur le lien pour réinitialiser ton mot de passe.
+                Vérifie ta <strong>boîte mail</strong> (<span className="text-[#c9a870]">{email}</span>) et clique sur le lien pour <em>réinitialiser</em> ton mot de passe.
               </p>
               <Link
                 to="/login"
@@ -77,7 +77,7 @@ export function ForgotPasswordPage() {
                 </div>
               )}
               <p className="text-[#a3a3a3] text-sm mb-6">
-                Saisis ton email et on t'envoie un lien pour créer un nouveau mot de passe.
+                Saisis ton <strong>email</strong> et on t'envoie un lien pour créer un <strong>nouveau mot de passe</strong>.
               </p>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Input

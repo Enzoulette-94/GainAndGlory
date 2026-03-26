@@ -99,7 +99,7 @@ export function LevelUpModal({ isOpen, onClose, level, discipline = 'global' }: 
               transition={{ delay: 0.3 }}
             >
               <p className="text-red-400 font-semibold text-sm uppercase tracking-wider mb-1">
-                Niveau supérieur !
+                <strong>Niveau supérieur</strong> !
               </p>
               <h2 className="text-4xl font-black text-white mb-2">
                 Niveau {level}

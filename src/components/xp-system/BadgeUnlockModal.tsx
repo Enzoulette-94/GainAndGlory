@@ -63,7 +63,7 @@ export function BadgeUnlockModal({ badge, onClose }: BadgeUnlockModalProps) {
               {/* Header */}
               <div className="space-y-1">
                 <p className="text-[10px] uppercase tracking-[0.2em] font-rajdhani font-bold" style={{ color: config.color }}>
-                  ✦ Badge débloqué
+                  ✦ <strong>Badge débloqué</strong>
                 </p>
                 <p className="text-[10px] uppercase tracking-widest text-[#4a4a4a] font-rajdhani">
                   {b?.rarity ?? 'commun'}

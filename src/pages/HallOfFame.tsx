@@ -105,7 +105,7 @@ function LeaderboardColumn({
         </h2>
       </div>
 
-      <div className="flex flex-col divide-y divide-white/5">
+      <ol className="flex flex-col divide-y divide-white/5" role="list">
         {loading && (
           <div className="px-4 py-8 flex justify-center">
             <Loader text="" />
@@ -125,8 +125,8 @@ function LeaderboardColumn({
           const colors = rankColor(rank);
           const isMe = entry.id === currentUserId;
           return (
+            <li key={entry.id} className="list-none">
             <motion.div
-              key={entry.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
@@ -172,9 +172,10 @@ function LeaderboardColumn({
                 <p className="text-xs text-[#6b6b6b]">{valueLabel}</p>
               </div>
             </motion.div>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </Card>
   );
 }
@@ -578,7 +579,7 @@ function PRModal({ isOpen, onClose, onSuccess, userId }: PRModalProps) {
                 <p className="font-rajdhani font-black text-lg uppercase tracking-widest text-yellow-400">
                   Nouveau Record Personnel
                 </p>
-                <p className="text-xs text-[#6b6b6b]">Publié dans le feed · Mis à jour dans ton profil</p>
+                <p className="text-xs text-[#6b6b6b]">Publié dans le <strong>feed</strong> · Mis à jour dans ton <em>profil</em></p>
               </div>
             </div>
 
@@ -809,10 +810,18 @@ export function HallOfFamePage() {
         </div>
       </motion.div>
 
+      {/* Navigation ancres */}
+      <nav aria-label="Navigation intra-page" className="flex items-center gap-3 flex-wrap text-xs font-rajdhani font-bold uppercase tracking-widest">
+        <a href="#classements" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Classements</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#records" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Records</a>
+      </nav>
+
       {/* Bandeau PR */}
       <PRBanner onOpen={() => setPrModalOpen(true)} />
 
       {/* 3 colonnes */}
+      <section id="classements" aria-label="Classements">
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -856,9 +865,11 @@ export function HallOfFamePage() {
           emptyIcon={<Dumbbell className="w-8 h-8" />}
         />
       </motion.div>
+      </section>
 
       {/* Records personnels */}
       {!records.loading && !records.error && records.groups.length > 0 && (
+        <section id="records" aria-label="Records personnels">
         <motion.div
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}
           className="space-y-6"
@@ -938,6 +949,7 @@ export function HallOfFamePage() {
             </div>
           )}
         </motion.div>
+        </section>
       )}
       {records.loading && (
         <div className="flex justify-center py-4">

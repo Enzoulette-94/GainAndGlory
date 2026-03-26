@@ -282,7 +282,7 @@ export function RunningPage() {
         className="relative overflow-hidden bg-gradient-to-br from-blue-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-blue-900/20 p-6 -mx-4 sm:mx-0"
       >
         <PersonStanding className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-blue-900/10 pointer-events-none" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400/50 mb-2">Course à pied</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400/50 mb-2"><strong>Course à pied</strong></p>
         <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
           RUNNING
         </h1>
@@ -331,7 +331,7 @@ export function RunningPage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-black text-blue-500">{totalSessions}</p>
-              <p className="text-xs text-[#a3a3a3]">Sorties totales</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Sorties</strong> totales</p>
             </div>
           </div>
         </Card>
@@ -347,7 +347,7 @@ export function RunningPage() {
                   : `${Math.round(totalDistance)}`}
                 <span className="text-base ml-0.5">km</span>
               </p>
-              <p className="text-xs text-[#a3a3a3]">Distance totale</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Distance</strong> totale</p>
             </div>
           </div>
         </Card>
@@ -1034,7 +1034,7 @@ function RecordCard({ label, km, record }: RecordCardProps) {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-[#6b6b6b] italic mt-1">Record non établi</p>
+              <p className="text-sm text-[#6b6b6b] italic mt-1"><em>Record non établi</em></p>
             )}
           </div>
         </div>

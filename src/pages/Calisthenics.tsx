@@ -155,7 +155,7 @@ export function CalisthenicsPage() {
       {/* Banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-violet-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-violet-900/20 p-6 -mx-4">
         <Zap className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-violet-900/10 pointer-events-none" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400/50 mb-2">Force au poids de corps</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400/50 mb-2"><strong>Force</strong> au <em>poids de corps</em></p>
         <h1 className="font-rajdhani text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
           CALISTHÉNIE
         </h1>
@@ -193,7 +193,7 @@ export function CalisthenicsPage() {
       {/* Stats */}
       <Card className="p-3 sm:p-4 text-center">
         <p className="text-xl sm:text-2xl font-rajdhani font-bold text-violet-400">{totalSessions}</p>
-        <p className="text-xs text-[#6b6b6b] mt-0.5">Séances</p>
+        <p className="text-xs text-[#6b6b6b] mt-0.5"><strong>Séances</strong></p>
       </Card>
 
       {/* Tabs */}
@@ -241,7 +241,7 @@ export function CalisthenicsPage() {
           {displayedSessions.length === 0 ? (
             <Card className="p-8 text-center">
               <Zap className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
-              <p className="text-[#6b6b6b]">Aucune séance enregistrée</p>
+              <p className="text-[#6b6b6b]"><em>Aucune séance</em> enregistrée</p>
               <Link to="/calisthenics/new" className="mt-3 inline-block">
                 <Button size="sm" className="bg-violet-600 hover:bg-violet-500 text-white border-0">
                   <Plus className="w-4 h-4 mr-1" />
@@ -286,7 +286,7 @@ export function CalisthenicsPage() {
         <Card className="p-4">
           <CardHeader title="Reps par séance (30 dernières)" />
           {chartData.length === 0 ? (
-            <p className="text-[#6b6b6b] text-sm text-center py-8">Pas encore de données</p>
+            <p className="text-[#6b6b6b] text-sm text-center py-8"><em>Pas encore</em> de données</p>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={chartData}>
@@ -307,7 +307,7 @@ export function CalisthenicsPage() {
           {Object.keys(exerciseRecords).length === 0 ? (
             <Card className="p-8 text-center">
               <Trophy className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
-              <p className="text-[#6b6b6b]">Aucun record à afficher</p>
+              <p className="text-[#6b6b6b]"><em>Aucun record</em> à afficher</p>
             </Card>
           ) : (
             Object.entries(exerciseRecords)
@@ -320,7 +320,7 @@ export function CalisthenicsPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-rajdhani font-bold text-violet-400">{record.maxReps}</p>
-                    <p className="text-xs text-[#6b6b6b]">reps max</p>
+                    <p className="text-xs text-[#6b6b6b]"><strong>reps</strong> max</p>
                   </div>
                 </Card>
               ))
@@ -360,7 +360,7 @@ export function CalisthenicsPage() {
                   </p>
                 )}
                 {!isUnlocked && (
-                  <p className="text-xs text-[#3a3a3a] mt-2">Non débloqué</p>
+                  <p className="text-xs text-[#3a3a3a] mt-2"><em>Non débloqué</em></p>
                 )}
               </Card>
             );
@@ -547,7 +547,7 @@ function SessionCard({ session, onDelete }: { session: CalisthenicsSession; onDe
 
         {session.skills_unlocked.length > 0 && (
           <div className="border border-violet-900/30 px-3 py-2">
-            <p className="text-xs text-violet-400 font-rajdhani font-semibold uppercase mb-1">Skills débloqués</p>
+            <p className="text-xs text-violet-400 font-rajdhani font-semibold uppercase mb-1"><strong>Skills</strong> débloqués</p>
             <div className="flex flex-wrap gap-1">
               {session.skills_unlocked.map((s, i) => (
                 <span key={i} className="text-xs bg-violet-900/20 text-violet-300 px-2 py-0.5 rounded">{s}</span>

@@ -253,7 +253,7 @@ export function WeightPage() {
         className="relative overflow-hidden bg-gradient-to-br from-green-950/60 via-[#0d0d0d] to-[#0a0a0a] border border-green-900/20 p-6 -mx-4 sm:mx-0"
       >
         <Scale className="absolute right-4 top-1/2 -translate-y-1/2 w-28 h-28 text-green-900/10 pointer-events-none" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-400/50 mb-2">Suivi corporel</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-400/50 mb-2"><strong>Suivi corporel</strong></p>
         <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none mb-3">
           POIDS
         </h1>
@@ -282,7 +282,7 @@ export function WeightPage() {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-[#4a4a4a]">Aucune pesée enregistrée</p>
+          <p className="text-sm text-[#4a4a4a]"><em>Aucune pesée</em> enregistrée</p>
         )}
       </motion.div>
 

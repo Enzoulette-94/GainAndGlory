@@ -69,7 +69,7 @@ export function ResetPasswordPage() {
             </h1>
           </div>
           <p className="text-[#a3a3a3] font-inter text-sm tracking-wide">
-            Nouveau mot de passe
+            Nouveau <strong>mot de passe</strong>
           </p>
         </div>
 
@@ -78,11 +78,11 @@ export function ResetPasswordPage() {
             <div className="text-center space-y-4">
               <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
               <p className="text-[#f5f5f5] font-medium">Mot de passe mis à jour !</p>
-              <p className="text-[#a3a3a3] text-sm">Redirection vers le dashboard...</p>
+              <p className="text-[#a3a3a3] text-sm">Redirection vers le <em>dashboard</em>...</p>
             </div>
           ) : !ready ? (
             <p className="text-[#a3a3a3] text-sm text-center">
-              Lien invalide ou expiré. Refais une demande depuis la page de connexion.
+              <strong>Lien invalide</strong> ou expiré. Refais une demande depuis la <em>page de connexion</em>.
             </p>
           ) : (
             <>

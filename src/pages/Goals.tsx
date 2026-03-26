@@ -493,15 +493,15 @@ export function GoalsPage() {
       >
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-[#c9a870]">{activeGoals.length}</p>
-          <p className="text-xs text-[#a3a3a3] mt-1">Actifs</p>
+          <p className="text-xs text-[#a3a3a3] mt-1"><strong>Actifs</strong></p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-emerald-600">{completedGoals.length}</p>
-          <p className="text-xs text-[#a3a3a3] mt-1">Complétés</p>
+          <p className="text-xs text-[#a3a3a3] mt-1"><strong>Complétés</strong></p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-[#6b6b6b]">{cancelledGoals.length}</p>
-          <p className="text-xs text-[#a3a3a3] mt-1">Annulés</p>
+          <p className="text-xs text-[#a3a3a3] mt-1"><em>Annulés</em></p>
         </Card>
       </motion.div>
 

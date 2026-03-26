@@ -232,13 +232,25 @@ export function SettingsPage() {
         </div>
         <div>
           <h1 className="text-2xl font-black text-white">Paramètres</h1>
-          <p className="text-[#a3a3a3] text-sm mt-0.5">Préférences et compte</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5"><em>Préférences</em> et compte</p>
         </div>
       </motion.div>
+
+      {/* Navigation ancres */}
+      <nav aria-label="Navigation intra-page" className="flex items-center gap-3 flex-wrap text-xs font-rajdhani font-bold uppercase tracking-widest">
+        <a href="#compte" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Compte</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#preferences" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Préférences</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#confidentialite" className="text-[#c9a870]/70 hover:text-[#c9a870] transition-colors">Confidentialité</a>
+        <span className="text-[#3a3a3a]">·</span>
+        <a href="#danger" className="text-[#c9a870]/70 hover:text-red-400 transition-colors">Zone de danger</a>
+      </nav>
 
       {/* ------------------------------------------------------------------ */}
       {/* Section Compte                                                       */}
       {/* ------------------------------------------------------------------ */}
+      <div id="compte">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -258,7 +270,7 @@ export function SettingsPage() {
                 className="relative w-16 h-16 border border-[#c9a870]/30 hover:border-[#c9a870]/70 bg-[#1c1c1c] flex items-center justify-center overflow-hidden group transition-colors flex-shrink-0"
               >
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
                 ) : (
                   <span className="font-rajdhani font-bold text-[#c9a870] text-xl">
                     {profile?.username?.[0]?.toUpperCase() ?? 'U'}
@@ -275,8 +287,8 @@ export function SettingsPage() {
               </button>
               <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
               <div>
-                <p className="text-sm font-medium text-[#d4d4d4]">Photo de profil</p>
-                <p className="text-xs text-[#6b6b6b] mt-0.5">JPG, PNG — max 2 Mo</p>
+                <p className="text-sm font-medium text-[#d4d4d4]">Photo de <strong>profil</strong></p>
+                <p className="text-xs text-[#6b6b6b] mt-0.5">JPG, PNG — <em>max 2 Mo</em></p>
                 {avatarError && <p className="text-xs text-red-400 mt-1">{avatarError}</p>}
               </div>
             </div>
@@ -320,10 +332,12 @@ export function SettingsPage() {
           </div>
         </Card>
       </motion.div>
+      </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Section Préférences sportives                                        */}
       {/* ------------------------------------------------------------------ */}
+      <div id="preferences">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -403,10 +417,12 @@ export function SettingsPage() {
           </div>
         </Card>
       </motion.div>
+      </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Section Confidentialité                                              */}
       {/* ------------------------------------------------------------------ */}
+      <div id="confidentialite">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -454,10 +470,12 @@ export function SettingsPage() {
           </div>
         </Card>
       </motion.div>
+      </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Section Danger                                                       */}
       {/* ------------------------------------------------------------------ */}
+      <div id="danger">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -483,6 +501,7 @@ export function SettingsPage() {
           </div>
         </Card>
       </motion.div>
+      </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Modal — Changer le pseudo                                            */}

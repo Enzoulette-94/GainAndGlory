@@ -105,7 +105,7 @@ export function UserProfilePage() {
             {/* Avatar */}
             <div className="flex-shrink-0 w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-[#c9a870]/40 bg-[#1c1c1c] flex items-center justify-center">
               {profile.avatar_url
-                ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                ? <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
                 : <span className="text-[#c9a870] font-bold text-2xl">{getInitials(profile.username)}</span>
               }
             </div>

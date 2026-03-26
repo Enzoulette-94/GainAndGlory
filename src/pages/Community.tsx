@@ -942,7 +942,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       {/* ═══ IDENTITY BANNER ═══ */}
       <div className="flex items-center gap-3 px-4 py-3" style={{ background: (typeConfig as any).headerGradient ?? 'linear-gradient(to right,#1a1a1a,#111111)' }}>
         {/* Avatar 40px */}
-        <Link to={`/profil/${item.user_id}`} className="flex-shrink-0 w-10 h-10 border-2 border-white/20 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-white/40 transition-colors">
+        <Link to={`/profil/${item.user_id}`} aria-label={`Voir le profil de ${username}`} className="flex-shrink-0 w-10 h-10 border-2 border-white/20 overflow-hidden bg-[#1c1c1c] flex items-center justify-center hover:border-white/40 transition-colors">
           {item.user?.avatar_url ? (
             <img src={item.user.avatar_url} alt={username} className="w-full h-full object-cover" />
           ) : (
@@ -1412,7 +1412,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         >
           <div className="flex-shrink-0 w-7 h-7 bg-[#252525] border border-white/10 flex items-center justify-center">
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt={myInitials} className="w-full h-full object-cover" />
+              <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
             ) : (
               <span className="text-[10px] font-bold font-rajdhani text-[#c9a870]">{myInitials}</span>
             )}
@@ -1637,8 +1637,8 @@ function FeedTab({ currentUserId }: FeedTabProps) {
     return (
       <Card className="p-10 text-center">
         <MessageCircle className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-        <p className="text-[#a3a3a3] font-medium">Le feed est vide pour l'instant.</p>
-        <p className="text-[#6b6b6b] text-sm mt-1">Les activités de la communauté apparaîtront ici.</p>
+        <p className="text-[#a3a3a3] font-medium">Le <strong>feed</strong> est vide pour l'instant.</p>
+        <p className="text-[#6b6b6b] text-sm mt-1">Les <em>activités de la communauté</em> apparaîtront ici.</p>
       </Card>
     );
   }
@@ -1674,7 +1674,8 @@ function FeedTab({ currentUserId }: FeedTabProps) {
       )}
 
       {groupedByDay.map(group => (
-        <div key={group.dateKey} className="space-y-3">
+        <section key={group.dateKey} className="space-y-3" aria-label={group.label}>
+          <div key={group.dateKey} className="space-y-3">
           {/* Séparateur de date */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-white/8" />
@@ -1687,17 +1688,19 @@ function FeedTab({ currentUserId }: FeedTabProps) {
           {/* Items du jour */}
           <div className="space-y-3">
             {group.items.map(item => (
+              <article key={item.id}>
               <FeedItemCard
-                key={item.id}
                 item={item}
                 currentUserId={currentUserId}
                 onLike={handleLike}
                 onCommentAdded={handleCommentAdded}
                 onCommentDeleted={handleCommentDeleted}
               />
+              </article>
             ))}
           </div>
-        </div>
+          </div>
+        </section>
       ))}
 
       {hasMore && (

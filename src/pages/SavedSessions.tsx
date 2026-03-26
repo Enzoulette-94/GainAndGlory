@@ -377,7 +377,7 @@ export function SavedSessionsPage() {
             {TABS.find(t => t.id === tab)!.icon}
           </div>
           <p className="text-sm text-[#6b6b6b]">Aucune séance {TABS.find(t => t.id === tab)!.label.toLowerCase()} enregistrée.</p>
-          <p className="text-xs text-[#4a4a4a] mt-1">Explore le feed Community et enregistre les séances qui t'inspirent.</p>
+          <p className="text-xs text-[#4a4a4a] mt-1">Explore le <strong>feed Community</strong> et enregistre les séances qui t'<em>inspirent</em>.</p>
         </Card>
       ) : (
         <AnimatePresence mode="popLayout">
