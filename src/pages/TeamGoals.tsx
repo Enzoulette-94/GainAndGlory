@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Swords, Plus, Trophy, Target, Calendar, Users, Zap, Dumbbell, Footprints, Repeat, Layers, Trash2 } from 'lucide-react';
+import { Swords, Plus, Trophy, Target, Calendar, Users, Zap, Dumbbell, Footprints, Repeat, Layers, Trash2, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
@@ -80,6 +80,16 @@ function typeBadgeClass(type: ChallengeType): string {
   }
 }
 
+function typeTextColor(type: ChallengeType): string {
+  switch (type) {
+    case 'distance':    return 'text-blue-500 border-blue-800/40 hover:border-blue-700/60';
+    case 'tonnage':     return 'text-red-400 border-red-800/40 hover:border-red-700/60';
+    case 'sessions':    return 'text-green-500 border-green-800/40 hover:border-green-700/60';
+    case 'repetitions': return 'text-purple-400 border-purple-800/40 hover:border-purple-700/60';
+    case 'mixte':       return 'text-[#c9a870] border-[#c9a870]/30 hover:border-[#c9a870]/50';
+  }
+}
+
 function typeProgressColor(type: ChallengeType): string {
   switch (type) {
     case 'distance':    return 'bg-blue-800';
@@ -140,12 +150,13 @@ interface ChallengeCardProps {
   userId: string | undefined;
   onJoin: (id: string) => Promise<void>;
   onContribute: (challenge: CommunityChallenge) => void;
+  onShowContributions: (challenge: CommunityChallenge) => void;
   joiningId: string | null;
   showMyContribution?: boolean;
 }
 
 function ChallengeCard({
-  challenge, userId, onJoin, onContribute, joiningId, showMyContribution = false,
+  challenge, userId, onJoin, onContribute, onShowContributions, joiningId, showMyContribution = false,
 }: ChallengeCardProps) {
   const total = calcTotal(challenge);
   const progress = Math.min((total / challenge.target_value) * 100, 100);
@@ -265,18 +276,27 @@ function ChallengeCard({
         )}
 
         {/* Actions */}
-        <div className="flex justify-end">
-          {!isParticipant ? (
-            <Button size="sm" variant="outline" icon={<Plus className="w-3.5 h-3.5" />}
-              loading={isJoining} onClick={() => onJoin(challenge.id)} disabled={days === 0}>
-              Rejoindre
-            </Button>
-          ) : (
-            <Button size="sm" variant="secondary" icon={<Plus className="w-3.5 h-3.5" />}
-              onClick={() => onContribute(challenge)} disabled={days === 0}>
-              + Ajouter
+        <div className="flex items-center justify-between gap-2">
+          {participants > 0 && (
+            <Button size="sm" variant="ghost" icon={<BarChart2 className="w-3.5 h-3.5" />}
+              onClick={() => onShowContributions(challenge)}
+              className={`border ${typeTextColor(challenge.type)}`}>
+              Qui charbonne le plus ?
             </Button>
           )}
+          <div className="ml-auto">
+            {!isParticipant ? (
+              <Button size="sm" variant="outline" icon={<Plus className="w-3.5 h-3.5" />}
+                loading={isJoining} onClick={() => onJoin(challenge.id)} disabled={days === 0}>
+                Rejoindre
+              </Button>
+            ) : (
+              <Button size="sm" variant="secondary" icon={<Plus className="w-3.5 h-3.5" />}
+                onClick={() => onContribute(challenge)} disabled={days === 0}>
+                + Ajouter
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
     </motion.div>
@@ -357,6 +377,94 @@ function ContributeModal({ challenge, userId, onClose, onSaved }: {
           <Button type="submit" loading={saving} className="flex-1">Confirmer</Button>
         </div>
       </form>
+    </Modal>
+  );
+}
+
+// ─────────────────────────────────────────────
+// ContributionModal
+// ─────────────────────────────────────────────
+
+function ContributionModal({ challenge, userId, onClose }: {
+  challenge: CommunityChallenge | null;
+  userId: string | undefined;
+  onClose: () => void;
+}) {
+  if (!challenge) return null;
+
+  const participants = challenge.participations ?? [];
+  const total = calcTotal(challenge);
+  const sorted = [...participants].sort((a, b) => (b.contribution ?? 0) - (a.contribution ?? 0));
+
+  return (
+    <Modal isOpen={!!challenge} onClose={onClose} title="Répartition des contributions" size="sm">
+      <div className="p-5 space-y-4">
+        <div>
+          <p className="text-sm text-[#a3a3a3]">
+            Objectif : <span className="font-medium text-[#e5e5e5]">{challenge.title}</span>
+          </p>
+          <p className="text-xs text-[#6b6b6b] mt-1">
+            Total collectif :{' '}
+            <span className="text-[#c9a870] font-semibold">
+              {total.toLocaleString('fr-FR')} {challenge.unit}
+            </span>
+            {' '}· {sorted.length} participant{sorted.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+
+        {sorted.length === 0 ? (
+          <p className="text-sm text-[#6b6b6b] text-center py-6">Aucune contribution pour le moment.</p>
+        ) : (
+          <div className="space-y-2">
+            {sorted.map((p, i) => {
+              const pct = total > 0 ? Math.round(((p.contribution ?? 0) / total) * 100) : 0;
+              const isMe = p.user_id === userId;
+              return (
+                <div
+                  key={p.user_id}
+                  className={`space-y-1.5 px-3 py-2.5 ${isMe ? 'border border-[#c9a870]/25 bg-[#c9a870]/5' : 'border border-white/5 bg-white/2'}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs text-[#4a4a4a] font-rajdhani w-4 shrink-0 text-center">
+                        {i + 1}
+                      </span>
+                      {p.user?.avatar_url ? (
+                        <img src={p.user.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[10px] text-[#6b6b6b] font-bold shrink-0">
+                          {(p.user?.username ?? '?')[0].toUpperCase()}
+                        </span>
+                      )}
+                      <span className={`text-sm font-medium truncate ${isMe ? 'text-[#c9a870]' : 'text-[#d4d4d4]'}`}>
+                        {p.user?.username ?? '—'}{isMe ? <span className="text-[#8a7050] text-xs ml-1">(moi)</span> : null}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1 shrink-0">
+                      <span className={`text-sm font-rajdhani font-semibold ${isMe ? 'text-[#c9a870]' : 'text-[#e5e5e5]'}`}>
+                        {(p.contribution ?? 0).toLocaleString('fr-FR')}
+                      </span>
+                      <span className="text-xs text-[#5a5a5a]">{challenge.unit}</span>
+                      <span className="text-xs text-[#5a5a5a] ml-1">· {pct}%</span>
+                    </div>
+                  </div>
+                  {/* Barre de % */}
+                  <div className="h-1.5 bg-[#1a1a1a] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.5, ease: 'easeOut', delay: i * 0.05 }}
+                      className={`h-full ${isMe ? 'bg-[#c9a870]' : 'bg-[#3a3a3a]'}`}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <Button variant="ghost" onClick={onClose} className="w-full">Fermer</Button>
+      </div>
     </Modal>
   );
 }
@@ -636,6 +744,7 @@ export function TeamGoalsPage() {
   const [error, setError] = useState('');
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [contributeTarget, setContributeTarget] = useState<CommunityChallenge | null>(null);
+  const [contributionTarget, setContributionTarget] = useState<CommunityChallenge | null>(null);
 
   const fetchChallenges = useCallback(async () => {
     setLoading(true);
@@ -799,8 +908,8 @@ export function TeamGoalsPage() {
             {!loading && !error && challenges.length === 0 && (
               <Card className="p-10 text-center">
                 <Swords className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] font-medium">Aucun objectif actif pour le moment.</p>
-                <p className="text-[#6b6b6b] text-sm mt-1">Sois le premier à en créer un !</p>
+                <p className="text-[#a3a3a3] font-medium"><em>Aucun objectif actif</em> pour le moment.</p>
+                <p className="text-[#6b6b6b] text-sm mt-1">Sois le <strong>premier</strong> à en créer un !</p>
                 <Button variant="outline" size="sm" onClick={() => setTab('create')} className="mt-4"
                   icon={<Plus className="w-3.5 h-3.5" />}>
                   Créer un objectif
@@ -809,7 +918,8 @@ export function TeamGoalsPage() {
             )}
             {!loading && !error && challenges.map(challenge => (
               <ChallengeCard key={challenge.id} challenge={challenge} userId={profile?.id}
-                onJoin={handleJoin} onContribute={c => setContributeTarget(c)} joiningId={joiningId} />
+                onJoin={handleJoin} onContribute={c => setContributeTarget(c)}
+                onShowContributions={c => setContributionTarget(c)} joiningId={joiningId} />
             ))}
           </motion.div>
         )}
@@ -821,14 +931,14 @@ export function TeamGoalsPage() {
             {loading && <Loader text="Chargement..." />}
             {!loading && !profile && (
               <Card className="p-8 text-center">
-                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour voir tes contributions.</p>
+                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour voir tes <strong>contributions</strong>.</p>
               </Card>
             )}
             {!loading && profile && myChallenges.length === 0 && (
               <Card className="p-10 text-center">
                 <Target className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] font-medium">Tu ne participes à aucun objectif.</p>
-                <p className="text-[#6b6b6b] text-sm mt-1">Rejoins un objectif actif pour commencer.</p>
+                <p className="text-[#a3a3a3] font-medium">Tu ne participes à <em>aucun objectif</em>.</p>
+                <p className="text-[#6b6b6b] text-sm mt-1">Rejoins un <strong>objectif actif</strong> pour commencer.</p>
                 <Button variant="outline" size="sm" onClick={() => setTab('active')} className="mt-4">
                   Voir les objectifs
                 </Button>
@@ -837,6 +947,7 @@ export function TeamGoalsPage() {
             {!loading && profile && myChallenges.map(challenge => (
               <ChallengeCard key={challenge.id} challenge={challenge} userId={profile?.id}
                 onJoin={handleJoin} onContribute={c => setContributeTarget(c)}
+                onShowContributions={c => setContributionTarget(c)}
                 joiningId={joiningId} showMyContribution />
             ))}
           </motion.div>
@@ -849,7 +960,7 @@ export function TeamGoalsPage() {
             {profile
               ? <CreateForm userId={profile.id} onCreated={fetchChallenges} />
               : <Card className="p-8 text-center">
-                  <p className="text-[#a3a3a3] text-sm">Connecte-toi pour créer un objectif.</p>
+                  <p className="text-[#a3a3a3] text-sm">Connecte-toi pour <strong>créer</strong> un objectif.</p>
                 </Card>
             }
           </motion.div>
@@ -861,6 +972,11 @@ export function TeamGoalsPage() {
         userId={profile?.id}
         onClose={() => setContributeTarget(null)}
         onSaved={fetchChallenges}
+      />
+      <ContributionModal
+        challenge={contributionTarget}
+        userId={profile?.id}
+        onClose={() => setContributionTarget(null)}
       />
     </div>
   );
