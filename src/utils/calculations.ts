@@ -130,8 +130,9 @@ export function calcSpeedKmH(distanceKm: number, durationSeconds: number): numbe
 /** Formate une allure en min/km → "5:42 /km" */
 export function formatPace(paceMinPerKm: number): string {
   if (!paceMinPerKm || paceMinPerKm <= 0) return '--:--';
-  const minutes = Math.floor(paceMinPerKm);
-  const seconds = Math.round((paceMinPerKm - minutes) * 60);
+  let minutes = Math.floor(paceMinPerKm);
+  let seconds = Math.round((paceMinPerKm - minutes) * 60);
+  if (seconds === 60) { minutes += 1; seconds = 0; }
   return `${minutes}:${seconds.toString().padStart(2, '0')} /km`;
 }
 

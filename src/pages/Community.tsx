@@ -442,36 +442,43 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
         })()}
 
         {/* ── COURSE ── */}
-        {!loading && data && !isWorkout && !isCalisthenics && (
+        {!loading && !isWorkout && !isCalisthenics && !isCrossfit && (() => {
+          const run = data ?? null;
+          const distance = run?.distance ?? (c as any).distance ?? null;
+          const duration = run?.duration ?? (c as any).duration ?? null;
+          const pace = run?.pace_min_per_km ?? (c as any).pace ?? null;
+          const runType = run?.run_type ?? (c as any).run_type ?? null;
+          if (!distance && !duration) return null;
+          return (
           <>
-            {data.name && (
+            {run?.name && (
               <h3 className="font-rajdhani font-bold text-lg text-blue-400 tracking-wide uppercase border-b border-white/5 pb-2">
-                {data.name}
+                {run.name}
               </h3>
             )}
             <div className="flex flex-wrap gap-3 text-sm">
-              <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              {data.run_type && (
+              <span className="text-[#a3a3a3]">{formatDate(run?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              {runType && (
                 <span className="text-xs border border-blue-800/50 text-blue-400 px-2 py-0.5 font-rajdhani font-semibold uppercase">
-                  {runTypeLabel(data.run_type)}
+                  {runTypeLabel(runType)}
                 </span>
               )}
-              {(() => { const fb = feedbackLabel(data.feedback); return fb ? (
+              {(() => { const fb = feedbackLabel(run?.feedback ?? (c as any).feedback ?? null); return fb ? (
                 <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
               ) : null; })()}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { icon: <Footprints className="w-4 h-4 text-blue-400" />, label: 'Distance', value: formatDistance(data.distance) },
-                { icon: <Star className="w-4 h-4 text-[#c9a870]" />, label: 'Durée', value: formatDuration(data.duration) },
-                { icon: <TrendingUp className="w-4 h-4 text-green-500" />, label: 'Allure', value: data.pace_min_per_km ? formatPace(data.pace_min_per_km) : '—' },
-                { icon: <Flame className="w-4 h-4 text-red-400" />, label: 'FC moy.', value: data.avg_heart_rate ? `${data.avg_heart_rate} bpm` : '—' },
-                { icon: <Flame className="w-4 h-4 text-red-600" />, label: 'FC max.', value: data.max_heart_rate ? `${data.max_heart_rate} bpm` : '—' },
-                { icon: <Wind className="w-4 h-4 text-[#a3a3a3]" />, label: 'Dénivelé +', value: data.elevation_gain != null ? `${data.elevation_gain} m` : '—' },
-                { icon: <Wind className="w-4 h-4 text-[#6b6b6b]" />, label: 'Dénivelé −', value: data.elevation_loss != null ? `${data.elevation_loss} m` : '—' },
-                { icon: <Thermometer className="w-4 h-4 text-orange-400" />, label: 'Météo', value: data.weather_temp != null ? `${data.weather_temp}°C${data.weather_condition ? ` · ${weatherLabel(data.weather_condition)}` : ''}` : weatherLabel(data.weather_condition) ?? '—' },
-              ].map((stat, i) => (
+                { icon: <Footprints className="w-4 h-4 text-blue-400" />, label: 'Distance', value: distance != null ? formatDistance(distance) : '—' },
+                { icon: <Star className="w-4 h-4 text-[#c9a870]" />, label: 'Durée', value: duration != null ? formatDuration(duration) : '—' },
+                { icon: <TrendingUp className="w-4 h-4 text-green-500" />, label: 'Allure', value: pace ? formatPace(pace) : '—' },
+                { icon: <Flame className="w-4 h-4 text-red-400" />, label: 'FC moy.', value: run?.avg_heart_rate ? `${run.avg_heart_rate} bpm` : '—' },
+                { icon: <Flame className="w-4 h-4 text-red-600" />, label: 'FC max.', value: run?.max_heart_rate ? `${run.max_heart_rate} bpm` : '—' },
+                { icon: <Wind className="w-4 h-4 text-[#a3a3a3]" />, label: 'Dénivelé +', value: run?.elevation_gain != null ? `${run.elevation_gain} m` : '—' },
+                { icon: <Wind className="w-4 h-4 text-[#6b6b6b]" />, label: 'Dénivelé −', value: run?.elevation_loss != null ? `${run.elevation_loss} m` : '—' },
+                { icon: <Thermometer className="w-4 h-4 text-orange-400" />, label: 'Météo', value: run?.weather_temp != null ? `${run.weather_temp}°C${run.weather_condition ? ` · ${weatherLabel(run.weather_condition)}` : ''}` : weatherLabel(run?.weather_condition ?? null) ?? '—' },
+              ].filter(s => s.value !== '—').map((stat, i) => (
                 <div key={i} className="flex items-center gap-2 border border-white/5 px-3 py-2">
                   {stat.icon}
                   <div>
@@ -482,15 +489,16 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
               ))}
             </div>
 
-            {data.shoe && (
+            {run?.shoe && (
               <div className="flex items-center gap-2 text-sm text-[#a3a3a3] border border-white/5 px-3 py-2">
                 <PersonStanding className="w-4 h-4 text-[#c9a870]" />
-                <span>Chaussure : <span className="text-[#e5e5e5] font-medium">{[data.shoe.brand, data.shoe.model].filter(Boolean).join(' ')}</span></span>
+                <span>Chaussure : <span className="text-[#e5e5e5] font-medium">{[run.shoe.brand, run.shoe.model].filter(Boolean).join(' ')}</span></span>
               </div>
             )}
-            {data.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-blue-800/50 pl-3">{data.notes}</p>}
+            {run?.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-blue-800/50 pl-3">{run.notes}</p>}
           </>
-        )}
+          );
+        })()}
 
         {/* ── CALISTHÉNIE ── */}
         {!loading && isCalisthenics && (() => {
