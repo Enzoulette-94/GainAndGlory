@@ -7,8 +7,6 @@ import {
   Clock,
   Trophy,
   BarChart2,
-  List,
-  ChevronDown,
   Activity,
   Pencil,
   Trash2,
@@ -52,10 +50,6 @@ import type { RunningSession } from '../types/models';
 import type { Feedback, RunType } from '../types/enums';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type Tab = 'sorties' | 'graphiques' | 'records';
-type RunTypeFilter = 'tous' | 'fractionne' | 'endurance' | 'tempo';
-type PeriodFilter = 'semaine' | 'mois' | 'tout';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +102,22 @@ interface HrTooltipProps {
   payload?: Array<{ value: number; payload: { date: string } }>;
 }
 
+interface WeeklyPaceTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+}
+
+function WeeklyPaceTooltip({ active, payload, label }: WeeklyPaceTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+  return (
+    <div className="bg-[#1c1c1c] border border-white/5 rounded px-3 py-2 text-xs shadow-lg">
+      <p className="text-[#a3a3a3] mb-0.5">{label}</p>
+      <p className="text-blue-500 font-semibold">{formatPace(payload[0].value)}</p>
+    </div>
+  );
+}
+
 function HrTooltip({ active, payload }: HrTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const raw = payload[0];
@@ -134,14 +144,6 @@ export function RunningPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Navigation
-  const [activeTab, setActiveTab] = useState<Tab>('sorties');
-
-  // Filtres onglet Sorties
-  const [typeFilter, setTypeFilter] = useState<RunTypeFilter>('tous');
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('tout');
-  const [visibleCount, setVisibleCount] = useState(10);
-
   function loadData(userId: string) {
     setLoading(true);
     setError(null);
@@ -166,34 +168,6 @@ export function RunningPage() {
     if (!profile) return;
     loadData(profile.id);
   }, [profile]);
-
-  // ── Sorties filtrées ────────────────────────────────────────────────────────
-
-  const filteredSessions = useMemo(() => {
-    let result = [...allSessions];
-
-    // Filtre type
-    if (typeFilter !== 'tous') {
-      result = result.filter((s) => s.run_type === typeFilter);
-    }
-
-    // Filtre période
-    if (periodFilter !== 'tout') {
-      const now = new Date();
-      if (periodFilter === 'semaine') {
-        const weekStart = getWeekStart(now);
-        result = result.filter((s) => new Date(s.date) >= weekStart);
-      } else if (periodFilter === 'mois') {
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        result = result.filter((s) => new Date(s.date) >= monthStart);
-      }
-    }
-
-    return result;
-  }, [allSessions, typeFilter, periodFilter]);
-
-  const visibleSessions = filteredSessions.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredSessions.length;
 
   // ── Données graphiques ──────────────────────────────────────────────────────
 
@@ -223,37 +197,60 @@ export function RunningPage() {
     return Object.entries(weeks).map(([, v]) => v);
   }, [allSessions]);
 
-  const paceEvolutionData = useMemo(() => {
-    return allSessions
-      .filter((s) => s.pace_min_per_km && s.pace_min_per_km > 0)
-      .slice()
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((s) => ({ date: s.date, pace: s.pace_min_per_km as number }));
+  const weeklySessionsData = useMemo(() => {
+    const weeks: Record<string, { label: string; count: number }> = {};
+    const now = new Date();
+    for (let i = 7; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * 7);
+      const ws = getWeekStart(d);
+      const key = ws.toISOString().slice(0, 10);
+      if (!weeks[key]) weeks[key] = { label: getWeekLabel(ws), count: 0 };
+    }
+    allSessions.forEach((s) => {
+      const ws = getWeekStart(new Date(s.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
+    return Object.entries(weeks).map(([, v]) => v);
   }, [allSessions]);
 
-  const hrEvolutionData = useMemo(() => {
-    return allSessions
-      .filter((s) => s.avg_heart_rate && s.avg_heart_rate > 0)
-      .slice()
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((s) => ({ date: s.date, hr: s.avg_heart_rate as number }));
+  const weeklyPaceData = useMemo(() => {
+    const weeks: Record<string, { label: string; paceSum: number; count: number }> = {};
+    const now = new Date();
+    for (let i = 7; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * 7);
+      const ws = getWeekStart(d);
+      const key = ws.toISOString().slice(0, 10);
+      if (!weeks[key]) weeks[key] = { label: getWeekLabel(ws), paceSum: 0, count: 0 };
+    }
+    allSessions.forEach((s) => {
+      if (!s.pace_min_per_km || s.pace_min_per_km <= 0) return;
+      const ws = getWeekStart(new Date(s.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) { weeks[key].paceSum += s.pace_min_per_km; weeks[key].count += 1; }
+    });
+    return Object.entries(weeks).map(([, v]) => ({
+      label: v.label,
+      pace: v.count > 0 ? parseFloat((v.paceSum / v.count).toFixed(3)) : null,
+    }));
   }, [allSessions]);
-
-  const hasHrData = hrEvolutionData.length > 0;
-
-  // ── Formatage allure pour axe Y ─────────────────────────────────────────────
 
   const formatPaceAxis = (value: number) => {
     if (!value) return '';
     const minutes = Math.floor(value);
     const seconds = Math.round((value - minutes) * 60);
+    if (seconds === 60) return `${minutes + 1}:00`;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const recentSessions = allSessions.slice(0, 7);
+
   const groupedSessions = useMemo(() => {
-    const groups: { month: string; items: typeof visibleSessions }[] = [];
+    const groups: { month: string; items: typeof recentSessions }[] = [];
     const idx: Record<string, number> = {};
-    for (const s of visibleSessions) {
+    for (const s of recentSessions) {
       const key = new Date(s.date)
         .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
         .toUpperCase();
@@ -261,17 +258,9 @@ export function RunningPage() {
       groups[idx[key]].items.push(s);
     }
     return groups;
-  }, [visibleSessions]);
+  }, [recentSessions]);
 
   if (!profile) return null;
-
-  // ── Onglets config ──────────────────────────────────────────────────────────
-
-  const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'sorties', label: 'Sorties', icon: <List className="w-3.5 h-3.5" /> },
-    { key: 'graphiques', label: 'Graphiques', icon: <BarChart2 className="w-3.5 h-3.5" /> },
-    { key: 'records', label: 'Records', icon: <Trophy className="w-3.5 h-3.5" /> },
-  ];
 
   return (
     <div className="space-y-6">
@@ -353,30 +342,6 @@ export function RunningPage() {
         </Card>
       </motion.div>
 
-      {/* ── Onglets ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <div className="flex gap-1 p-1 bg-[#111111] border border-white/5 rounded">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded text-xs font-semibold transition-all ${
-                activeTab === tab.key
-                  ? 'bg-blue-700 text-white shadow'
-                  : 'text-[#a3a3a3] hover:text-[#e5e5e5] hover:bg-[#1c1c1c]'
-              }`}
-            >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
       {loading && <Loader text="Chargement des courses..." />}
 
       {error && (
@@ -386,278 +351,178 @@ export function RunningPage() {
       )}
 
       {!loading && !error && (
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {/* ════════════════════════════════════════════════
-              ONGLET SORTIES
-          ════════════════════════════════════════════════ */}
-          {activeTab === 'sorties' && (
-            <div className="space-y-4">
-              {/* Filtres */}
-              <div className="flex gap-2">
-                <select
-                  value={typeFilter}
-                  onChange={e => { setTypeFilter(e.target.value as RunTypeFilter); setVisibleCount(10); }}
-                  className="flex-1 bg-[#111] border border-white/10 text-[#d4d4d4] text-xs px-3 py-2 font-rajdhani font-semibold uppercase tracking-wide focus:outline-none focus:border-blue-700/60"
-                >
-                  <option value="tous">Tous les types</option>
-                  <option value="fractionne">Fractionné</option>
-                  <option value="endurance">Endurance</option>
-                  <option value="tempo">Tempo</option>
-                </select>
-                <select
-                  value={periodFilter}
-                  onChange={e => { setPeriodFilter(e.target.value as PeriodFilter); setVisibleCount(10); }}
-                  className="flex-1 bg-[#111] border border-white/10 text-[#d4d4d4] text-xs px-3 py-2 font-rajdhani font-semibold uppercase tracking-wide focus:outline-none focus:border-blue-700/60"
-                >
-                  <option value="tout">Toute la période</option>
-                  <option value="semaine">Cette semaine</option>
-                  <option value="mois">Ce mois</option>
-                </select>
-              </div>
+        <>
+          {/* ── Section Graphiques ────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+            <div className="w-1 h-6 bg-blue-600 flex-shrink-0" />
+            <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Graphiques</h2>
+          </div>
 
-              {/* Résultats */}
-              {filteredSessions.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <PersonStanding className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                  <p className="text-[#a3a3a3] text-sm mb-4">
-                    Aucune course pour ces filtres.
-                  </p>
-                  <Link to="/running/new">
-                    <Button
-                      icon={<Plus className="w-4 h-4" />}
-                      className="bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
-                    >
-                      Première course
-                    </Button>
-                  </Link>
-                </Card>
-              ) : (
-                <div className="space-y-6">
-                  {groupedSessions.map(({ month, items }) => (
-                    <div key={month} className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
-                        <div className="flex-1 h-px bg-white/5" />
-                        <span className="text-[10px] text-[#2a2a2a]">{items.length} sortie{items.length > 1 ? 's' : ''}</span>
-                      </div>
-                      {items.map(session => (
-                        <RunSessionCard
-                          key={session.id}
-                          session={session}
-                          onUpdated={() => profile && loadData(profile.id)}
-                          onDeleted={() => profile && loadData(profile.id)}
-                        />
-                      ))}
-                    </div>
-                  ))}
-
-                  {/* Charger plus */}
-                  {hasMore && (
-                    <button
-                      onClick={() => setVisibleCount((c) => c + 10)}
-                      className="w-full flex items-center justify-center gap-2 py-3 text-sm text-[#a3a3a3] hover:text-blue-500 bg-[#0d0d0d]/40 border border-white/5 rounded transition-all hover:border-blue-700/30"
-                    >
-                      <ChevronDown className="w-4 h-4" />
-                      Charger plus ({filteredSessions.length - visibleCount} restantes)
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ════════════════════════════════════════════════
-              ONGLET GRAPHIQUES
-          ════════════════════════════════════════════════ */}
-          {activeTab === 'graphiques' && (
-            <div className="space-y-5">
+          {/* ── Graphiques côte à côte ─────────────────────────────────────── */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="p-3">
+              <p className="text-xs font-semibold text-[#d4d4d4] mb-3">Distance / semaine (km)</p>
               {allSessions.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <BarChart2 className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                  <p className="text-[#a3a3a3] text-sm">
-                    Pas encore assez de données pour afficher les graphiques.
-                  </p>
-                </Card>
+                <p className="text-xs text-[#6b6b6b] text-center py-6">Pas de données</p>
               ) : (
-                <>
-                  {/* Distance par semaine */}
-                  <Card className="p-4">
-                    <p className="text-sm font-semibold text-[#d4d4d4] mb-4">
-                      Distance par semaine (km)
-                    </p>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart
-                        data={weeklyDistanceData}
-                        margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="#1e293b"
-                          vertical={false}
-                        />
-                        <XAxis
-                          dataKey="label"
-                          tick={{ fill: '#6b6b6b', fontSize: 10 }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          tick={{ fill: '#6b6b6b', fontSize: 10 }}
-                          axisLine={false}
-                          tickLine={false}
-                          tickFormatter={(v: number) => `${v}`}
-                        />
-                        <Tooltip content={<DistTooltip />} cursor={{ fill: '#1e293b' }} />
-                        <Bar
-                          dataKey="distance"
-                          fill="#1d4ed8"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-
-                  {/* Évolution de l'allure */}
-                  {paceEvolutionData.length >= 2 && (
-                    <Card className="p-4">
-                      <p className="text-sm font-semibold text-[#d4d4d4] mb-1">
-                        Évolution de l'allure moyenne
-                      </p>
-                      <p className="text-xs text-[#6b6b6b] mb-4">
-                        Plus l'allure est basse, meilleure elle est
-                      </p>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <LineChart
-                          data={paceEvolutionData}
-                          margin={{ top: 4, right: 4, left: -10, bottom: 0 }}
-                        >
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke="#1e293b"
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="date"
-                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={(d: string) =>
-                              new Date(d).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'short',
-                              })
-                            }
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis
-                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={formatPaceAxis}
-                            reversed
-                          />
-                          <Tooltip content={<PaceTooltip />} />
-                          <Line
-                            type="monotone"
-                            dataKey="pace"
-                            stroke="#1d4ed8"
-                            strokeWidth={2}
-                            dot={{ fill: '#1d4ed8', r: 3, strokeWidth: 0 }}
-                            activeDot={{ r: 5, fill: '#60a5fa' }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </Card>
-                  )}
-
-                  {/* FC moyenne */}
-                  {hasHrData && hrEvolutionData.length >= 2 && (
-                    <Card className="p-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Activity className="w-4 h-4 text-rose-400" />
-                        <p className="text-sm font-semibold text-[#d4d4d4]">
-                          Fréquence cardiaque moyenne (bpm)
-                        </p>
-                      </div>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <LineChart
-                          data={hrEvolutionData}
-                          margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
-                        >
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            stroke="#1e293b"
-                            vertical={false}
-                          />
-                          <XAxis
-                            dataKey="date"
-                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={(d: string) =>
-                              new Date(d).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'short',
-                              })
-                            }
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis
-                            tick={{ fill: '#6b6b6b', fontSize: 10 }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <Tooltip content={<HrTooltip />} />
-                          <Line
-                            type="monotone"
-                            dataKey="hr"
-                            stroke="#f43f5e"
-                            strokeWidth={2}
-                            dot={{ fill: '#f43f5e', r: 3, strokeWidth: 0 }}
-                            activeDot={{ r: 5, fill: '#fb7185' }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </Card>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {/* ════════════════════════════════════════════════
-              ONGLET RECORDS
-          ════════════════════════════════════════════════ */}
-          {activeTab === 'records' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Trophy className="w-4 h-4 text-blue-500" />
-                <h2 className="text-sm font-semibold text-[#a3a3a3] uppercase tracking-wider">
-                  Records personnels
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                {RUNNING_RECORD_DISTANCES.map(({ label, km }) => {
-                  const record = records[km];
-                  return (
-                    <RecordCard
-                      key={km}
-                      label={label}
-                      km={km}
-                      record={record ?? null}
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart
+                    data={weeklyDistanceData}
+                    margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#1e293b"
+                      vertical={false}
                     />
-                  );
-                })}
-              </div>
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: '#6b6b6b', fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis
+                      tick={{ fill: '#6b6b6b', fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => `${v}`}
+                    />
+                    <Tooltip content={<DistTooltip />} cursor={{ fill: '#1e293b' }} />
+                    <Bar
+                      dataKey="distance"
+                      fill="#1d4ed8"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </Card>
+
+            <Card className="p-3">
+              <p className="text-xs font-semibold text-[#d4d4d4] mb-1">Allure moy. / semaine</p>
+              <p className="text-[10px] text-[#6b6b6b] mb-2">Basse = meilleure</p>
+              {!weeklyPaceData.some(d => d.pace !== null) ? (
+                <p className="text-xs text-[#6b6b6b] text-center py-6">Pas de données</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={160}>
+                  <LineChart data={weeklyPaceData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: '#6b6b6b', fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis
+                      tick={{ fill: '#6b6b6b', fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={formatPaceAxis}
+                      reversed
+                    />
+                    <Tooltip content={<WeeklyPaceTooltip />} />
+                    <Line
+                      type="monotone"
+                      dataKey="pace"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={{ fill: '#3b82f6', r: 3, strokeWidth: 0 }}
+                      activeDot={{ r: 5, fill: '#60a5fa' }}
+                      connectNulls={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </Card>
+          </div>
+
+          {/* ── Graphique Séances par semaine ──────────────────────────────── */}
+          <Card className="p-3">
+            <p className="text-xs font-semibold text-[#d4d4d4] mb-3">Sorties / semaine</p>
+            {weeklySessionsData.every((d) => d.count === 0) ? (
+              <p className="text-xs text-[#6b6b6b] text-center py-4">Pas de données</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={120}>
+                <BarChart data={weeklySessionsData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fill: '#6b6b6b', fontSize: 9 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fill: '#6b6b6b', fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1c1c1c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', fontSize: '12px', color: '#d4d4d4' }}
+                    cursor={{ fill: '#1e293b' }}
+                    formatter={(v: number | undefined) => [`${v ?? 0}`, 'Sorties'] as [string, string]}
+                  />
+                  <Bar dataKey="count" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </Card>
+
+          {/* ── Section Sorties récentes ──────────────────────────────────── */}
+          <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+            <div className="w-1 h-6 bg-blue-600 flex-shrink-0" />
+            <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Sorties récentes</h2>
+          </div>
+
+          {allSessions.length === 0 ? (
+            <Card className="p-8 text-center">
+              <PersonStanding className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+              <p className="text-[#a3a3a3] text-sm mb-4">
+                Aucune course enregistrée pour l&apos;instant.
+              </p>
+              <Link to="/running/new">
+                <Button
+                  icon={<Plus className="w-4 h-4" />}
+                  className="bg-transparent border border-blue-800/60 text-blue-500 hover:bg-blue-900/10 hover:border-blue-700"
+                >
+                  Première course
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {groupedSessions.map(({ month, items }) => (
+                <div key={month} className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                    <span className="text-[10px] text-[#2a2a2a]">{items.length} sortie{items.length > 1 ? 's' : ''}</span>
+                  </div>
+                  {items.map(session => (
+                    <RunSessionCard
+                      key={session.id}
+                      session={session}
+                      onUpdated={() => profile && loadData(profile.id)}
+                      onDeleted={() => profile && loadData(profile.id)}
+                    />
+                  ))}
+                </div>
+              ))}
             </div>
           )}
-        </motion.div>
+
+          {/* ── Section Records ───────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+            <div className="w-1 h-6 bg-blue-600 flex-shrink-0" />
+            <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Records</h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {RUNNING_RECORD_DISTANCES.map(({ label, km }) => {
+              const record = records[km];
+              return (
+                <RecordCard
+                  key={km}
+                  label={label}
+                  km={km}
+                  record={record ?? null}
+                />
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Flame, Plus, BarChart2, Trophy, Trash2, ChevronDown, Copy, Eye } from 'lucide-react';
+import { Flame, Plus, BarChart2, Trophy, Trash2, Copy, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
   BarChart, Bar,
@@ -13,15 +13,11 @@ import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
-import { formatRelativeTime, formatDate, getLevelProgress } from '../utils/calculations';
+import { formatRelativeTime, formatDate, getLevelProgress, getWeekStart } from '../utils/calculations';
 import { CROSSFIT_WOD_TYPES, FEEDBACK_LABELS, FEEDBACK_COLORS } from '../utils/constants';
 import type { CrossfitSession } from '../types/models';
-import type { Feedback } from '../types/enums';
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
-
-type ActiveTab = 'sessions' | 'charts' | 'records';
-type FeedbackFilter = 'all' | Feedback;
 
 // ─── Recharts dark mode ───────────────────────────────────────────────────────
 
@@ -35,8 +31,6 @@ const CHART_TOOLTIP_STYLE = {
   color: '#d4d4d4',
 };
 
-const SESSIONS_PER_PAGE = 10;
-
 function wodLabel(type: string): string {
   return CROSSFIT_WOD_TYPES.find(w => w.id === type)?.label ?? type.toUpperCase();
 }
@@ -49,11 +43,8 @@ export function CrossfitPage() {
   const [allSessions, setAllSessions] = useState<CrossfitSession[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>('sessions');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [feedbackFilter, setFeedbackFilter] = useState<FeedbackFilter>('all');
-  const [displayedCount, setDisplayedCount] = useState(SESSIONS_PER_PAGE);
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; session: CrossfitSession | null }>({ open: false, session: null });
   const [deleting, setDeleting] = useState(false);
 
@@ -80,12 +71,6 @@ export function CrossfitPage() {
       setLoading(false);
     }
   }
-
-  const filteredSessions = useMemo(() => {
-    return allSessions.filter(s => feedbackFilter === 'all' || s.feedback === feedbackFilter);
-  }, [allSessions, feedbackFilter]);
-
-  const displayedSessions = filteredSessions.slice(0, displayedCount);
 
   // Données graphique: nb séances par type de WOD
   const chartData = useMemo(() => {
@@ -127,10 +112,30 @@ export function CrossfitPage() {
     }
   }
 
+  const weeklySessionsData = useMemo(() => {
+    const weeks: Record<string, { label: string; count: number }> = {};
+    const now = new Date();
+    for (let i = 7; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * 7);
+      const ws = getWeekStart(d);
+      const key = ws.toISOString().slice(0, 10);
+      if (!weeks[key]) weeks[key] = { label: ws.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }), count: 0 };
+    }
+    allSessions.forEach((s) => {
+      const ws = getWeekStart(new Date(s.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
+    return Object.entries(weeks).map(([, v]) => v);
+  }, [allSessions]);
+
+  const recentSessions = allSessions.slice(0, 7);
+
   const groupedSessions = useMemo(() => {
-    const groups: { month: string; items: typeof displayedSessions }[] = [];
+    const groups: { month: string; items: typeof recentSessions }[] = [];
     const idx: Record<string, number> = {};
-    for (const s of displayedSessions) {
+    for (const s of recentSessions) {
       const key = new Date(s.date)
         .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
         .toUpperCase();
@@ -138,15 +143,9 @@ export function CrossfitPage() {
       groups[idx[key]].items.push(s);
     }
     return groups;
-  }, [displayedSessions]);
+  }, [recentSessions]);
 
   if (loading) return <Loader fullScreen text="Chargement Crossfit..." />;
-
-  const tabs: { id: ActiveTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'sessions', label: 'Séances', icon: <Flame className="w-4 h-4" /> },
-    { id: 'charts', label: 'Graphiques', icon: <BarChart2 className="w-4 h-4" /> },
-    { id: 'records', label: 'Records', icon: <Trophy className="w-4 h-4" /> },
-  ];
 
   return (
     <div className="space-y-6">
@@ -208,136 +207,120 @@ export function CrossfitPage() {
         </Card>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/5">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === tab.id
-                ? 'border-orange-400 text-orange-400'
-                : 'border-transparent text-[#6b6b6b] hover:text-[#d4d4d4]'
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       {error && (
         <div className="bg-red-950/30 border border-red-800/40 rounded-xl p-3 text-red-400 text-sm">{error}</div>
       )}
 
-      {/* Tab: Séances */}
-      {activeTab === 'sessions' && (
-        <div className="space-y-4">
-          <div className="flex gap-2 flex-wrap">
-            {(['all', 'facile', 'difficile', 'mort'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => { setFeedbackFilter(f); setDisplayedCount(SESSIONS_PER_PAGE); }}
-                className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                  feedbackFilter === f
-                    ? 'bg-orange-600/20 border-orange-500/40 text-orange-300'
-                    : 'border-white/10 text-[#6b6b6b] hover:border-white/20'
-                }`}
-              >
-                {f === 'all' ? 'Toutes' : FEEDBACK_LABELS[f]}
-              </button>
-            ))}
-          </div>
+      {/* Section Graphiques */}
+      <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+        <div className="w-1 h-6 bg-orange-600 flex-shrink-0" />
+        <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Graphiques</h2>
+      </div>
 
-          {displayedSessions.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Flame className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
-              <p className="text-[#6b6b6b]"><em>Aucune séance</em> enregistrée</p>
-              <Link to="/crossfit/new" className="mt-3 inline-block">
-                <Button size="sm" className="bg-orange-600 hover:bg-orange-500 text-white border-0">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Première séance
-                </Button>
-              </Link>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {groupedSessions.map(({ month, items }) => (
-                <div key={month} className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
-                    <div className="flex-1 h-px bg-white/5" />
-                    <span className="text-[10px] text-[#2a2a2a]">{items.length} séance{items.length > 1 ? 's' : ''}</span>
-                  </div>
-                  {items.map(session => (
-                    <SessionCard
-                      key={session.id}
-                      session={session}
-                      onDelete={() => setDeleteModal({ open: true, session })}
-                    />
-                  ))}
-                </div>
-              ))}
-              {displayedCount < filteredSessions.length && (
-                <button
-                  onClick={() => setDisplayedCount(c => c + SESSIONS_PER_PAGE)}
-                  className="w-full py-3 flex items-center justify-center gap-2 text-sm text-[#6b6b6b] hover:text-[#d4d4d4] border border-white/5 rounded-xl transition-colors"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                  Charger plus
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab: Graphiques */}
-      {activeTab === 'charts' && (
-        <Card className="p-4">
-          <CardHeader title="Séances par type de WOD" />
+      {/* Graphiques côte à côte */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="p-3">
+          <p className="text-xs font-semibold text-[#e5e5e5] mb-3">Par type de WOD</p>
           {chartData.length === 0 ? (
-            <p className="text-[#6b6b6b] text-sm text-center py-8"><em>Pas encore</em> de données</p>
+            <p className="text-[#6b6b6b] text-xs text-center py-6">Pas de données</p>
           ) : (
-            <ResponsiveContainer width="100%" height={240}>
+            <ResponsiveContainer width="100%" height={160}>
               <BarChart data={chartData}>
                 <CartesianGrid {...CHART_GRID_PROPS} />
-                <XAxis dataKey="name" {...CHART_AXIS_PROPS} />
-                <YAxis {...CHART_AXIS_PROPS} allowDecimals={false} />
+                <XAxis dataKey="name" {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} interval="preserveStartEnd" />
+                <YAxis {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} allowDecimals={false} />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                 <Bar dataKey="séances" fill="#ea580c" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </Card>
-      )}
 
-      {/* Tab: Records */}
-      {activeTab === 'records' && (
-        <div className="space-y-3">
-          {Object.keys(exerciseRecords).length === 0 ? (
-            <Card className="p-8 text-center">
-              <Trophy className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
-              <p className="text-[#6b6b6b]"><em>Aucun record</em> à afficher</p>
-            </Card>
+        <Card className="p-3">
+          <p className="text-xs font-semibold text-[#e5e5e5] mb-3">Séances / semaine</p>
+          {weeklySessionsData.every((d) => d.count === 0) ? (
+            <p className="text-xs text-[#6b6b6b] text-center py-6">Pas de données</p>
           ) : (
-            Object.entries(exerciseRecords)
-              .sort((a, b) => b[1].maxWeight - a[1].maxWeight)
-              .map(([name, record]) => (
-                <Card key={name} className="p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-[#f5f5f5]">{name}</p>
-                    <p className="text-xs text-[#6b6b6b] mt-0.5">{formatDate(record.date)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-rajdhani font-bold text-orange-400">{record.maxWeight}</p>
-                    <p className="text-xs text-[#6b6b6b]"><strong>kg</strong> max</p>
-                  </div>
-                </Card>
-              ))
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={weeklySessionsData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="label" {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} interval="preserveStartEnd" />
+                <YAxis {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} allowDecimals={false} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: '#1a1a1a' }} formatter={(v: number | undefined) => [`${v ?? 0}`, 'Séances'] as [string, string]} />
+                <Bar dataKey="count" fill="#c2410c" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           )}
+        </Card>
+      </div>
+
+      {/* Section Séances récentes */}
+      <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+        <div className="w-1 h-6 bg-orange-600 flex-shrink-0" />
+        <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Séances récentes</h2>
+      </div>
+
+      {allSessions.length === 0 ? (
+        <Card className="p-8 text-center">
+          <Flame className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
+          <p className="text-[#6b6b6b]"><em>Aucune séance</em> enregistrée</p>
+          <Link to="/crossfit/new" className="mt-3 inline-block">
+            <Button size="sm" className="bg-orange-600 hover:bg-orange-500 text-white border-0">
+              <Plus className="w-4 h-4 mr-1" />
+              Première séance
+            </Button>
+          </Link>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {groupedSessions.map(({ month, items }) => (
+            <div key={month} className="space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
+                <div className="flex-1 h-px bg-white/5" />
+                <span className="text-[10px] text-[#2a2a2a]">{items.length} séance{items.length > 1 ? 's' : ''}</span>
+              </div>
+              {items.map(session => (
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  onDelete={() => setDeleteModal({ open: true, session })}
+                />
+              ))}
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Section Records */}
+      <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+        <div className="w-1 h-6 bg-orange-600 flex-shrink-0" />
+        <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Records</h2>
+      </div>
+
+      <div className="space-y-3">
+        {Object.keys(exerciseRecords).length === 0 ? (
+          <Card className="p-8 text-center">
+            <Trophy className="w-10 h-10 text-[#2a2a2a] mx-auto mb-3" />
+            <p className="text-[#6b6b6b]"><em>Aucun record</em> à afficher</p>
+          </Card>
+        ) : (
+          Object.entries(exerciseRecords)
+            .sort((a, b) => b[1].maxWeight - a[1].maxWeight)
+            .map(([name, record]) => (
+              <Card key={name} className="p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-[#f5f5f5]">{name}</p>
+                  <p className="text-xs text-[#6b6b6b] mt-0.5">{formatDate(record.date)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-rajdhani font-bold text-orange-400">{record.maxWeight}</p>
+                  <p className="text-xs text-[#6b6b6b]"><strong>kg</strong> max</p>
+                </div>
+              </Card>
+            ))
+        )}
+      </div>
 
       {/* Modal suppression */}
       <Modal

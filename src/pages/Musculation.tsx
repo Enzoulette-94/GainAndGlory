@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Dumbbell, Plus, BarChart2, Weight, TrendingUp, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Copy, Eye } from 'lucide-react';
+import { Dumbbell, Plus, BarChart2, Weight, Trophy, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Copy, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  BarChart, Bar, LineChart, Line,
+  BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
@@ -27,9 +27,6 @@ import type { Feedback, MuscleGroup } from '../types/enums';
 
 // ─── Types locaux ────────────────────────────────────────────────────────────
 
-type ActiveTab = 'sessions' | 'charts' | 'records';
-type FeedbackFilter = 'all' | Feedback;
-
 // ─── Constantes Recharts (dark mode) ────────────────────────────────────────
 
 const CHART_GRID_PROPS = {
@@ -51,7 +48,6 @@ const CHART_TOOLTIP_STYLE = {
   color: '#d4d4d4',
 };
 
-const SESSIONS_PER_PAGE = 10;
 const CHART_SESSIONS_LIMIT = 50;
 
 // ─── Composant principal ─────────────────────────────────────────────────────
@@ -60,7 +56,6 @@ export function MusculationPage() {
   const { profile } = useAuth();
 
   // Données
-  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [chartSessions, setChartSessions] = useState<WorkoutSession[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
   const [totalTonnage, setTotalTonnage] = useState(0);
@@ -70,17 +65,8 @@ export function MusculationPage() {
   >({});
 
   // UI state
-  const [activeTab, setActiveTab] = useState<ActiveTab>('sessions');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Filtres onglet Séances
-  const [feedbackFilter, setFeedbackFilter] = useState<FeedbackFilter>('all');
-  const [muscleGroupFilter, setMuscleGroupFilter] = useState<string>('all');
-  const [displayedCount, setDisplayedCount] = useState(SESSIONS_PER_PAGE);
-
-  // Filtre onglet Graphiques
-  const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
 
   // ── Chargement initial ──────────────────────────────────────────────────────
   function loadData(userId: string) {
@@ -96,7 +82,6 @@ export function MusculationPage() {
     ])
       .then(([allSessions, count, tonnage, exList, prs]) => {
         setChartSessions(allSessions);
-        setSessions(allSessions.slice(0, SESSIONS_PER_PAGE));
         setTotalSessions(count);
         setTotalTonnage(tonnage);
         setExercises(exList);
@@ -110,29 +95,6 @@ export function MusculationPage() {
     if (!profile) return;
     loadData(profile.id);
   }, [profile]);
-
-  // ── Sessions filtrées ───────────────────────────────────────────────────────
-  const filteredSessions = useMemo(() => {
-    return chartSessions.filter((s) => {
-      // Filtre feedback
-      if (feedbackFilter !== 'all' && s.feedback !== feedbackFilter) return false;
-
-      // Filtre groupe musculaire : on vérifie si au moins un set correspond
-      if (muscleGroupFilter !== 'all') {
-        const hasMuscle = s.sets?.some(
-          (set) => set.exercise?.muscle_group === muscleGroupFilter
-        );
-        if (!hasMuscle) return false;
-      }
-
-      return true;
-    });
-  }, [chartSessions, feedbackFilter, muscleGroupFilter]);
-
-  const paginatedSessions = useMemo(
-    () => filteredSessions.slice(0, displayedCount),
-    [filteredSessions, displayedCount]
-  );
 
   // ── Données graphique tonnage par semaine ───────────────────────────────────
   const weeklyTonnageData = useMemo(() => {
@@ -167,50 +129,6 @@ export function MusculationPage() {
     }));
   }, [chartSessions]);
 
-  // ── Données graphique évolution exercice ───────────────────────────────────
-  const exerciseEvolutionData = useMemo(() => {
-    if (!selectedExerciseId) return [];
-
-    const points: { date: string; charge: number }[] = [];
-
-    for (const session of [...chartSessions].reverse()) {
-      if (!session.sets) continue;
-      const relevantSets = session.sets.filter(
-        (s) => s.exercise_id === selectedExerciseId
-      );
-      if (relevantSets.length === 0) continue;
-
-      const maxWeight = Math.max(...relevantSets.map((s) => s.weight));
-      const label = new Date(session.date).toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-      });
-      points.push({ date: label, charge: maxWeight });
-    }
-
-    return points;
-  }, [chartSessions, selectedExerciseId]);
-
-  // ── Exercices utilisés par l'user (pour le select du graphique) ────────────
-  const usedExercises = useMemo(() => {
-    const usedIds = new Set<string>();
-    for (const s of chartSessions) {
-      s.sets?.forEach((set) => usedIds.add(set.exercise_id));
-    }
-    return exercises.filter((e) => usedIds.has(e.id));
-  }, [chartSessions, exercises]);
-
-  // ── Groupes musculaires présents dans les séances (pour le select filtre) ──
-  const availableMuscleGroups = useMemo(() => {
-    const groups = new Set<string>();
-    for (const s of chartSessions) {
-      s.sets?.forEach((set) => {
-        if (set.exercise?.muscle_group) groups.add(set.exercise.muscle_group);
-      });
-    }
-    return Array.from(groups) as MuscleGroup[];
-  }, [chartSessions]);
-
   // ── Records groupés par groupe musculaire ──────────────────────────────────
   const recordsByMuscleGroup = useMemo(() => {
     const result: Record<string, { exerciseName: string; weight: number; reps: number; date: string }[]> = {};
@@ -238,10 +156,30 @@ export function MusculationPage() {
     return result;
   }, [personalRecords, exercises]);
 
+  const weeklySessionsData = useMemo(() => {
+    const weeks: Record<string, { label: string; count: number }> = {};
+    const now = new Date();
+    for (let i = 7; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * 7);
+      const ws = getWeekStart(d);
+      const key = ws.toISOString().slice(0, 10);
+      if (!weeks[key]) weeks[key] = { label: ws.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }), count: 0 };
+    }
+    chartSessions.forEach((s) => {
+      const ws = getWeekStart(new Date(s.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
+    return Object.entries(weeks).map(([, v]) => v);
+  }, [chartSessions]);
+
+  const recentSessions = chartSessions.slice(0, 7);
+
   const groupedSessions = useMemo(() => {
-    const groups: { month: string; items: typeof paginatedSessions }[] = [];
+    const groups: { month: string; items: typeof recentSessions }[] = [];
     const idx: Record<string, number> = {};
-    for (const s of paginatedSessions) {
+    for (const s of recentSessions) {
       const key = new Date(s.date)
         .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
         .toUpperCase();
@@ -249,7 +187,7 @@ export function MusculationPage() {
       groups[idx[key]].items.push(s);
     }
     return groups;
-  }, [paginatedSessions]);
+  }, [recentSessions]);
 
   if (!profile) return null;
 
@@ -332,38 +270,6 @@ export function MusculationPage() {
         </Card>
       </motion.div>
 
-      {/* ── Onglets ────────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <div className="flex gap-1 p-1 bg-[#0d0d0d] border border-white/5">
-          {(
-            [
-              { key: 'sessions', label: 'Séances', icon: <Dumbbell className="w-3.5 h-3.5" /> },
-              { key: 'charts', label: 'Graphiques', icon: <TrendingUp className="w-3.5 h-3.5" /> },
-              { key: 'records', label: 'Records', icon: <Trophy className="w-3.5 h-3.5" /> },
-            ] as { key: ActiveTab; label: string; icon: React.ReactNode }[]
-          ).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded text-xs font-semibold transition-all ${
-                activeTab === tab.key
-                  ? 'bg-[#7f1d1d] text-white border-l-2 border-[#c9a870]/40'
-                  : 'text-[#6b6b6b] hover:text-[#d4d4d4]'
-              }`}
-            >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── Contenu des onglets ─────────────────────────────────────────────── */}
-
       {loading && <Loader text="Chargement des séances..." />}
 
       {error && (
@@ -374,251 +280,116 @@ export function MusculationPage() {
 
       {!loading && !error && (
         <>
-          {/* ══ Onglet Séances ════════════════════════════════════════════════ */}
-          {activeTab === 'sessions' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-4"
-            >
-              {/* Filtres */}
-              <div className="space-y-3">
-                {/* Filtre feedback */}
-                <div className="flex gap-2 flex-wrap">
-                  {(
-                    [
-                      { value: 'all', label: 'Tous' },
-                      { value: 'facile', label: FEEDBACK_LABELS.facile },
-                      { value: 'difficile', label: FEEDBACK_LABELS.difficile },
-                      { value: 'mort', label: FEEDBACK_LABELS.mort },
-                    ] as { value: FeedbackFilter; label: string }[]
-                  ).map((f) => (
-                    <button
-                      key={f.value}
-                      onClick={() => {
-                        setFeedbackFilter(f.value);
-                        setDisplayedCount(SESSIONS_PER_PAGE);
-                      }}
-                      className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
-                        feedbackFilter === f.value
-                          ? 'bg-[#c9a870]/10 border border-[#c9a870]/30 text-[#c9a870]'
-                          : 'bg-[#1c1c1c] border border-white/5 text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/10'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
+          {/* ── Section Graphiques ────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+            <div className="w-1 h-6 bg-red-600 flex-shrink-0" />
+            <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Graphiques</h2>
+          </div>
 
-                {/* Filtre groupe musculaire */}
-                {availableMuscleGroups.length > 0 && (
-                  <select
-                    value={muscleGroupFilter}
-                    onChange={(e) => {
-                      setMuscleGroupFilter(e.target.value);
-                      setDisplayedCount(SESSIONS_PER_PAGE);
-                    }}
-                    className="w-full w-full bg-[#111111] border border-white/8 text-[#d4d4d4] text-xs px-3 py-2.5 focus:outline-none focus:border-[#c9a870]/40 appearance-none cursor-pointer"
-                  >
-                    <option value="all">Tous les groupes musculaires</option>
-                    {availableMuscleGroups.map((mg) => (
-                      <option key={mg} value={mg}>
-                        {MUSCLE_GROUP_LABELS[mg]}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              {/* Liste des séances */}
-              {filteredSessions.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Dumbbell className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                  <p className="text-[#a3a3a3] text-sm mb-4">
-                    Aucune séance ne correspond aux filtres.
-                  </p>
-                </Card>
+          {/* ── Graphiques côte à côte ─────────────────────────────────────── */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="p-3">
+              <p className="text-xs font-semibold text-[#e5e5e5] mb-3">Tonnage / semaine</p>
+              {weeklyTonnageData.every((d) => d.tonnage === 0) ? (
+                <p className="text-xs text-[#6b6b6b] text-center py-6">Pas de données</p>
               ) : (
-                <div className="space-y-6">
-                  {groupedSessions.map(({ month, items }) => (
-                    <div key={month} className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
-                        <div className="flex-1 h-px bg-white/5" />
-                        <span className="text-[10px] text-[#2a2a2a]">{items.length} séance{items.length > 1 ? 's' : ''}</span>
-                      </div>
-                      {items.map((session) => (
-                        <SessionCard
-                          key={session.id}
-                          session={session}
-                          allExercises={exercises}
-                          onUpdated={() => profile && loadData(profile.id)}
-                          onDeleted={() => profile && loadData(profile.id)}
-                        />
-                      ))}
-                    </div>
-                  ))}
-
-                  {/* Bouton "Charger plus" */}
-                  {displayedCount < filteredSessions.length && (
-                    <button
-                      onClick={() => setDisplayedCount((c) => c + SESSIONS_PER_PAGE)}
-                      className="w-full py-3 rounded bg-[#1c1c1c] border border-white/5 text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/10 text-sm font-medium transition-all"
-                    >
-                      Charger plus ({filteredSessions.length - displayedCount} restantes)
-                    </button>
-                  )}
-                </div>
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={weeklyTonnageData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <CartesianGrid {...CHART_GRID_PROPS} />
+                    <XAxis dataKey="name" {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} interval="preserveStartEnd" />
+                    <YAxis {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}t` : `${v}`} />
+                    <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: '#1a1a1a' }} formatter={(value: number | undefined) => [`${formatNumber(value ?? 0)} kg`, 'Tonnage'] as [string, string]} />
+                    <Bar dataKey="tonnage" fill="#991b1b" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               )}
+            </Card>
 
-              {/* CTA si aucune séance du tout */}
-              {chartSessions.length === 0 && (
-                <Card className="p-8 text-center">
-                  <Dumbbell className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                  <p className="text-[#a3a3a3] text-sm mb-4">
-                    Aucune séance enregistrée pour l&apos;instant.
-                  </p>
-                  <Link to="/musculation/new">
-                    <Button icon={<Plus className="w-4 h-4" />}>
-                      Première séance
-                    </Button>
-                  </Link>
-                </Card>
-              )}
-            </motion.div>
-          )}
-
-          {/* ══ Onglet Graphiques ════════════════════════════════════════════ */}
-          {activeTab === 'charts' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-5"
-            >
-              {/* Tonnage par semaine */}
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 rounded-lg bg-transparent">
-                    <BarChart2 className="w-4 h-4 text-red-400" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-[#e5e5e5]">Tonnage par semaine</h3>
-                </div>
-
-                {weeklyTonnageData.every((d) => d.tonnage === 0) ? (
-                  <p className="text-xs text-[#6b6b6b] text-center py-6">
-                    Pas assez de données pour afficher ce graphique.
-                  </p>
-                ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={weeklyTonnageData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                      <CartesianGrid {...CHART_GRID_PROPS} />
-                      <XAxis dataKey="name" {...CHART_AXIS_PROPS} />
-                      <YAxis
-                        {...CHART_AXIS_PROPS}
-                        tickFormatter={(v: number) =>
-                          v >= 1000 ? `${(v / 1000).toFixed(1)}t` : `${v}`
-                        }
-                      />
-                      <Tooltip
-                        contentStyle={CHART_TOOLTIP_STYLE}
-                        cursor={{ fill: '#1a1a1a' }}
-                        formatter={(value: number | undefined) => [`${formatNumber(value ?? 0)} kg`, 'Tonnage'] as [string, string]}
-                      />
-                      <Bar dataKey="tonnage" fill="#991b1b" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </Card>
-
-              {/* Évolution d'exercice */}
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 rounded-lg bg-transparent">
-                    <TrendingUp className="w-4 h-4 text-red-400" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-[#e5e5e5]">Évolution d&apos;exercice</h3>
-                </div>
-
-                {/* Select exercice */}
-                <select
-                  value={selectedExerciseId}
-                  onChange={(e) => setSelectedExerciseId(e.target.value)}
-                  className="w-full bg-[#1c1c1c] border border-white/5 text-[#d4d4d4] text-xs rounded px-3 py-2 mb-4 focus:outline-none focus:border-[#c9a870]/40 focus:ring-1 focus:ring-[#c9a870]/20 appearance-none cursor-pointer"
-                >
-                  <option value="">Choisir un exercice...</option>
-                  {usedExercises.map((ex) => (
-                    <option key={ex.id} value={ex.id}>
-                      {ex.name}
-                    </option>
-                  ))}
-                </select>
-
-                {!selectedExerciseId ? (
-                  <p className="text-xs text-[#6b6b6b] text-center py-6">
-                    Sélectionnez un exercice pour voir sa progression.
-                  </p>
-                ) : exerciseEvolutionData.length < 2 ? (
-                  <p className="text-xs text-[#6b6b6b] text-center py-6">
-                    Pas assez de données pour cet exercice (minimum 2 séances).
-                  </p>
-                ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={exerciseEvolutionData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                      <CartesianGrid {...CHART_GRID_PROPS} />
-                      <XAxis dataKey="date" {...CHART_AXIS_PROPS} />
-                      <YAxis
-                        {...CHART_AXIS_PROPS}
-                        tickFormatter={(v: number) => `${v}kg`}
-                      />
-                      <Tooltip
-                        contentStyle={CHART_TOOLTIP_STYLE}
-                        formatter={(value: number | undefined) => [`${value ?? 0} kg`, 'Charge max'] as [string, string]}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="charge"
-                        stroke="#8b5cf6"
-                        strokeWidth={2}
-                        dot={{ fill: '#8b5cf6', r: 3, strokeWidth: 0 }}
-                        activeDot={{ r: 5, fill: '#a78bfa' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </Card>
-            </motion.div>
-          )}
-
-          {/* ══ Onglet Records ════════════════════════════════════════════════ */}
-          {activeTab === 'records' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="space-y-3"
-            >
-              {Object.keys(recordsByMuscleGroup).length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                  <p className="text-[#a3a3a3] text-sm">
-                    Aucun record personnel enregistré pour l&apos;instant.
-                  </p>
-                </Card>
+            <Card className="p-3">
+              <p className="text-xs font-semibold text-[#e5e5e5] mb-3">Séances / semaine</p>
+              {weeklySessionsData.every((d) => d.count === 0) ? (
+                <p className="text-xs text-[#6b6b6b] text-center py-6">Pas de données</p>
               ) : (
-                (Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[])
-                  .filter((mg) => recordsByMuscleGroup[mg]?.length > 0)
-                  .map((mg) => (
-                    <MuscleGroupAccordion
-                      key={mg}
-                      muscleGroup={mg}
-                      records={recordsByMuscleGroup[mg]}
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={weeklySessionsData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <CartesianGrid {...CHART_GRID_PROPS} />
+                    <XAxis dataKey="label" {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} interval="preserveStartEnd" />
+                    <YAxis {...CHART_AXIS_PROPS} tick={{ fill: '#6b6b6b', fontSize: 9 }} allowDecimals={false} />
+                    <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: '#1a1a1a' }} formatter={(v: number | undefined) => [`${v ?? 0}`, 'Séances'] as [string, string]} />
+                    <Bar dataKey="count" fill="#b91c1c" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </Card>
+          </div>
+
+          {/* ── Section Séances récentes ──────────────────────────────────── */}
+          <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+            <div className="w-1 h-6 bg-red-600 flex-shrink-0" />
+            <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Séances récentes</h2>
+          </div>
+
+          {chartSessions.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Dumbbell className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+              <p className="text-[#a3a3a3] text-sm mb-4">
+                Aucune séance enregistrée pour l&apos;instant.
+              </p>
+              <Link to="/musculation/new">
+                <Button icon={<Plus className="w-4 h-4" />}>
+                  Première séance
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {groupedSessions.map(({ month, items }) => (
+                <div key={month} className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#3a3a3a]">{month}</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                    <span className="text-[10px] text-[#2a2a2a]">{items.length} séance{items.length > 1 ? 's' : ''}</span>
+                  </div>
+                  {items.map((session) => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      allExercises={exercises}
+                      onUpdated={() => profile && loadData(profile.id)}
+                      onDeleted={() => profile && loadData(profile.id)}
                     />
-                  ))
-              )}
-            </motion.div>
+                  ))}
+                </div>
+              ))}
+            </div>
           )}
+
+          {/* ── Section Records ───────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 -mx-4 px-4 py-3 bg-white/[0.02] border-t border-b border-white/8">
+            <div className="w-1 h-6 bg-red-600 flex-shrink-0" />
+            <h2 className="font-rajdhani font-black text-lg uppercase tracking-[0.12em] text-white">Records</h2>
+          </div>
+
+          <div className="space-y-3">
+            {Object.keys(recordsByMuscleGroup).length === 0 ? (
+              <Card className="p-8 text-center">
+                <Trophy className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
+                <p className="text-[#a3a3a3] text-sm">
+                  Aucun record personnel enregistré pour l&apos;instant.
+                </p>
+              </Card>
+            ) : (
+              (Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[])
+                .filter((mg) => recordsByMuscleGroup[mg]?.length > 0)
+                .map((mg) => (
+                  <MuscleGroupAccordion
+                    key={mg}
+                    muscleGroup={mg}
+                    records={recordsByMuscleGroup[mg]}
+                  />
+                ))
+            )}
+          </div>
         </>
       )}
     </div>
