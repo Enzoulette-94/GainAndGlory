@@ -123,6 +123,11 @@ export const feedService = {
   },
 
   // Publier un Personal Record dans le feed
+  async deletePost(postId: string): Promise<void> {
+    const { error } = await db.from('activity_feed').delete().eq('id', postId);
+    if (error) throw error;
+  },
+
   async publishPersonalRecord(userId: string, title: string, value: string, unit: string, category: 'musculation' | 'course' | 'calisthenics' | 'crossfit') {
     try {
       await db.from('activity_feed').insert({

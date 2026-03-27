@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp, Bookmark, Copy } from 'lucide-react';
+import { Users, Plus, Zap, Target, Trophy, Calendar, MessageCircle, Star, Dumbbell, PersonStanding, Send, X, ChevronRight, Flame, Wind, Thermometer, Footprints, TrendingUp, Bookmark, Copy, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase-client';
@@ -691,9 +691,10 @@ interface FeedItemCardProps {
   onLike: (itemId: string) => void;
   onCommentAdded: (itemId: string, comment: ActivityComment) => void;
   onCommentDeleted: (itemId: string, commentId: string) => void;
+  onDelete: (itemId: string) => Promise<void>;
 }
 
-function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDeleted }: FeedItemCardProps) {
+function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDeleted, onDelete }: FeedItemCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showDetail, setShowDetail] = useState(false);
@@ -1438,6 +1439,16 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
           </button>
         )}
 
+        {item.user_id === currentUserId && (
+          <button
+            onClick={() => onDelete(item.id)}
+            title="Supprimer cette publication"
+            className="flex items-center gap-1 text-xs text-[#3a3a3a] hover:text-red-400 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
+
         <button
           onClick={() => {
             setShowComments(prev => !prev);
@@ -1682,6 +1693,11 @@ function FeedTab({ currentUserId }: FeedTabProps) {
     }));
   }
 
+  async function handleDelete(itemId: string) {
+    await feedService.deletePost(itemId);
+    setItems(prev => prev.filter(item => item.id !== itemId));
+  }
+
   const storyUsers = useMemo(() => {
     const seen = new Set<string>();
     return items
@@ -1784,6 +1800,7 @@ function FeedTab({ currentUserId }: FeedTabProps) {
                 onLike={handleLike}
                 onCommentAdded={handleCommentAdded}
                 onCommentDeleted={handleCommentDeleted}
+                onDelete={handleDelete}
               />
               </article>
             ))}
