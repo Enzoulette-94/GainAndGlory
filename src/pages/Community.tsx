@@ -110,6 +110,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
   const c = item.content as any;
   const isWorkout = item.type === 'workout';
   const isCalisthenics = item.type === 'calisthenics';
+  const isCrossfit = item.type === 'crossfit';
 
   useEffect(() => {
     (async () => {
@@ -146,6 +147,21 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           }
           const { data: res } = await query.maybeSingle();
           setData(res);
+        } else if (isCrossfit) {
+          let query = supabase
+            .from('crossfit_sessions')
+            .select('*')
+            .eq('user_id', item.user_id);
+          if (c.session_id) {
+            query = query.eq('id', c.session_id);
+          } else {
+            const ts = new Date(item.created_at);
+            const from = new Date(ts.getTime() - 5 * 60000).toISOString();
+            const to   = new Date(ts.getTime() + 5 * 60000).toISOString();
+            query = query.gte('date', from).lte('date', to).order('date', { ascending: false }).limit(1);
+          }
+          const { data: res } = await query.maybeSingle();
+          setData(res);
         } else {
           let query = supabase
             .from('running_sessions')
@@ -165,7 +181,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
       } catch { setData(null); }
       finally { setLoading(false); }
     })();
-  }, [item, isWorkout, isCalisthenics, c.session_id]);
+  }, [item, isWorkout, isCalisthenics, isCrossfit, c.session_id]);
 
   const feedbackLabel = (fb: string | null) => {
     if (fb === 'facile') return { label: 'Facile', color: 'text-green-500 border-green-900/50' };
@@ -202,7 +218,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
     return Object.values(map).map(g => ({ ...g, sets: g.sets.sort((a: any, b: any) => a.set_number - b.set_number) }));
   }, [data]);
 
-  const title = isWorkout ? 'Détails — Séance muscu' : isCalisthenics ? 'Détails — Calisthénie' : 'Détails — Course';
+  const title = isWorkout ? 'Détails — Séance muscu' : isCalisthenics ? 'Détails — Calisthénie' : isCrossfit ? 'Détails — Crossfit' : 'Détails — Course';
 
   const username = item.user?.username ?? 'Utilisateur';
   const sessionName = data?.name ?? c.name ?? title;
@@ -529,6 +545,71 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           );
         })()}
       </div>
+
+        {/* ── CROSSFIT ── */}
+        {!loading && isCrossfit && (() => {
+          const session = data;
+          const exList = ((session?.exercises ?? c.exercises ?? []) as { name: string; reps?: number | null; weight?: number | null; duration?: number | null; notes?: string | null }[]);
+          const wodType = session?.wod_type ?? c.wod_type ?? null;
+          const fb = feedbackLabel(session?.feedback ?? c.feedback ?? null);
+          return (
+            <>
+              {(session?.name ?? c.name) && (
+                <h3 className="font-rajdhani font-bold text-lg text-orange-400 tracking-wide uppercase border-b border-white/5 pb-2">
+                  {session?.name ?? c.name}
+                </h3>
+              )}
+              <div className="flex flex-wrap gap-3 text-sm">
+                <span className="text-[#a3a3a3]">{formatDate(session?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                {wodType && (
+                  <span className="text-xs border border-orange-800/50 text-orange-400 px-2 py-0.5 font-rajdhani font-semibold uppercase">
+                    {wodType}
+                  </span>
+                )}
+                {fb && <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>}
+              </div>
+
+              {/* Résultat WOD */}
+              {(session?.result_reps != null || session?.result_time || session?.result_rounds != null) && (
+                <div className="border border-orange-900/40 bg-orange-900/10 px-4 py-3 flex flex-wrap gap-4">
+                  {session.result_rounds != null && (
+                    <div><p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">Rounds</p>
+                      <p className="text-lg font-rajdhani font-bold text-orange-400">{session.result_rounds}</p></div>
+                  )}
+                  {session.result_reps != null && (
+                    <div><p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">Reps totales</p>
+                      <p className="text-lg font-rajdhani font-bold text-orange-400">{session.result_reps}</p></div>
+                  )}
+                  {session.result_time && (
+                    <div><p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">Temps</p>
+                      <p className="text-lg font-rajdhani font-bold text-orange-400">{session.result_time}</p></div>
+                  )}
+                </div>
+              )}
+
+              {/* Exercices */}
+              {exList.length === 0 && !session && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
+              <div className="space-y-2">
+                {exList.map((ex, i) => (
+                  <div key={i} className="border border-orange-900/30">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-orange-900/30 bg-orange-900/10">
+                      <Flame className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+                      <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{ex.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4 px-3 py-2 text-sm flex-wrap">
+                      {ex.reps != null && ex.reps > 0 && <span className="text-[#d4d4d4]">{ex.reps} reps</span>}
+                      {ex.weight != null && ex.weight > 0 && <span className="font-rajdhani font-bold text-orange-400">{ex.weight} kg</span>}
+                      {ex.duration != null && ex.duration > 0 && <span className="text-[#a3a3a3]">{ex.duration}s</span>}
+                      {ex.notes && <span className="text-[#6b6b6b] italic text-xs">{ex.notes}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {session?.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-orange-800/50 pl-3">{session.notes}</p>}
+            </>
+          );
+        })()}
 
       {/* Bouton PDF — affiché uniquement pour muscu (DB ou fallback) */}
       {!loading && isWorkout && (
