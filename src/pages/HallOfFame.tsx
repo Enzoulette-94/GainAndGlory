@@ -261,7 +261,22 @@ function useMusculationRanking() {
 
 // ─── Carte record par exercice ────────────────────────────────────────────────
 
-function RecordGroupCard({ group, currentUserId }: { group: RecordGroup; currentUserId: string | null }) {
+function RecordGroupCard({ group, currentUserId, onDelete }: {
+  group: RecordGroup;
+  currentUserId: string | null;
+  onDelete: (recordId: string) => Promise<void>;
+}) {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(recordId: string) {
+    setDeletingId(recordId);
+    try {
+      await onDelete(recordId);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <Card className="flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
@@ -281,6 +296,7 @@ function RecordGroupCard({ group, currentUserId }: { group: RecordGroup; current
           const rank = i + 1;
           const colors = rankColor(rank);
           const isMe = entry.user_id === currentUserId;
+          const isDeleting = deletingId === entry.recordId;
           return (
             <div
               key={entry.user_id}
@@ -323,6 +339,20 @@ function RecordGroupCard({ group, currentUserId }: { group: RecordGroup; current
                   {group.category === 'course' ? 'temps' : group.unit}
                 </p>
               </div>
+
+              {isMe && (
+                <button
+                  onClick={() => handleDelete(entry.recordId)}
+                  disabled={isDeleting}
+                  title="Supprimer mon PR"
+                  className="flex-shrink-0 p-1 text-[#3a3a3a] hover:text-red-400 transition-colors disabled:opacity-40"
+                >
+                  {isDeleting
+                    ? <span className="block w-3 h-3 border border-red-400/50 border-t-red-400 rounded-full animate-spin" />
+                    : <X className="w-3.5 h-3.5" />
+                  }
+                </button>
+              )}
             </div>
           );
         })}
@@ -337,9 +367,16 @@ function useRecordsRanking() {
   const [groups, setGroups] = useState<RecordGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  async function deleteRecord(recordId: string) {
+    await profileRecordsService.deleteRecord(recordId);
+    setRefreshKey(k => k + 1);
+  }
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
       try {
         const { data: records, error: err } = await (supabase as any)
@@ -407,9 +444,9 @@ function useRecordsRanking() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshKey]);
 
-  return { groups, loading, error };
+  return { groups, loading, error, deleteRecord };
 }
 
 // ─── Confetti PR ──────────────────────────────────────────────────────────────
@@ -934,7 +971,7 @@ export function HallOfFamePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'musculation').map(group => (
-                  <RecordGroupCard key={`muscu-${group.title}`} group={group} currentUserId={currentUserId} />
+                  <RecordGroupCard key={`muscu-${group.title}`} group={group} currentUserId={currentUserId} onDelete={records.deleteRecord} />
                 ))}
               </div>
             </div>
@@ -949,7 +986,7 @@ export function HallOfFamePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'course').map(group => (
-                  <RecordGroupCard key={`course-${group.title}`} group={group} currentUserId={currentUserId} />
+                  <RecordGroupCard key={`course-${group.title}`} group={group} currentUserId={currentUserId} onDelete={records.deleteRecord} />
                 ))}
               </div>
             </div>
@@ -964,7 +1001,7 @@ export function HallOfFamePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'calisthenics' && !g.weighted).map(group => (
-                  <RecordGroupCard key={`cali-${group.title}`} group={group} currentUserId={currentUserId} />
+                  <RecordGroupCard key={`cali-${group.title}`} group={group} currentUserId={currentUserId} onDelete={records.deleteRecord} />
                 ))}
               </div>
             </div>
@@ -980,7 +1017,7 @@ export function HallOfFamePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'calisthenics' && g.weighted).map(group => (
-                  <RecordGroupCard key={`cali-weighted-${group.title}-${group.unit}`} group={group} currentUserId={currentUserId} />
+                  <RecordGroupCard key={`cali-weighted-${group.title}-${group.unit}`} group={group} currentUserId={currentUserId} onDelete={records.deleteRecord} />
                 ))}
               </div>
             </div>
@@ -995,7 +1032,7 @@ export function HallOfFamePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {records.groups.filter(g => g.category === 'crossfit').map(group => (
-                  <RecordGroupCard key={`crossfit-${group.title}`} group={group} currentUserId={currentUserId} />
+                  <RecordGroupCard key={`crossfit-${group.title}`} group={group} currentUserId={currentUserId} onDelete={records.deleteRecord} />
                 ))}
               </div>
             </div>
