@@ -11,6 +11,8 @@ import {
   AlertCircle,
   CalendarClock,
   ChevronDown,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -40,6 +42,7 @@ interface CreateGoalForm {
   current_value: string;
   unit: string;
   deadline: string;
+  direction: 'gain' | 'lose';
 }
 
 // ============================================================
@@ -81,6 +84,12 @@ const STATUS_TAB_LABELS: Record<TabType, string> = {
 
 function calcProgress(goal: PersonalGoal): number {
   if (!goal.target_value || goal.target_value <= 0) return 0;
+  if (goal.direction === 'lose') {
+    if (!goal.initial_value || goal.initial_value <= goal.target_value) return 0;
+    const total = goal.initial_value - goal.target_value;
+    const done = goal.initial_value - goal.current_value;
+    return Math.min(100, Math.max(0, Math.round((done / total) * 100)));
+  }
   return Math.min(100, Math.round((goal.current_value / goal.target_value) * 100));
 }
 
@@ -150,6 +159,7 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
   const hasTarget = goal.target_value !== null && goal.target_value > 0;
   const iconClass = GOAL_TYPE_COLORS[goal.type];
   const barColor = GOAL_TYPE_BAR_COLORS[goal.type];
+  const isGameOver = overdue && goal.status === 'active';
 
   return (
     <motion.div
@@ -159,95 +169,141 @@ function GoalCard({ goal, onUpdate, onComplete, onCancel }: GoalCardProps) {
       exit={{ opacity: 0, y: -16 }}
       transition={{ duration: 0.25 }}
     >
-      <Card className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Icône type */}
-          <div className={`p-2 rounded border shrink-0 ${iconClass}`}>
-            {GOAL_TYPE_ICONS[goal.type]}
-          </div>
+      <div className={`relative overflow-hidden border ${isGameOver ? 'border-red-700/80' : 'border-white/5'} bg-[#111111]`}>
 
-          {/* Contenu principal */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[#f5f5f5] truncate">{goal.title}</h3>
-                {goal.description && (
-                  <p className="text-xs text-[#a3a3a3] mt-0.5 line-clamp-2">{goal.description}</p>
-                )}
-              </div>
-
-              {/* Bouton annuler */}
-              {goal.status === 'active' && (
-                <button
-                  onClick={() => onCancel(goal.id)}
-                  className="p-1.5 rounded-lg hover:bg-transparent text-[#6b6b6b] hover:text-red-400 transition-colors shrink-0"
-                  aria-label="Annuler l'objectif"
+        {/* GAME OVER banner */}
+        {isGameOver && (
+          <div className="relative">
+            {/* Scanlines overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none z-10 opacity-10"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.4) 2px, rgba(255,0,0,0.4) 4px)',
+              }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0.6 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
+              className="relative z-20 flex items-center justify-between px-4 py-2.5"
+              style={{ background: 'linear-gradient(90deg, #3d0000 0%, #7f0000 50%, #3d0000 100%)' }}
+            >
+              <div className="flex items-center gap-2">
+                <motion.span
+                  animate={{ opacity: [1, 0.4, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+                  className="text-red-400 text-[10px] font-rajdhani font-black uppercase tracking-[0.3em]"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+                  ■ TEMPS ÉCOULÉ
+                </motion.span>
+              </div>
+              <motion.span
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ repeat: Infinity, duration: 0.9, ease: 'easeInOut' }}
+                className="font-rajdhani font-black uppercase text-red-300 tracking-[0.25em]"
+                style={{ fontSize: 'clamp(1rem, 4vw, 1.4rem)', textShadow: '0 0 12px rgba(255,50,50,0.9), 0 0 24px rgba(255,0,0,0.5)' }}
+              >
+                GAME OVER
+              </motion.span>
+              <span className="text-red-600 text-[10px] font-rajdhani font-black uppercase tracking-[0.3em]">
+                {formatDate(goal.deadline!)}
+              </span>
+            </motion.div>
+          </div>
+        )}
+
+        <div className={`p-4 ${isGameOver ? 'opacity-75' : ''}`}>
+          <div className="flex items-start gap-3">
+            {/* Icône type */}
+            <div className={`p-2 rounded border shrink-0 ${isGameOver ? 'border-red-900/50 text-red-600' : iconClass}`}>
+              {GOAL_TYPE_ICONS[goal.type]}
             </div>
 
-            {/* Barre de progression */}
-            {hasTarget && (
-              <div className="mt-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-[#a3a3a3]">
-                    {goal.current_value} / {goal.target_value}{goal.unit ? ` ${goal.unit}` : ''}
-                  </span>
-                  <span className="text-xs font-semibold text-[#d4d4d4]">{progress}%</span>
+            {/* Contenu principal */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className={`font-semibold truncate ${isGameOver ? 'text-red-200/80 line-through decoration-red-700' : 'text-[#f5f5f5]'}`}>
+                    {goal.title}
+                  </h3>
+                  {goal.description && (
+                    <p className="text-xs text-[#a3a3a3] mt-0.5 line-clamp-2">{goal.description}</p>
+                  )}
                 </div>
-                <ProgressBar
-                  value={progress}
-                  color={barColor}
-                  height="sm"
-                  animated
-                />
-              </div>
-            )}
 
-            {/* Date limite */}
-            {goal.deadline && (
-              <div className={`flex items-center gap-1.5 mt-2.5 text-xs font-medium ${overdue ? 'text-red-400' : 'text-[#a3a3a3]'}`}>
-                <CalendarClock className="w-3.5 h-3.5 shrink-0" />
-                {overdue
-                  ? <span>Échéance dépassée · {formatDate(goal.deadline)}</span>
-                  : <span>Échéance : {formatDate(goal.deadline)}</span>
-                }
-                {overdue && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-md bg-transparent border border-red-800/50 text-red-400 text-xs uppercase tracking-wide font-bold">
-                    En retard
-                  </span>
+                {/* Bouton annuler */}
+                {goal.status === 'active' && (
+                  <button
+                    onClick={() => onCancel(goal.id)}
+                    className="p-1.5 rounded-lg hover:bg-transparent text-[#6b6b6b] hover:text-red-400 transition-colors shrink-0"
+                    aria-label="Annuler l'objectif"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
-            )}
 
-            {/* Actions */}
-            {goal.status === 'active' && (
-              <div className="flex items-center gap-2 mt-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<Pencil className="w-3.5 h-3.5" />}
-                  onClick={() => onUpdate(goal)}
-                  className="text-xs"
-                >
-                  Mettre à jour
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={<CheckCircle2 className="w-3.5 h-3.5" />}
-                  onClick={() => onComplete(goal.id)}
-                  className="text-xs"
-                >
-                  Compléter
-                </Button>
-              </div>
-            )}
+              {/* Barre de progression */}
+              {hasTarget && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-[#a3a3a3]">
+                      {goal.direction === 'lose' && goal.type === 'weight'
+                        ? `${goal.current_value} kg → ${goal.target_value} kg${goal.initial_value ? ` (départ: ${goal.initial_value} kg)` : ''}`
+                        : `${goal.current_value} / ${goal.target_value}${goal.unit ? ` ${goal.unit}` : ''}`
+                      }
+                    </span>
+                    <span className="text-xs font-semibold text-[#d4d4d4]">{progress}%</span>
+                  </div>
+                  <ProgressBar
+                    value={progress}
+                    color={isGameOver ? 'bg-red-900' : barColor}
+                    height="sm"
+                    animated
+                  />
+                </div>
+              )}
+
+              {/* Date limite — uniquement si pas game over */}
+              {goal.deadline && !isGameOver && (
+                <div className="flex items-center gap-1.5 mt-2.5 text-xs font-medium text-[#a3a3a3]">
+                  <CalendarClock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Échéance : {formatDate(goal.deadline)}</span>
+                </div>
+              )}
+
+              {/* Actions */}
+              {goal.status === 'active' && (
+                <div className="flex items-center gap-2 mt-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<Pencil className="w-3.5 h-3.5" />}
+                    onClick={() => onUpdate(goal)}
+                    className="text-xs"
+                  >
+                    Mettre à jour
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                    onClick={() => onComplete(goal.id)}
+                    className={`text-xs ${isGameOver ? 'border-red-700/50 text-red-400 hover:bg-red-900/20' : ''}`}
+                  >
+                    Compléter quand même
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </Card>
+
+        {/* Bordure gauche rouge si game over */}
+        {isGameOver && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-600" style={{ boxShadow: '0 0 8px rgba(220,38,38,0.8)' }} />
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -264,6 +320,7 @@ const INITIAL_CREATE_FORM: CreateGoalForm = {
   current_value: '',
   unit: '',
   deadline: '',
+  direction: 'gain',
 };
 
 export function GoalsPage() {
@@ -353,6 +410,10 @@ export function GoalsPage() {
         current_value: createForm.current_value ? parseFloat(createForm.current_value) : 0,
         unit: createForm.unit.trim() || undefined,
         deadline: createForm.deadline || undefined,
+        direction: createForm.type === 'weight' ? createForm.direction : 'gain',
+        initial_value: createForm.type === 'weight' && createForm.direction === 'lose'
+          ? (createForm.current_value ? parseFloat(createForm.current_value) : undefined)
+          : undefined,
       });
       setGoals((prev) => [newGoal, ...prev]);
       setShowCreateModal(false);
@@ -604,6 +665,35 @@ export function GoalsPage() {
             onChange={(e) => setCreateForm((f) => ({ ...f, type: e.target.value as GoalType }))}
           />
 
+          {createForm.type === 'weight' && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setCreateForm(f => ({ ...f, direction: 'gain' }))}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 border text-sm font-rajdhani font-bold uppercase tracking-wide transition-colors ${
+                  createForm.direction === 'gain'
+                    ? 'border-emerald-600 bg-emerald-900/20 text-emerald-400'
+                    : 'border-white/10 bg-transparent text-[#6b6b6b] hover:border-white/20'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                Prendre du poids
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreateForm(f => ({ ...f, direction: 'lose' }))}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 border text-sm font-rajdhani font-bold uppercase tracking-wide transition-colors ${
+                  createForm.direction === 'lose'
+                    ? 'border-orange-600 bg-orange-900/20 text-orange-400'
+                    : 'border-white/10 bg-transparent text-[#6b6b6b] hover:border-white/20'
+                }`}
+              >
+                <TrendingDown className="w-4 h-4" />
+                Perdre du poids
+              </button>
+            </div>
+          )}
+
           <Input
             label="Titre *"
             placeholder="Ex: Courir un semi-marathon"
@@ -621,7 +711,7 @@ export function GoalsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Valeur cible"
+              label={createForm.type === 'weight' && createForm.direction === 'lose' ? 'Poids cible (à atteindre)' : createForm.type === 'weight' ? 'Poids cible' : 'Valeur cible'}
               type="number"
               min="0"
               step="any"
@@ -630,7 +720,7 @@ export function GoalsPage() {
               onChange={(e) => setCreateForm((f) => ({ ...f, target_value: e.target.value }))}
             />
             <Input
-              label="Valeur actuelle"
+              label={createForm.type === 'weight' ? 'Poids actuel' : 'Valeur actuelle'}
               type="number"
               min="0"
               step="any"

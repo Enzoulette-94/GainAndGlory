@@ -195,6 +195,8 @@ export interface PersonalGoal {
   deadline: string | null;
   status: GoalStatus;
   completed_at: string | null;
+  direction: 'gain' | 'lose' | null;
+  initial_value: number | null;
   created_at: string;
 }
 

@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Dumbbell, PersonStanding, Scale,
-  Calendar, Target, Users, Trophy, CalendarDays, User, Swords, ShieldCheck, X, Zap, Bookmark, Flame,
+  Calendar, Target, Users, Trophy, User, Swords, ShieldCheck, X, Zap, Bookmark, Flame,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/calendar', icon: Calendar, label: 'Calendrier' },
   { path: '/community', icon: Users, label: 'Les Monstres' },
   { path: '/musculation', icon: Dumbbell, label: 'Muscu' },
   { path: '/running', icon: PersonStanding, label: 'Course' },
@@ -16,11 +17,9 @@ const navItems = [
   { path: '/crossfit', icon: Flame, label: 'Crossfit' },
   { path: '/weight', icon: Scale, label: 'Poids' },
   { path: '/seances', icon: Bookmark, label: 'Séances' },
-  { path: '/calendar', icon: Calendar, label: 'Calendrier' },
   { path: '/goals', icon: Target, label: 'Objectifs' },
   { path: '/team-goals', icon: Swords, label: 'Objectifs équipe' },
   { path: '/hall-of-fame', icon: Trophy, label: 'Hall of Fame' },
-  { path: '/events', icon: CalendarDays, label: 'Événements' },
   { path: '/profile', icon: User, label: 'Profil' },
 ];
 

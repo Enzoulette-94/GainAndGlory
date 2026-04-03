@@ -88,11 +88,6 @@ describe('RunningPage', () => {
   });
 
   describe('Filtres', () => {
-    it('affiche le filtre "Tous"', async () => {
-      renderRunning();
-      await q(/tous/i);
-    });
-
     it('affiche le filtre "Endurance"', async () => {
       renderRunning();
       await q(/endurance/i);

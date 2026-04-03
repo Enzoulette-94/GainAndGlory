@@ -92,9 +92,9 @@ describe('MusculationPage', () => {
   });
 
   describe('Filtre par ressenti', () => {
-    it('affiche le filtre "Tous"', async () => {
+    it('affiche les labels de ressenti', async () => {
       renderMusculation();
-      await q(/tous/i);
+      await q(/facile|difficile|mort/i);
     });
   });
 

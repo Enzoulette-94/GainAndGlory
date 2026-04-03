@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Swords, Plus, Trophy, Target, Calendar, Users, Zap, Dumbbell, Footprints, Repeat, Layers, Trash2, BarChart2 } from 'lucide-react';
+import { Swords, Plus, Trophy, Calendar, Users, Zap, Dumbbell, Footprints, Repeat, Layers, Trash2, BarChart2, ChevronDown, CheckCircle2, Skull } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase-client';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,7 +50,6 @@ interface CommunityChallenge {
   total_contribution?: number;
 }
 
-type Tab = 'active' | 'mine' | 'create';
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -299,6 +298,187 @@ function ChallengeCard({
           </div>
         </div>
       </Card>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// FinishedChallengeCard
+// ─────────────────────────────────────────────
+
+function FinishedChallengeCard({ challenge, isWin }: { challenge: CommunityChallenge; isWin: boolean }) {
+  const total = calcTotal(challenge);
+  const progress = challenge.type === 'mixte' ? 100 : Math.min((total / challenge.target_value) * 100, 100);
+  const participants = (challenge.participations ?? []).length;
+  const sorted = [...(challenge.participations ?? [])].sort((a, b) => (b.contribution ?? 0) - (a.contribution ?? 0));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className={`relative overflow-hidden border ${isWin ? 'border-emerald-700/60' : 'border-red-700/80'} bg-[#0d0d0d]`}>
+
+        {/* ── Bandeau résultat ── */}
+        {isWin ? (
+          /* GOOD GAME banner */
+          <div className="relative overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0.7 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.4, type: 'spring', stiffness: 180 }}
+              className="relative flex items-center justify-between px-4 py-2.5"
+              style={{ background: 'linear-gradient(90deg, #001a0d 0%, #003d1a 50%, #001a0d 100%)' }}
+            >
+              {/* Sweep animation */}
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: '200%' }}
+                transition={{ duration: 1.2, delay: 0.4, ease: 'easeOut' }}
+                className="absolute inset-y-0 w-16 pointer-events-none"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(34,197,94,0.25), transparent)' }}
+              />
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="text-emerald-600 text-[10px] font-rajdhani font-black uppercase tracking-[0.3em]">
+                  DÉFI ACCOMPLI
+                </span>
+              </div>
+              <motion.span
+                animate={{ opacity: [1, 0.7, 1] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                className="font-rajdhani font-black uppercase tracking-[0.25em]"
+                style={{
+                  fontSize: 'clamp(0.9rem, 3.5vw, 1.3rem)',
+                  color: '#22c55e',
+                  textShadow: '0 0 10px rgba(34,197,94,0.8), 0 0 20px rgba(34,197,94,0.4)',
+                }}
+              >
+                GOOD GAME
+              </motion.span>
+              <span className="text-emerald-900 text-[10px] font-rajdhani font-black uppercase tracking-widest">
+                {formatDate(challenge.end_date, { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </motion.div>
+          </div>
+        ) : (
+          /* GAME OVER banner */
+          <div className="relative">
+            <div
+              className="absolute inset-0 pointer-events-none z-10 opacity-10"
+              style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.4) 2px, rgba(255,0,0,0.4) 4px)' }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0.6 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.4, type: 'spring', stiffness: 200 }}
+              className="relative z-20 flex items-center justify-between px-4 py-2.5"
+              style={{ background: 'linear-gradient(90deg, #3d0000 0%, #7f0000 50%, #3d0000 100%)' }}
+            >
+              <div className="flex items-center gap-2">
+                <Skull className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <span className="text-red-500 text-[10px] font-rajdhani font-black uppercase tracking-[0.3em]">
+                  DÉFI ÉCHOUÉ
+                </span>
+              </div>
+              <motion.span
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ repeat: Infinity, duration: 0.9, ease: 'easeInOut' }}
+                className="font-rajdhani font-black uppercase text-red-300 tracking-[0.25em]"
+                style={{ fontSize: 'clamp(0.9rem, 3.5vw, 1.3rem)', textShadow: '0 0 12px rgba(255,50,50,0.9), 0 0 24px rgba(255,0,0,0.5)' }}
+              >
+                GAME OVER
+              </motion.span>
+              <span className="text-red-700 text-[10px] font-rajdhani font-black uppercase tracking-[0.3em]">
+                {formatDate(challenge.end_date, { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            </motion.div>
+          </div>
+        )}
+
+        {/* ── Corps de la card ── */}
+        <div className={`p-4 space-y-3 ${!isWin ? 'opacity-80' : ''}`}>
+          {/* Badges */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center gap-1 text-xs font-rajdhani font-medium px-2 py-0.5 border ${typeBadgeClass(challenge.type)}`}>
+                {typeIcon(challenge.type)}
+                {typeLabel(challenge.type)}
+              </span>
+              {challenge.is_flash && (
+                <span className="inline-flex items-center gap-1 text-xs font-rajdhani font-bold px-2 py-0.5 border bg-transparent text-amber-500 border-amber-700/50">
+                  <Zap className="w-3 h-3" />FLASH
+                </span>
+              )}
+            </div>
+            {challenge.creator && (
+              <span className="text-xs text-[#5a5a5a] whitespace-nowrap">par {challenge.creator.username}</span>
+            )}
+          </div>
+
+          {/* Titre */}
+          <h3 className={`font-rajdhani font-semibold text-base tracking-wide uppercase ${
+            isWin ? 'text-emerald-300' : 'text-red-200/70 line-through decoration-red-700'
+          }`}>
+            {challenge.title}
+          </h3>
+          {challenge.description && (
+            <p className="text-xs text-[#6b6b6b] leading-relaxed">{challenge.description}</p>
+          )}
+
+          {/* Progress */}
+          {challenge.type !== 'mixte' && (
+            <div className="space-y-1.5">
+              <ProgressBar
+                value={isWin ? 100 : progress}
+                color={isWin ? 'bg-emerald-700' : 'bg-red-900'}
+                height="sm"
+              />
+              <div className="flex justify-between text-xs">
+                <span className="text-[#5a5a5a]">
+                  {total.toLocaleString('fr-FR')} / {challenge.target_value.toLocaleString('fr-FR')} {challenge.unit}
+                </span>
+                <span className={`font-rajdhani font-bold ${isWin ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {isWin ? '100% ✓' : `${Math.round(progress)}% — ÉCHEC`}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Participants */}
+          {participants > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {sorted.map(p => (
+                <span key={p.user_id}
+                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 border text-xs ${
+                    isWin
+                      ? 'border-emerald-900/40 text-emerald-700 bg-emerald-950/30'
+                      : 'border-red-900/30 text-red-800 bg-red-950/20'
+                  }`}>
+                  {p.user?.avatar_url ? (
+                    <img src={p.user.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[9px] font-bold">
+                      {(p.user?.username ?? '?')[0].toUpperCase()}
+                    </span>
+                  )}
+                  {p.user?.username ?? '—'}
+                  {challenge.type !== 'mixte' && (
+                    <span className="text-[#4a4a4a]">· {(p.contribution ?? 0).toLocaleString('fr-FR')}</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Bordure gauche colorée */}
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-1 ${isWin ? 'bg-emerald-500' : 'bg-red-600'}`}
+          style={{ boxShadow: isWin ? '0 0 8px rgba(34,197,94,0.6)' : '0 0 8px rgba(220,38,38,0.8)' }}
+        />
+      </div>
     </motion.div>
   );
 }
@@ -738,29 +918,33 @@ function CreateForm({ userId, onCreated }: { userId: string; onCreated: () => vo
 
 export function TeamGoalsPage() {
   const { profile } = useAuth();
-  const [tab, setTab] = useState<Tab>('active');
   const [challenges, setChallenges] = useState<CommunityChallenge[]>([]);
+  const [finishedChallenges, setFinishedChallenges] = useState<CommunityChallenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['mission', 'active', 'finished', 'goodgame', 'gameover']));
   const [error, setError] = useState('');
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [contributeTarget, setContributeTarget] = useState<CommunityChallenge | null>(null);
   const [contributionTarget, setContributionTarget] = useState<CommunityChallenge | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const CHALLENGE_SELECT = `
+    *,
+    creator:profiles!created_by(username),
+    participations:challenge_participations(
+      user_id, contribution, completed,
+      user:profiles(username, avatar_url)
+    )
+  `;
 
   const fetchChallenges = useCallback(async () => {
-    setLoading(true);
-    setError('');
+    const today = new Date().toISOString().split('T')[0];
     try {
       const { data, error: supaErr } = await supabase
         .from('community_challenges')
-        .select(`
-          *,
-          creator:profiles!created_by(username),
-          participations:challenge_participations(
-            user_id, contribution, completed,
-            user:profiles(username, avatar_url)
-          )
-        `)
+        .select(CHALLENGE_SELECT)
         .eq('status', 'active')
+        .gte('end_date', today)
         .order('end_date', { ascending: true });
       if (supaErr) throw supaErr;
       const enriched = (data ?? []).map((c: CommunityChallenge) => ({
@@ -770,12 +954,56 @@ export function TeamGoalsPage() {
       setChallenges(enriched);
     } catch {
       setError('Impossible de charger les objectifs.');
-    } finally {
-      setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchChallenges(); }, [fetchChallenges]);
+  const fetchFinished = useCallback(async () => {
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const [resCompleted, resExpired] = await Promise.all([
+        supabase
+          .from('community_challenges')
+          .select(CHALLENGE_SELECT)
+          .in('status', ['completed', 'cancelled'])
+          .order('end_date', { ascending: false }),
+        supabase
+          .from('community_challenges')
+          .select(CHALLENGE_SELECT)
+          .eq('status', 'active')
+          .lt('end_date', today)
+          .order('end_date', { ascending: false }),
+      ]);
+
+      const combined = [...(resCompleted.data ?? []), ...(resExpired.data ?? [])];
+      const seen = new Set<string>();
+      const unique = combined.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
+
+      const enriched = unique.map((c: CommunityChallenge) => ({
+        ...c,
+        total_contribution: (c.participations ?? []).reduce((sum: number, p) => sum + (p.contribution ?? 0), 0),
+      }));
+      setFinishedChallenges(enriched);
+    } catch {
+      // silently fail
+    }
+  }, []);
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    await Promise.all([fetchChallenges(), fetchFinished()]);
+    setLoading(false);
+  }, [fetchChallenges, fetchFinished]);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  function toggleSection(id: string) {
+    setOpenSections(prev => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
 
   async function handleJoin(challengeId: string) {
     if (!profile) return;
@@ -797,25 +1025,27 @@ export function TeamGoalsPage() {
     (c.participations ?? []).some(p => p.user_id === profile?.id)
   );
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'active', label: 'Défis actifs', icon: <Trophy className="w-4 h-4" /> },
-    { id: 'mine',   label: 'Mes contributions', icon: <Target className="w-4 h-4" /> },
-    { id: 'create', label: 'Créer', icon: <Plus className="w-4 h-4" /> },
-  ];
+  const activeCount = challenges.filter(c => c.status === 'active').length;
+  const wins = finishedChallenges.filter(c => c.type === 'mixte' || calcTotal(c) >= c.target_value);
+  const losses = finishedChallenges.filter(c => c.type !== 'mixte' && calcTotal(c) < c.target_value);
+
+  const missionOpen = openSections.has('mission');
+  const activeOpen = openSections.has('active');
+  const finishedOpen = openSections.has('finished');
+  const ggOpen = openSections.has('goodgame');
+  const goOpen = openSections.has('gameover');
 
   return (
     <div className="space-y-6">
-      {/* Header — guerre en équipe */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden -mx-4 px-6 py-8 sm:mx-0 sm:px-8"
         style={{ background: 'linear-gradient(135deg, #0d0500 0%, #120800 50%, #0d0500 100%)' }}
       >
-        {/* Lignes rouges */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-700/50 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-900/30 to-transparent" />
 
-        {/* Épées en watermark */}
         <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.04] pointer-events-none select-none">
           <Swords className="w-44 h-44 text-red-400" />
         </div>
@@ -824,7 +1054,6 @@ export function TeamGoalsPage() {
         </div>
 
         <div className="relative flex flex-col items-center text-center gap-3">
-          {/* Icône */}
           <motion.div
             initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
@@ -833,7 +1062,6 @@ export function TeamGoalsPage() {
             <Swords className="w-7 h-7 text-red-500" />
           </motion.div>
 
-          {/* Titre */}
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <h1
               className="font-rajdhani font-black uppercase leading-none tracking-[0.2em]"
@@ -856,116 +1084,288 @@ export function TeamGoalsPage() {
             </div>
           </motion.div>
 
-          {/* Compteurs */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             className="flex items-center gap-4 text-[10px] text-[#4a3a3a] uppercase tracking-widest font-rajdhani"
           >
-            <span>{challenges.filter(c => c.status === 'active').length} défi{challenges.filter(c => c.status === 'active').length > 1 ? 's' : ''} actif{challenges.filter(c => c.status === 'active').length > 1 ? 's' : ''}</span>
+            <span>{activeCount} défi{activeCount > 1 ? 's' : ''} actif{activeCount > 1 ? 's' : ''}</span>
             <span className="text-red-900/50">·</span>
             <span>{myChallenges.length} participation{myChallenges.length > 1 ? 's' : ''}</span>
           </motion.div>
+
         </div>
       </motion.div>
 
-      {/* Onglets */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-        className="flex gap-1 p-1 bg-[#0d0d0d] border border-white/5"
-      >
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`
-              flex-1 flex items-center justify-center gap-1.5 text-xs font-rajdhani font-semibold
-              tracking-wide px-3 py-2.5 transition-colors
-              ${tab === t.id
-                ? 'bg-[#c9a870]/10 text-[#c9a870] border-l-2 border-[#c9a870]'
-                : 'text-[#6b6b6b] hover:text-[#d4d4d4] border-l-2 border-transparent'
-              }
-            `}
-          >
-            {t.icon}
-            <span className="ml-1">{t.label}</span>
-          </button>
-        ))}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <Button
+          variant="outline"
+          size="sm"
+          icon={<Plus className="w-3.5 h-3.5" />}
+          onClick={() => setShowCreateModal(true)}
+          className="w-full border-red-800/50 text-red-400 hover:border-red-600/70 hover:text-red-300"
+        >
+          Créer un objectif d'équipe
+        </Button>
       </motion.div>
 
-      {/* Contenu */}
-      <AnimatePresence mode="wait">
-        {/* ── Objectifs actifs ── */}
-        {tab === 'active' && (
-          <motion.div key="active" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }} className="space-y-4">
-            {loading && <Loader text="Chargement des objectifs..." />}
-            {!loading && error && (
-              <Card className="p-6 text-center">
-                <p className="text-sm text-red-400">{error}</p>
-                <Button variant="ghost" size="sm" onClick={fetchChallenges} className="mt-3">Réessayer</Button>
-              </Card>
-            )}
-            {!loading && !error && challenges.length === 0 && (
-              <Card className="p-10 text-center">
-                <Swords className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] font-medium"><em>Aucun objectif actif</em> pour le moment.</p>
-                <p className="text-[#6b6b6b] text-sm mt-1">Sois le <strong>premier</strong> à en créer un !</p>
-                <Button variant="outline" size="sm" onClick={() => setTab('create')} className="mt-4"
-                  icon={<Plus className="w-3.5 h-3.5" />}>
-                  Créer un objectif
-                </Button>
-              </Card>
-            )}
-            {!loading && !error && challenges.map(challenge => (
-              <ChallengeCard key={challenge.id} challenge={challenge} userId={profile?.id}
-                onJoin={handleJoin} onContribute={c => setContributeTarget(c)}
-                onShowContributions={c => setContributionTarget(c)} joiningId={joiningId} />
-            ))}
-          </motion.div>
-        )}
+      {loading && <Loader text="Chargement des objectifs..." />}
 
-        {/* ── Mes contributions ── */}
-        {tab === 'mine' && (
-          <motion.div key="mine" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }} className="space-y-4">
-            {loading && <Loader text="Chargement..." />}
-            {!loading && !profile && (
-              <Card className="p-8 text-center">
-                <p className="text-[#a3a3a3] text-sm">Connecte-toi pour voir tes <strong>contributions</strong>.</p>
-              </Card>
-            )}
-            {!loading && profile && myChallenges.length === 0 && (
-              <Card className="p-10 text-center">
-                <Target className="w-12 h-12 mx-auto mb-3 text-[#4a4a4a]" />
-                <p className="text-[#a3a3a3] font-medium">Tu ne participes à <em>aucun objectif</em>.</p>
-                <p className="text-[#6b6b6b] text-sm mt-1">Rejoins un <strong>objectif actif</strong> pour commencer.</p>
-                <Button variant="outline" size="sm" onClick={() => setTab('active')} className="mt-4">
-                  Voir les objectifs
-                </Button>
-              </Card>
-            )}
-            {!loading && profile && myChallenges.map(challenge => (
-              <ChallengeCard key={challenge.id} challenge={challenge} userId={profile?.id}
-                onJoin={handleJoin} onContribute={c => setContributeTarget(c)}
-                onShowContributions={c => setContributionTarget(c)}
-                joiningId={joiningId} showMyContribution />
-            ))}
-          </motion.div>
-        )}
+      {!loading && error && (
+        <Card className="p-6 text-center">
+          <p className="text-sm text-red-400">{error}</p>
+          <Button variant="ghost" size="sm" onClick={fetchAll} className="mt-3">Réessayer</Button>
+        </Card>
+      )}
 
-        {/* ── Créer ── */}
-        {tab === 'create' && (
-          <motion.div key="create" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
-            {profile
-              ? <CreateForm userId={profile.id} onCreated={fetchChallenges} />
-              : <Card className="p-8 text-center">
-                  <p className="text-[#a3a3a3] text-sm">Connecte-toi pour <strong>créer</strong> un objectif.</p>
-                </Card>
-            }
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!loading && !error && (
+        <div className="space-y-0">
+
+          {/* ── Section EN MISSION ── */}
+          <div>
+            <button onClick={() => toggleSection('mission')} className="w-full flex items-start justify-between px-4 py-3 border transition-all duration-200 border-[#c9a870]/20 bg-[#0d0d0d]">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2.5">
+                  <Swords className="w-4 h-4 text-[#c9a870] shrink-0" />
+                  <span className="font-rajdhani font-black uppercase tracking-[0.2em] text-sm text-[#c9a870]">EN MISSION</span>
+                  <span className="text-xs px-2 py-0.5 bg-[#c9a870]/10 text-[#c9a870] font-rajdhani font-bold">{myChallenges.length}</span>
+                </div>
+                <p className="text-[11px] text-[#5a4a30] pl-[22px]">Les défis actifs auxquels tu participes</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-[#8b6f47] transition-transform duration-200 shrink-0 mt-1 ${missionOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence initial={false}>
+              {missionOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-2 space-y-3">
+                    {myChallenges.length === 0 ? (
+                      <div className="px-4 py-8 text-center border border-white/5 bg-[#0d0d0d]">
+                        <p className="text-[#6b6b6b] text-sm">Tu n'es en mission sur aucun défi actif.</p>
+                        <button
+                          onClick={() => {
+                            const el = document.getElementById('section-active');
+                            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            if (!openSections.has('active')) toggleSection('active');
+                          }}
+                          className="mt-3 text-xs text-[#c9a870] hover:text-[#f5d990] underline underline-offset-2 transition-colors"
+                        >
+                          Voir les défis actifs
+                        </button>
+                      </div>
+                    ) : myChallenges.map(challenge => (
+                      <ChallengeCard key={challenge.id} challenge={challenge} userId={profile?.id}
+                        onJoin={handleJoin} onContribute={c => setContributeTarget(c)}
+                        onShowContributions={c => setContributionTarget(c)}
+                        joiningId={joiningId} showMyContribution />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Séparateur ── */}
+          <div className="flex items-center gap-3 py-3 px-2">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#c9a870]/20" />
+            <Swords className="w-3 h-3 text-[#3a3a3a]" />
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#c9a870]/20" />
+          </div>
+
+          {/* ── Section DÉFIS ACTIFS ── */}
+          <div id="section-active">
+            <button onClick={() => toggleSection('active')} className="w-full flex items-start justify-between px-4 py-3 border transition-all duration-200 border-[#c9a870]/20 bg-[#0d0d0d]">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2.5">
+                  <Trophy className="w-4 h-4 text-[#c9a870] shrink-0" />
+                  <span className="font-rajdhani font-black uppercase tracking-[0.2em] text-sm text-[#c9a870]">DÉFIS ACTIFS</span>
+                  <span className="text-xs px-2 py-0.5 bg-[#c9a870]/10 text-[#c9a870] font-rajdhani font-bold">{challenges.filter(c => !(c.participations ?? []).some(p => p.user_id === profile?.id)).length}</span>
+                </div>
+                <p className="text-[11px] text-[#5a4a30] pl-[22px]">Défis en cours auxquels tu ne participes pas encore</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-[#8b6f47] transition-transform duration-200 shrink-0 mt-1 ${activeOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence initial={false}>
+              {activeOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-2 space-y-3">
+                    {challenges.length === 0 ? (
+                      <div className="px-4 py-8 text-center border border-white/5 bg-[#0d0d0d]">
+                        <Swords className="w-10 h-10 mx-auto mb-2 text-[#4a4a4a]" />
+                        <p className="text-[#6b6b6b] text-sm">Aucun défi actif. Sois le premier à en créer un !</p>
+                      </div>
+                    ) : challenges.filter(c => !(c.participations ?? []).some(p => p.user_id === profile?.id)).map(challenge => (
+                      <ChallengeCard key={challenge.id} challenge={challenge} userId={profile?.id}
+                        onJoin={handleJoin} onContribute={c => setContributeTarget(c)}
+                        onShowContributions={c => setContributionTarget(c)} joiningId={joiningId} />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Séparateur ── */}
+          <div className="flex items-center gap-3 py-3 px-2">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/5" />
+            <CheckCircle2 className="w-3 h-3 text-[#2a2a2a]" />
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/5" />
+          </div>
+
+          {/* ── Section DÉFIS TERMINÉS ── */}
+          <div>
+            <button onClick={() => toggleSection('finished')} className="w-full flex items-start justify-between px-4 py-3 border transition-all duration-200 border-white/5 bg-[#0a0a0a]">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#4a4a4a] shrink-0" />
+                  <span className="font-rajdhani font-black uppercase tracking-[0.2em] text-sm text-[#3a3a3a]">DÉFIS TERMINÉS</span>
+                  <span className="text-xs px-2 py-0.5 bg-[#1a1a1a] text-[#4a4a4a] font-rajdhani font-bold">{finishedChallenges.length}</span>
+                </div>
+                <p className="text-[11px] text-[#3a3a3a] pl-[22px]">Victoires et défaites de l'équipe</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-[#3a3a3a] transition-transform duration-200 shrink-0 mt-1 ${finishedOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence initial={false}>
+              {finishedOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-2 space-y-2">
+                    {finishedChallenges.length === 0 ? (
+                      <div className="px-4 py-8 text-center border border-white/5 bg-[#0d0d0d]">
+                        <Trophy className="w-10 h-10 mx-auto mb-2 text-[#4a4a4a]" />
+                        <p className="text-[#4a4a4a] text-sm">Aucun défi terminé pour l'instant.</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Sous-accordéon GOOD GAME */}
+                        <div>
+                          <button
+                            onClick={() => toggleSection('goodgame')}
+                            className={`w-full flex items-center justify-between px-4 py-3 border transition-all duration-200 ${
+                              ggOpen
+                                ? 'border-emerald-700/60 bg-emerald-950/30'
+                                : 'border-white/5 bg-[#0d0d0d] hover:border-emerald-900/40'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <CheckCircle2 className={`w-4 h-4 ${ggOpen ? 'text-emerald-500' : 'text-[#3a3a3a]'}`} />
+                              <span
+                                className="font-rajdhani font-black uppercase tracking-[0.25em] text-sm"
+                                style={ggOpen ? { color: '#22c55e', textShadow: '0 0 8px rgba(34,197,94,0.5)' } : { color: '#3a5a40' }}
+                              >
+                                GOOD GAME
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs px-2 py-0.5 font-rajdhani font-bold ${
+                                ggOpen ? 'bg-emerald-800 text-emerald-200' : 'bg-[#1a1a1a] text-[#4a4a4a]'
+                              }`}>
+                                {wins.length}
+                              </span>
+                              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${ggOpen ? 'rotate-180 text-emerald-500' : 'text-[#4a4a4a]'}`} />
+                            </div>
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {ggOpen && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-2 space-y-3">
+                                  {wins.length === 0 ? (
+                                    <div className="px-4 py-6 text-center border border-white/5 bg-[#0d0d0d]">
+                                      <p className="text-[#4a4a4a] text-sm">Aucun défi remporté pour l'instant.</p>
+                                    </div>
+                                  ) : wins.map(c => <FinishedChallengeCard key={c.id} challenge={c} isWin={true} />)}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Sous-accordéon GAME OVER */}
+                        <div>
+                          <button
+                            onClick={() => toggleSection('gameover')}
+                            className={`w-full flex items-center justify-between px-4 py-3 border transition-all duration-200 relative overflow-hidden ${
+                              goOpen
+                                ? 'border-red-700/60 bg-red-950/20'
+                                : 'border-white/5 bg-[#0d0d0d] hover:border-red-900/30'
+                            }`}
+                          >
+                            {goOpen && (
+                              <div
+                                className="absolute inset-0 pointer-events-none opacity-[0.04]"
+                                style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,0,0.5) 2px, rgba(255,0,0,0.5) 4px)' }}
+                              />
+                            )}
+                            <div className="relative flex items-center gap-2.5">
+                              <Skull className={`w-4 h-4 ${goOpen ? 'text-red-500' : 'text-[#3a3a3a]'}`} />
+                              <motion.span
+                                animate={goOpen ? { opacity: [1, 0.6, 1] } : { opacity: 1 }}
+                                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                                className="font-rajdhani font-black uppercase tracking-[0.25em] text-sm"
+                                style={goOpen ? { color: '#ef4444', textShadow: '0 0 8px rgba(220,38,38,0.7)' } : { color: '#4a2020' }}
+                              >
+                                GAME OVER
+                              </motion.span>
+                            </div>
+                            <div className="relative flex items-center gap-2">
+                              <span className={`text-xs px-2 py-0.5 font-rajdhani font-bold ${
+                                goOpen ? 'bg-red-900 text-red-200' : 'bg-[#1a1a1a] text-[#4a4a4a]'
+                              }`}>
+                                {losses.length}
+                              </span>
+                              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${goOpen ? 'rotate-180 text-red-500' : 'text-[#4a4a4a]'}`} />
+                            </div>
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {goOpen && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-2 space-y-3">
+                                  {losses.length === 0 ? (
+                                    <div className="px-4 py-6 text-center border border-white/5 bg-[#0d0d0d]">
+                                      <p className="text-[#4a4a4a] text-sm">Aucun défi échoué. Bien joué !</p>
+                                    </div>
+                                  ) : losses.map(c => <FinishedChallengeCard key={c.id} challenge={c} isWin={false} />)}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+        </div>
+      )}
+
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Créer un objectif d'équipe" size="lg">
+        {profile
+          ? <CreateForm userId={profile.id} onCreated={() => { setShowCreateModal(false); fetchAll(); }} />
+          : <div className="p-8 text-center">
+              <p className="text-[#a3a3a3] text-sm">Connecte-toi pour <strong>créer</strong> un objectif.</p>
+            </div>
+        }
+      </Modal>
 
       <ContributeModal
         challenge={contributeTarget}

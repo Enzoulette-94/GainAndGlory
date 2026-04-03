@@ -25,6 +25,10 @@ vi.mock('../../lib/supabase-client', () => ({
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      lt: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: mockChallenges, error: null }),
       insert: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
@@ -59,9 +63,9 @@ describe('TeamGoalsPage', () => {
       await q(/actif/i);
     });
 
-    it('affiche l\'onglet Contributions', async () => {
+    it('affiche la section "EN MISSION"', async () => {
       renderTeamGoals();
-      await q(/contribution/i);
+      await q(/mission/i);
     });
 
     it('affiche l\'onglet Créer', async () => {
@@ -69,9 +73,9 @@ describe('TeamGoalsPage', () => {
       await q(/créer/i);
     });
 
-    it('affiche le défi "Défi 500 km"', async () => {
+    it('affiche le défi "Défi 500 km" dans la section active', async () => {
       renderTeamGoals();
-      await q(/défi 500 km/i);
+      await q(/500 km/i);
     });
   });
 

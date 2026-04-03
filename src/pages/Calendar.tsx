@@ -3,6 +3,8 @@ import {
   CalendarDays, ChevronLeft, ChevronRight,
   Dumbbell, PersonStanding, Scale, Target, Swords, Flag, Zap, Flame,
 } from 'lucide-react';
+import { Input, Select, Textarea } from '../components/common/Input';
+import { Button } from '../components/common/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -93,6 +95,9 @@ export function CalendarPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<DayActivity | null>(null);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showChallengeModal, setShowChallengeModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -104,7 +109,7 @@ export function CalendarPage() {
       crossfitService.getSessions(profile.id, 300),
       weightService.getEntries(profile.id, 300),
       goalsService.getGoals(profile.id),
-      db.from('community_challenges').select('id,title,start_date,end_date,type').in('status', ['active', 'pending']).then(({ data }: { data: ChallengeItem[] | null }) => data ?? []),
+      db.from('community_challenges').select('id,title,start_date,end_date,type,participations:challenge_participations(user_id)').in('status', ['active', 'pending']).then(({ data }: { data: (ChallengeItem & { participations?: { user_id: string }[] })[] | null }) => (data ?? []).filter(c => (c.participations ?? []).some((p: { user_id: string }) => p.user_id === profile.id))),
       db.from('events').select('id,title,event_date,type,description').order('event_date', { ascending: true }).then(({ data }: { data: EventItem[] | null }) => data ?? []),
     ]).then(([w, r, c, cf, wt, g, ch, ev]) => {
       setWorkouts(w as WorkoutSession[]);
@@ -200,6 +205,23 @@ export function CalendarPage() {
   const todayStr  = toDateStr(new Date());
   const totalMonthActivities = monthStats.workoutDays + monthStats.runDays + monthStats.caliDays + monthStats.crossfitDays;
 
+  async function reloadData() {
+    if (!profile) return;
+    const [newGoals, newEvents] = await Promise.all([
+      goalsService.getGoals(profile.id),
+      db.from('events').select('id,title,event_date,type,description').order('event_date', { ascending: true }).then(({ data }: any) => data ?? []),
+    ]);
+    setGoals((newGoals as PersonalGoal[]).filter(g => g.status === 'active' && g.deadline));
+    setEvents(newEvents);
+  }
+
+  const allEvents = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return [...events]
+      .filter(ev => ev.event_date >= today)
+      .sort((a, b) => a.event_date.localeCompare(b.event_date));
+  }, [events]);
+
   if (!profile) return null;
 
   return (
@@ -249,6 +271,32 @@ export function CalendarPage() {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* ── Boutons d'action rapide ────────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-2">
+        <button onClick={() => setShowGoalModal(true)} className="flex items-center justify-center gap-1.5 px-2 py-2 border border-[#c9a870]/30 bg-[#c9a870]/5 text-[#c9a870] text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-[#c9a870]/10 transition-colors">
+          <Target className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">+ Objectif perso</span>
+        </button>
+        <button onClick={() => setShowChallengeModal(true)} className="flex items-center justify-center gap-1.5 px-2 py-2 border border-pink-800/40 bg-pink-950/10 text-pink-400 text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-pink-900/20 transition-colors">
+          <Swords className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">+ Équipe</span>
+        </button>
+        <button onClick={() => setShowEventModal(true)} className="flex items-center justify-center gap-1.5 px-2 py-2 border border-amber-800/40 bg-amber-950/10 text-amber-400 text-xs font-rajdhani font-bold uppercase tracking-wide hover:bg-amber-900/20 transition-colors">
+          <Flag className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">+ Événement</span>
+        </button>
+      </div>
+
+      {/* ── Séparateur Échéances ── */}
+      <div className="relative flex items-center gap-4 py-2">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c9a870]/40 to-[#c9a870]/60" />
+        <div className="flex items-center gap-2 px-4 py-1.5 border border-[#c9a870]/30 bg-[#c9a870]/5">
+          <Target className="w-3.5 h-3.5 text-[#c9a870]" />
+          <span className="text-xs font-rajdhani font-black uppercase tracking-[0.3em] text-[#c9a870]">Échéances</span>
+        </div>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c9a870]/40 to-[#c9a870]/60" />
+      </div>
 
       {/* ── À venir ───────────────────────────────────────────────────── */}
       {(() => {
@@ -342,6 +390,16 @@ export function CalendarPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* ── Séparateur Calendrier ── */}
+      <div className="relative flex items-center gap-4 py-2">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c9a870]/40 to-[#c9a870]/60" />
+        <div className="flex items-center gap-2 px-4 py-1.5 border border-[#c9a870]/30 bg-[#c9a870]/5">
+          <CalendarDays className="w-3.5 h-3.5 text-[#c9a870]" />
+          <span className="text-xs font-rajdhani font-black uppercase tracking-[0.3em] text-[#c9a870]">Calendrier</span>
+        </div>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c9a870]/40 to-[#c9a870]/60" />
       </div>
 
       {/* ── Calendrier ────────────────────────────────────────────────── */}
@@ -481,6 +539,50 @@ export function CalendarPage() {
           {monthItems.events.length > 0 && <Link to="/events" className="text-[10px] text-[#4a4a4a] hover:text-amber-400 transition-colors font-rajdhani">Voir événements →</Link>}
         </div>
       )}
+
+      {/* ── Séparateur Événements ── */}
+      <div className="relative flex items-center gap-4 py-2">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-800/40 to-amber-700/60" />
+        <div className="flex items-center gap-2 px-4 py-1.5 border border-amber-800/40 bg-amber-950/10">
+          <Flag className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-xs font-rajdhani font-black uppercase tracking-[0.3em] text-amber-500">Événements à venir</span>
+        </div>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-800/40 to-amber-700/60" />
+      </div>
+
+      {/* ── Événements à venir ────────────────────────────────────────── */}
+      <div className="space-y-2">
+        {allEvents.length === 0 ? (
+          <div className="text-center py-6 border border-white/5 bg-[#0d0d0d]">
+            <p className="text-xs text-[#4a4a4a]">Aucun événement à venir.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {allEvents.map((ev) => {
+              const d = new Date(ev.event_date);
+              const daysLeft = Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000));
+              const urgent = daysLeft <= 7;
+              return (
+                <div key={ev.id} className={`flex items-center justify-between px-4 py-4 border-l-4 ${urgent ? 'border-l-red-500 border border-red-500/20 bg-red-950/15' : 'border-l-amber-500 border border-amber-700/25 bg-amber-950/10'}`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Flag className={`w-4 h-4 shrink-0 ${urgent ? 'text-red-400' : 'text-amber-400'}`} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-rajdhani font-bold text-white uppercase tracking-wide truncate">{ev.title}</p>
+                      <p className={`text-xs font-medium mt-0.5 ${urgent ? 'text-red-400' : 'text-amber-500'}`}>{formatDate(ev.event_date)}{ev.type ? ` · ${ev.type}` : ''}</p>
+                    </div>
+                  </div>
+                  <div className={`shrink-0 ml-4 flex flex-col items-center justify-center px-3 py-1.5 border ${urgent ? 'border-red-500/40 bg-red-950/30' : 'border-amber-600/40 bg-amber-950/20'}`}>
+                    <span className={`font-rajdhani font-black text-2xl leading-none ${urgent ? 'text-red-400' : 'text-amber-400'}`}>
+                      {daysLeft === 0 ? 'AUJ.' : `J-${daysLeft}`}
+                    </span>
+                    {daysLeft > 0 && <span className={`text-[9px] font-rajdhani font-bold uppercase tracking-widest ${urgent ? 'text-red-600' : 'text-amber-700'}`}>jours</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Modal détail du jour ───────────────────────────────────────── */}
       <Modal
@@ -639,6 +741,31 @@ export function CalendarPage() {
           </div>
         )}
       </Modal>
+
+      {/* ── Modal nouvel objectif perso ────────────────────────────────── */}
+      <GoalModal
+        isOpen={showGoalModal}
+        onClose={() => setShowGoalModal(false)}
+        profileId={profile.id}
+        onSaved={reloadData}
+      />
+
+      {/* ── Modal nouvel objectif équipe ───────────────────────────────── */}
+      <ChallengeModal
+        isOpen={showChallengeModal}
+        onClose={() => setShowChallengeModal(false)}
+        profileId={profile.id}
+        onSaved={reloadData}
+      />
+
+      {/* ── Modal nouvel événement ─────────────────────────────────────── */}
+      <EventModal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        onSaved={reloadData}
+        userId={profile?.id ?? ''}
+      />
+
     </div>
   );
 }
@@ -653,5 +780,278 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
       </div>
       <div className="space-y-1.5">{children}</div>
     </div>
+  );
+}
+
+// ── Modal objectif perso ─────────────────────────────────────────────────────
+function GoalModal({ isOpen, onClose, profileId, onSaved }: {
+  isOpen: boolean; onClose: () => void; profileId: string; onSaved: () => void;
+}) {
+  const [type, setType] = useState('musculation');
+  const [title, setTitle] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [targetValue, setTargetValue] = useState('');
+  const [unit, setUnit] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  function reset() { setType('musculation'); setTitle(''); setDeadline(''); setTargetValue(''); setUnit(''); setError(''); }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) { setError('Le titre est obligatoire.'); return; }
+    setSaving(true); setError('');
+    try {
+      await goalsService.createGoal({
+        user_id: profileId,
+        type,
+        title: title.trim(),
+        deadline: deadline || undefined,
+        target_value: targetValue ? parseFloat(targetValue) : undefined,
+        unit: unit.trim() || undefined,
+      });
+      await onSaved();
+      reset();
+      onClose();
+    } catch (err: any) {
+      setError(err?.message ?? 'Erreur lors de la création.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={() => { reset(); onClose(); }} title="Nouvel objectif perso">
+      <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <Select
+          label="Type"
+          value={type}
+          onChange={e => setType(e.target.value)}
+          options={[
+            { value: 'musculation', label: 'Musculation' },
+            { value: 'running', label: 'Course' },
+            { value: 'weight', label: 'Poids' },
+            { value: 'calisthenics', label: 'Calisthénie' },
+          ]}
+        />
+        <Input
+          label="Titre"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Ex : Courir 10 km"
+          required
+        />
+        <Input
+          label="Date limite"
+          type="date"
+          value={deadline}
+          onChange={e => setDeadline(e.target.value)}
+        />
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Input
+              label="Valeur cible"
+              type="number"
+              value={targetValue}
+              onChange={e => setTargetValue(e.target.value)}
+              placeholder="Ex : 10"
+              min="0"
+              step="any"
+            />
+          </div>
+          <div className="flex-1">
+            <Input
+              label="Unité"
+              value={unit}
+              onChange={e => setUnit(e.target.value)}
+              placeholder="Ex : km, kg, reps"
+            />
+          </div>
+        </div>
+        {error && <p className="text-xs text-red-400">{error}</p>}
+        <div className="flex gap-2 justify-end pt-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => { reset(); onClose(); }}>Annuler</Button>
+          <Button type="submit" size="sm" loading={saving}>Créer</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ── Modal objectif équipe ────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const dbLocal = supabase as any;
+
+function ChallengeModal({ isOpen, onClose, profileId, onSaved }: {
+  isOpen: boolean; onClose: () => void; profileId: string; onSaved: () => void;
+}) {
+  const [title, setTitle] = useState('');
+  const [type, setType] = useState('distance');
+  const [targetValue, setTargetValue] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  function reset() { setTitle(''); setType('distance'); setTargetValue(''); setEndDate(''); setError(''); }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) { setError('Le titre est obligatoire.'); return; }
+    if (!targetValue || isNaN(parseFloat(targetValue))) { setError('La valeur cible est obligatoire.'); return; }
+    if (!endDate) { setError('La date de fin est obligatoire.'); return; }
+    setSaving(true); setError('');
+    try {
+      const unitMap: Record<string, string> = { distance: 'km', tonnage: 'kg', repetitions: 'reps', sessions: 'séances' };
+      const { error: insertErr } = await dbLocal.from('community_challenges').insert({
+        created_by: profileId,
+        title: title.trim(),
+        type,
+        target_value: parseFloat(targetValue),
+        unit: unitMap[type] ?? 'séances',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: endDate,
+        is_flash: false,
+        status: 'active',
+      });
+      if (insertErr) throw insertErr;
+      await onSaved();
+      reset();
+      onClose();
+    } catch (err: any) {
+      setError(err?.message ?? 'Erreur lors de la création.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={() => { reset(); onClose(); }} title="Nouvel objectif d'équipe">
+      <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <Input
+          label="Titre"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Ex : 500 km en équipe"
+          required
+        />
+        <Select
+          label="Type"
+          value={type}
+          onChange={e => setType(e.target.value)}
+          options={[
+            { value: 'distance', label: 'Distance (km)' },
+            { value: 'tonnage', label: 'Tonnage (kg)' },
+            { value: 'sessions', label: 'Séances' },
+            { value: 'repetitions', label: 'Répétitions' },
+          ]}
+        />
+        <Input
+          label="Valeur cible"
+          type="number"
+          value={targetValue}
+          onChange={e => setTargetValue(e.target.value)}
+          placeholder="Ex : 500"
+          min="0"
+          step="any"
+          required
+        />
+        <Input
+          label="Date de fin"
+          type="date"
+          value={endDate}
+          onChange={e => setEndDate(e.target.value)}
+          required
+        />
+        {error && <p className="text-xs text-red-400">{error}</p>}
+        <div className="flex gap-2 justify-end pt-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => { reset(); onClose(); }}>Annuler</Button>
+          <Button type="submit" size="sm" loading={saving}>Créer</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ── Modal nouvel événement ───────────────────────────────────────────────────
+function EventModal({ isOpen, onClose, onSaved, userId }: {
+  isOpen: boolean; onClose: () => void; onSaved: () => void; userId: string;
+}) {
+  const [title, setTitle] = useState('');
+  const [eventType, setEventType] = useState('');
+  const [date, setDate] = useState('');
+  const [description, setDescription] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  function reset() { setTitle(''); setEventType(''); setDate(''); setDescription(''); setError(''); }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) { setError('Le titre est obligatoire.'); return; }
+    if (!date) { setError('La date est obligatoire.'); return; }
+    setSaving(true); setError('');
+    try {
+      const { error: insertErr } = await dbLocal.from('events').insert({
+        user_id: userId,
+        title: title.trim(),
+        event_date: date,
+        type: eventType || null,
+        description: description.trim() || null,
+      });
+      if (insertErr) throw insertErr;
+      await onSaved();
+      reset();
+      onClose();
+    } catch (err: any) {
+      setError(err?.message ?? 'Erreur lors de la création.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal isOpen={isOpen} onClose={() => { reset(); onClose(); }} title="Nouvel événement">
+      <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <Input
+          label="Titre"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Ex : Semi-marathon de Paris"
+          required
+        />
+        <Select
+          label="Type"
+          value={eventType}
+          onChange={e => setEventType(e.target.value)}
+          placeholder="— Sélectionner —"
+          options={[
+            { value: 'course', label: 'Course' },
+            { value: 'competition', label: 'Compétition' },
+            { value: 'trail', label: 'Trail' },
+            { value: 'triathlon', label: 'Triathlon' },
+            { value: 'autre', label: 'Autre' },
+          ]}
+        />
+        <Input
+          label="Date"
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+          required
+        />
+        <Textarea
+          label="Description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="Optionnel"
+          rows={2}
+        />
+        {error && <p className="text-xs text-red-400">{error}</p>}
+        <div className="flex gap-2 justify-end pt-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => { reset(); onClose(); }}>Annuler</Button>
+          <Button type="submit" size="sm" loading={saving}>Créer</Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

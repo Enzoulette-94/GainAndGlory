@@ -28,6 +28,8 @@ export const goalsService = {
     current_value?: number;
     unit?: string;
     deadline?: string;
+    direction?: 'gain' | 'lose';
+    initial_value?: number;
   }): Promise<PersonalGoal> {
     const { data, error } = await db
       .from('personal_goals')
@@ -41,6 +43,8 @@ export const goalsService = {
         unit: input.unit ?? null,
         deadline: input.deadline ?? null,
         status: 'active',
+        direction: input.direction ?? 'gain',
+        initial_value: input.initial_value ?? null,
       })
       .select()
       .single();
