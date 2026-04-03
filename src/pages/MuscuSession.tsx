@@ -31,6 +31,7 @@ import type { UserBadge } from '../types/models';
 interface SetRow {
   reps: number;
   weight: number;
+  weightRaw: string;
   rest_time: number | null;
 }
 
@@ -41,7 +42,7 @@ interface ExerciseBlock {
 }
 
 function defaultSet(): SetRow {
-  return { reps: 10, weight: 0, rest_time: null };
+  return { reps: 10, weight: 0, weightRaw: '', rest_time: null };
 }
 
 function defaultExerciseBlock(): ExerciseBlock {
@@ -81,6 +82,7 @@ export function MuscuSessionPage() {
         grouped.get(set.exercise_id)!.sets.push({
           reps: set.reps,
           weight: set.weight,
+          weightRaw: String(set.weight),
           rest_time: set.rest_time ?? null,
         });
       }
@@ -452,16 +454,17 @@ export function MuscuSessionPage() {
                           className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                         />
                         <input
-                          type="number"
-                          min={0}
-                          max={9999}
-                          step={0.5}
-                          value={set.weight}
-                          onChange={e =>
+                          type="text"
+                          inputMode="decimal"
+                          value={set.weightRaw}
+                          onChange={e => {
+                            const raw = e.target.value.replace(',', '.');
+                            const parsed = parseFloat(raw);
                             updateSet(ex.id, setIdx, {
-                              weight: parseFloat(e.target.value) || 0,
-                            })
-                          }
+                              weightRaw: e.target.value,
+                              weight: isNaN(parsed) ? 0 : parsed,
+                            });
+                          }}
                           className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
                         />
                         <input
