@@ -122,6 +122,24 @@ export const feedService = {
     } catch { /* ignore */ }
   },
 
+  // Publier une session hybride dans le feed
+  async publishHybrid(userId: string, blocks: import('../types/models').HybridBlock[], feedback?: string, sessionId?: string, name?: string) {
+    try {
+      await db.from('activity_feed').insert({
+        user_id: userId,
+        type: 'hybrid',
+        content: {
+          type: 'hybrid',
+          blocks,
+          blocks_count: blocks.length,
+          feedback,
+          session_id: sessionId,
+          name,
+        },
+      });
+    } catch { /* ignore */ }
+  },
+
   // Publier un Personal Record dans le feed
   async deletePost(postId: string): Promise<void> {
     const { error } = await db.from('activity_feed').delete().eq('id', postId);

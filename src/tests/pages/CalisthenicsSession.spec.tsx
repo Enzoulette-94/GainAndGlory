@@ -15,6 +15,7 @@ vi.mock('../../services/calisthenics.service', () => ({
   calisthenicsService: {
     getUnlockedSkills: vi.fn().mockResolvedValue([]),
     createSession: vi.fn().mockResolvedValue({ id: 's-1' }),
+    getSessionsCount: vi.fn().mockResolvedValue(3),
   },
 }));
 
@@ -113,6 +114,40 @@ describe('CalisthenicsSessionPage', () => {
       await waitFor(() => {
         expect(screen.queryAllByText(/annuler/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/enregistrer/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
+
+  describe('Boutons dupliquer et circuit', () => {
+    it('affiche le bouton "Circuit"', async () => {
+      renderPage();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/circuit/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche le bouton "Repos"', async () => {
+      renderPage();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/^repos$/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('ajoute un circuit au clic sur "Circuit"', async () => {
+      renderPage();
+      // D'abord ajouter un exercice pour que les boutons soient visibles
+      await waitFor(() => {
+        const addBtns = screen.queryAllByText(/exercice/i);
+        expect(addBtns.length).toBeGreaterThan(0);
+        addBtns[0].click();
+      }, { timeout: 3000 });
+      await waitFor(() => {
+        const circuitBtns = screen.queryAllByText(/circuit/i);
+        expect(circuitBtns.length).toBeGreaterThan(0);
+        circuitBtns[0].click();
+      }, { timeout: 3000 });
+      await waitFor(() => {
+        expect(screen.queryAllByText(/rounds/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });

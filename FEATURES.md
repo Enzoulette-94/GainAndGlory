@@ -617,6 +617,54 @@
 
 ---
 
+## 18. Circuits & Dupliquer
+
+### Circuits (Musculation / Calisthénie / Crossfit)
+- Bouton **"Créer un circuit"** dans chaque page de nouvelle séance
+- Un circuit regroupe N exercices exécutés en boucle (paramètre **rounds**)
+- Paramètre **repos entre rounds** (secondes)
+- Dans un circuit : ajout d'exercices et de **blocs repos**
+- Sauvegarde : les exercices du circuit sont enregistrés avec `rounds` répétitions chacun
+- Pour Calisthénie et Crossfit : structure JSONB préservée avec items imbriqués
+
+### Bouton Dupliquer
+- **Dupliquer un exercice** : bouton ⧉ sur chaque exercice → copie insérée juste en dessous
+- **Dupliquer une série** (Musculation) : bouton ⧉ sur chaque ligne de série
+- **Dupliquer un circuit entier** : bouton ⧉ sur le header du circuit
+- **Dupliquer dans un circuit** : bouton ⧉ sur chaque exercice à l'intérieur du circuit
+
+---
+
+## 19. Session Hybride
+
+### Concept
+Combiner plusieurs activités en une seule session (ex : Course + Musculation).
+
+### Formulaire
+- Page dédiée `/hybrid/new`, accessible depuis le Dashboard (bouton "Hybride")
+- Formulaire unifié avec des **blocs d'activité** ordonnés
+- Types supportés : Running, Musculation, Calisthénie, Crossfit
+- Chaque bloc a son propre formulaire simplifié inline
+- Boutons ↑ / ↓ pour réordonner les blocs
+- Minimum 2 blocs requis
+
+### XP
+- XP accordé pour chaque bloc selon son type (RUNNING_SESSION, WORKOUT_SESSION, etc.)
+- **+20 XP bonus hybride** si 2 blocs ou plus
+- Affiché en temps réel pendant la saisie
+
+### Données
+- Table `hybrid_sessions` avec colonne `blocks` JSONB
+- Fichier SQL : `supabase/hybrid_sessions.sql`
+- Service : `src/services/hybrid.service.ts`
+
+### Feed communautaire
+- Carte dorée avec label "SESSION HYBRIDE"
+- Affiche le résumé des types d'activités (🏃 Course + 🏋️ Muscu...)
+- Type `'hybrid'` ajouté à `ActivityType`
+
+---
+
 ## Résumé des fonctionnalités
 
 | Module | Fonctionnalités principales | Statut |
@@ -638,6 +686,8 @@
 | Badges | Vérification automatique, déblocage, affichage | ✅ |
 | Notifications | Realtime, 7 types, centre de notifs | ✅ |
 | Crossfit | WOD (EMOM/AMRAP/Benchmark/For Rounds/For Time), records, graphiques, feed | ✅ |
+| Circuits | Blocs circuit (N rounds) dans Muscu/Cali/Crossfit, dupliquer exercice/circuit | ✅ |
+| Session hybride | Multi-activité en une session (Running+Muscu+Cali+Crossfit), XP cumulé | ✅ |
 | Navigation | SideNav desktop, BottomNav mobile + drawer "Plus" | ✅ |
 | Mot de passe oublié | Envoi email de reset, page réinitialisation | ✅ |
 | Migrations DB | 4 migrations SQL avec BEGIN/COMMIT, DO blocks, vérifications | ✅ |

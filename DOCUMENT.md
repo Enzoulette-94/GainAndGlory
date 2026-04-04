@@ -353,6 +353,8 @@ VITE_SUPABASE_URL=... VITE_SUPABASE_ANON_KEY=... VITE_ACCESS_KEY=... npm run bui
 | `d60ef4b` | feat(ui): headers HallOfFame, TeamGoals, Community, Goals, Calendar grandioses |
 | `aec8d57` | feat(hall-of-fame): bandeau PR festif + confetti + feed doré |
 | `dc3318c` | feat(records): liaison complète séances → profil → hall of fame |
+| récent | feat(circuits): bouton dupliquer (exercice/série/circuit) dans Muscu, Cali, Crossfit |
+| récent | feat(hybrid): page HybridSession — blocs multi-activité ordonnés, XP cumulé, feed doré |
 
 ## Historique des commits — v1.0.0 (historique)
 

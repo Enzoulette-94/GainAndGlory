@@ -19,6 +19,7 @@ vi.mock('../../services/workout.service', () => ({
     ]),
     createSession: vi.fn().mockResolvedValue({ id: 's-1' }),
     addSet: vi.fn().mockResolvedValue(undefined),
+    getSessionsCount: vi.fn().mockResolvedValue(5),
   },
 }));
 
@@ -139,6 +140,39 @@ describe('MuscuSessionPage', () => {
     it('pré-remplit les exercices depuis copyFrom', async () => {
       renderWithCopyFrom();
       await q(/développé couché/i);
+    });
+  });
+
+  describe('Bouton dupliquer et circuits', () => {
+    it('affiche le bouton "Créer un circuit"', async () => {
+      renderMuscuSession();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/créer un circuit/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche le bouton dupliquer sur l\'exercice par défaut', async () => {
+      renderMuscuSession();
+      await waitFor(() => {
+        // Le bouton Copy (title="Dupliquer l'exercice") doit être présent
+        const btns = Array.from(document.querySelectorAll('button[title]'));
+        const dupBtn = btns.find(b => b.getAttribute('title')?.match(/dupliquer/i));
+        expect(dupBtn).toBeTruthy();
+      }, { timeout: 3000 });
+    });
+
+    it('ajoute un circuit au clic sur "Créer un circuit"', async () => {
+      renderMuscuSession();
+      await waitFor(() => {
+        const circuitBtns = screen.queryAllByText(/créer un circuit/i);
+        expect(circuitBtns.length).toBeGreaterThan(0);
+        circuitBtns[0].click();
+      }, { timeout: 3000 });
+      await waitFor(() => {
+        // Le circuit header devrait montrer "rounds" ou "Circuit"
+        const roundsText = document.querySelectorAll('input[title="Nombre de rounds"]');
+        expect(roundsText.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
     });
   });
 

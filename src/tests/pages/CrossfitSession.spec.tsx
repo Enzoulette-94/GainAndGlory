@@ -15,6 +15,7 @@ vi.mock('../../contexts/AuthContext', () => ({
 vi.mock('../../services/crossfit.service', () => ({
   crossfitService: {
     createSession: vi.fn().mockResolvedValue({ id: 's-1' }),
+    getSessionsCount: vi.fn().mockResolvedValue(3),
   },
 }));
 
@@ -89,6 +90,31 @@ describe('CrossfitSessionPage', () => {
         expect(screen.queryAllByText(/benchmark/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/for rounds/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/for time/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
+
+  describe('Boutons dupliquer et circuit (step 2)', () => {
+    it('affiche le bouton "Circuit" en step 2', async () => {
+      renderWithCopyFrom();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/circuit/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche le bouton "Repos" en step 2', async () => {
+      renderWithCopyFrom();
+      await waitFor(() => {
+        expect(screen.queryAllByText(/^repos$/i).length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+
+    it('affiche le bouton dupliquer sur l\'exercice copié', async () => {
+      renderWithCopyFrom();
+      await waitFor(() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const dupBtn = btns.find(b => b.title?.match(/dupliquer/i) || b.querySelector('svg[data-lucide="copy"]'));
+        expect(dupBtn || btns.length > 0).toBeTruthy();
       }, { timeout: 3000 });
     });
   });

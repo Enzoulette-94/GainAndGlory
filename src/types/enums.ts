@@ -43,6 +43,7 @@ export type ActivityType =
   | 'run'
   | 'calisthenics'
   | 'crossfit'
+  | 'hybrid'
   | 'record'
   | 'personal_record'
   | 'badge'

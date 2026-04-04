@@ -43,6 +43,7 @@ const TeamGoalsPage = lazy(() => import('./pages/TeamGoals').then(m => ({ defaul
 const AdminPage = lazy(() => import('./pages/Admin').then(m => ({ default: m.AdminPage })));
 const UserProfilePage = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfilePage })));
 const SavedSessionsPage = lazy(() => import('./pages/SavedSessions').then(m => ({ default: m.SavedSessionsPage })));
+const HybridSessionPage = lazy(() => import('./pages/HybridSession').then(m => ({ default: m.HybridSessionPage })));
 
 export default function App() {
   return (
@@ -74,6 +75,8 @@ export default function App() {
 
               <Route path="/crossfit" element={<CrossfitPage />} />
               <Route path="/crossfit/new" element={<CrossfitSessionPage />} />
+
+              <Route path="/hybrid/new" element={<HybridSessionPage />} />
 
               <Route path="/weight" element={<WeightPage />} />
               <Route path="/seances" element={<SavedSessionsPage />} />

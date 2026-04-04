@@ -911,6 +911,22 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         stats: c.wod_type ? `${(c.wod_type as string).toUpperCase()} · ${c.result_value ?? ''} ${c.result_unit ?? ''}`.trim() : 'CROSSFIT',
         feedback: c.feedback ?? null,
       };
+      case 'hybrid': {
+        const blockTypes: string[] = (c.blocks ?? []).map((b: any) => b.blockType ?? b.uiType ?? '');
+        const labels = blockTypes.map((t: string) => ({ running: '🏃 Course', musculation: '🏋️ Muscu', calisthenics: '⚡ Cali', crossfit: '🔥 CF' }[t] ?? t)).join(' + ');
+        return {
+          label: (c as any).name ? (c as any).name.toUpperCase() : 'SESSION HYBRIDE',
+          borderColor: 'border-l-[#c9a870]/60',
+          labelColor: 'text-[#c9a870]',
+          bgGradient: 'bg-gradient-to-br from-[#c9a870]/10 via-[#111] to-[#111]',
+          bannerBg: 'bg-[#c9a870]/20 border-y border-[#c9a870]/40',
+          headerGradient: 'linear-gradient(to right, #1a1500, #111111)',
+          accentColor: '#c9a870',
+          icon: '🏆',
+          stats: labels || `${c.blocks_count ?? 0} activités`,
+          feedback: c.feedback ?? null,
+        };
+      }
       case 'badge': {
         const rarityColors: Record<string, { accent: string; gradient: string }> = {
           common:    { accent: '#94a3b8', gradient: 'linear-gradient(to right, #1e293b, #111111)' },
@@ -1329,8 +1345,41 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         </div>
       )}
 
+      {/* Hybrid — stats bloc */}
+      {item.type === 'hybrid' && (() => {
+        const c = c_content as any;
+        const blocks: any[] = c.blocks ?? [];
+        const iconMap: Record<string, string> = {
+          running: '🏃', musculation: '🏋️', calisthenics: '⚡', crossfit: '🔥',
+        };
+        const labelMap: Record<string, string> = {
+          running: 'Course', musculation: 'Muscu', calisthenics: 'Cali', crossfit: 'Crossfit',
+        };
+        return (
+          <div className="px-4 py-3 space-y-2 border-b border-white/5 bg-[#0d0d0d]">
+            {blocks.map((b: any, i: number) => {
+              const type = b.blockType ?? '';
+              const icon = iconMap[type] ?? '🏆';
+              const label = labelMap[type] ?? type;
+              let detail = '';
+              if (type === 'running') detail = b.distance ? `${b.distance} km · ${b.duration} min` : '';
+              else if (type === 'musculation') detail = b.exercises?.length ? `${b.exercises.length} exercice${b.exercises.length > 1 ? 's' : ''}` : '';
+              else if (type === 'calisthenics') detail = b.exercises?.length ? `${b.exercises.length} exercice${b.exercises.length > 1 ? 's' : ''}` : '';
+              else if (type === 'crossfit') detail = b.wodType ? b.wodType.toUpperCase() + (b.duration ? ` · ${b.duration} min` : '') : '';
+              return (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-base w-6">{icon}</span>
+                  <span className="text-sm font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide">{label}</span>
+                  {detail && <span className="text-xs text-[#6b6b6b]">{detail}</span>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
       {/* Autres types */}
-      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && item.type !== 'badge' && item.type !== 'personal_record' && typeConfig.stats && (
+      {item.type !== 'workout' && item.type !== 'run' && item.type !== 'calisthenics' && item.type !== 'crossfit' && item.type !== 'hybrid' && item.type !== 'badge' && item.type !== 'personal_record' && typeConfig.stats && (
         <div className="px-4 py-3">
           <span className="text-xs text-[#a3a3a3]">{typeConfig.stats}</span>
         </div>

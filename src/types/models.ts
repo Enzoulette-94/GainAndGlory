@@ -157,6 +157,101 @@ export interface CrossfitExercise {
   notes: string | null;
 }
 
+// ─── Circuits (structure JSONB partagée Cali + Crossfit) ────────────────────
+
+export interface CircuitExerciseItem {
+  type: 'exercise';
+  name: string;
+  // calisthenics
+  set_type?: 'reps' | 'timed';
+  reps?: number | null;
+  hold_seconds?: number | null;
+  weight_kg?: number | null;
+  // crossfit
+  crossfit_reps?: number | null;
+  weight?: number | null;
+  duration?: number | null;
+  notes?: string | null;
+}
+
+export interface CircuitRestItem {
+  type: 'rest';
+  duration: number;
+}
+
+export interface CircuitBlock {
+  type: 'circuit';
+  id: string;
+  name: string;
+  rounds: number;
+  restBetweenRounds: number;
+  items: (CircuitExerciseItem | CircuitRestItem)[];
+}
+
+// ─── Hybrid Session ──────────────────────────────────────────────────────────
+
+export interface HybridRunBlock {
+  blockType: 'running';
+  id: string;
+  distance: number;
+  duration: number;
+  runType: string;
+  notes: string;
+}
+
+export interface HybridMusculationExercise {
+  id: string;
+  name: string;
+  sets: { reps: number; weight: number }[];
+}
+
+export interface HybridMusculationBlock {
+  blockType: 'musculation';
+  id: string;
+  exercises: HybridMusculationExercise[];
+  notes: string;
+}
+
+export interface HybridCaliExercise {
+  id: string;
+  name: string;
+  sets: number;
+  reps: number;
+}
+
+export interface HybridCalisthenicsBlock {
+  blockType: 'calisthenics';
+  id: string;
+  exercises: HybridCaliExercise[];
+  notes: string;
+}
+
+export interface HybridCrossfitBlock {
+  blockType: 'crossfit';
+  id: string;
+  wodType: string;
+  exercises: { id: string; name: string }[];
+  duration: number;
+  notes: string;
+}
+
+export type HybridBlock =
+  | HybridRunBlock
+  | HybridMusculationBlock
+  | HybridCalisthenicsBlock
+  | HybridCrossfitBlock;
+
+export interface HybridSession {
+  id: string;
+  user_id: string;
+  date: string;
+  name: string | null;
+  notes: string | null;
+  feedback: string | null;
+  blocks: HybridBlock[];
+  created_at: string;
+}
+
 export interface CrossfitSession {
   id: string;
   user_id: string;
@@ -333,7 +428,8 @@ export type ActivityContent =
   | { type: 'badge'; badge_code: string; badge_name: string; badge_rarity: BadgeRarity }
   | { type: 'level_up'; level: number; discipline: 'global' | 'musculation' | 'running' | 'calisthenics'; title: string }
   | { type: 'challenge_completed'; challenge_title: string; contribution: number; unit: string }
-  | { type: 'personal_record'; title: string; value: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' | 'crossfit' };
+  | { type: 'personal_record'; title: string; value: string; unit: string; category: 'musculation' | 'course' | 'calisthenics' | 'crossfit' }
+  | { type: 'hybrid'; blocks: HybridBlock[]; blocks_count: number; feedback?: string; session_id?: string; name?: string };
 
 export type NotificationContent =
   | { message: string; challenge_id?: string; challenge_title?: string }

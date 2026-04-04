@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, PersonStanding, Scale, Flame, Trophy, ChevronRight, CalendarDays, Swords, Target, Zap, Activity } from 'lucide-react';
+import { Dumbbell, PersonStanding, Scale, Flame, Trophy, ChevronRight, CalendarDays, Swords, Target, Zap, Activity, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { workoutService } from '../services/workout.service';
@@ -147,6 +147,28 @@ export function DashboardPage() {
         {/* Actions rapides — order 2 sur mobile, colonne gauche sur desktop */}
         <div className="order-2 lg:order-1 lg:row-span-2 bg-[#0e0e0e] border border-white/5 p-4 flex flex-col gap-3">
           <h2 className="font-rajdhani text-xs font-bold text-[#8b6f47] uppercase tracking-widest">Nouvelle session</h2>
+
+          {/* Bouton Hybride — featured, pleine largeur */}
+          <Link
+            to="/hybrid/new"
+            className="group relative flex items-center justify-between border border-[#c9a870]/25 bg-[#c9a870]/5 hover:bg-[#c9a870]/12 hover:border-[#c9a870]/45 transition-all duration-200 px-4 py-3 overflow-hidden"
+          >
+            <div className="flex items-center gap-3">
+              <Layers className="w-4 h-4 text-[#c9a870] flex-shrink-0" />
+              <div>
+                <span className="font-rajdhani font-black text-sm uppercase tracking-wide text-[#c9a870] block leading-tight">Hybride</span>
+                <span className="text-[10px] text-[#7a6040] leading-tight">Combiner plusieurs activités</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500/70" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/70" />
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500/70" />
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-500/70" />
+            </div>
+          </Link>
+
+          {/* 4 disciplines en 2×2 */}
           <div className="grid grid-cols-2 gap-2 flex-1">
             <QuickAction
               to="/musculation/new"
