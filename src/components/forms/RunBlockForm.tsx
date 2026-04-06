@@ -168,7 +168,7 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
                   : 'bg-[#1c1c1c] border-white/8 text-[#6b6b6b] hover:border-white/15 hover:text-[#d4d4d4]'
               }`}
             >
-              <span>🌳</span> Extérieur
+              Extérieur
             </button>
             <button
               type="button"
@@ -179,7 +179,7 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
                   : 'bg-[#1c1c1c] border-white/8 text-[#6b6b6b] hover:border-white/15 hover:text-[#d4d4d4]'
               }`}
             >
-              <span>🏃</span> En salle
+              En salle
             </button>
           </div>
         </div>
