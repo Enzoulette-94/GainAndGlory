@@ -153,7 +153,7 @@ export const RUNNING_RACE_DISTANCES = [
 export const CALISTHENICS_EXERCISES = [
   'Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Diamond Push-up', 'Pike Push-up',
   'Handstand Push-up', 'Muscle-up', 'L-sit', 'Handstand', 'Front Lever',
-  'Back Lever', 'Planche', 'Dragon Flag', 'Pistol Squat', 'Burpee',
+  'Back Lever', 'Planche', 'Dragon Flag', 'Squat', 'Pistol Squat', 'Burpee',
   'Tuck Planche', 'Inverted Row', 'Ring Dip', 'Ring Row',
   'Archer Push-up', 'Pseudo Planche Push-up', 'Hollow Body Hold', 'Superman Hold',
   'Pompes inclinées', 'Pompes déclinées', 'Pompes spartiates', 'Skull Crusher',
