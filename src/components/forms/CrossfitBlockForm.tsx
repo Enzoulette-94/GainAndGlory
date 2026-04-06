@@ -437,7 +437,7 @@ export function CrossfitExerciseBlock({ exercise, index, compact, onUpdate, onRe
             </button>
           ) : (
             <button type="button" onClick={onOpenPicker} className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-sm text-[#4a4a4a] hover:border-orange-500/30 hover:text-[#a3a3a3] transition-colors">
-              Sélectionner un exercice...
+              Exercice...
             </button>
           )}
         </div>

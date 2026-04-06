@@ -223,9 +223,7 @@ export function CaliBlockForm({ onChange, initialItems }: CaliBlockFormProps) {
       const idx = i.exercises.findIndex(e => e.id === exId);
       if (idx === -1) return i;
       const clone = { ...JSON.parse(JSON.stringify(i.exercises[idx])), id: Math.random().toString(36).slice(2) };
-      const next = [...i.exercises];
-      next.splice(idx + 1, 0, clone);
-      return { ...i, exercises: next };
+      return { ...i, exercises: [...i.exercises, clone] };
     }));
   }, []);
 
@@ -479,7 +477,7 @@ export function CaliExerciseBlock({ exercise, index, compact, onUpdate, onRemove
             </button>
           ) : (
             <button type="button" onClick={onOpenPicker} className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-sm text-[#4a4a4a] hover:border-violet-500/30 hover:text-[#a3a3a3] transition-colors">
-              Sélectionner un exercice...
+              Exercice...
             </button>
           )}
         </div>

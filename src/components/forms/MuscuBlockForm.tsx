@@ -290,9 +290,7 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
         const idx = item.exercises.findIndex(e => e.id === exId);
         if (idx === -1) return item;
         const clone = { ...JSON.parse(JSON.stringify(item.exercises[idx])), id: Math.random().toString(36).slice(2) };
-        const next = [...item.exercises];
-        next.splice(idx + 1, 0, clone);
-        return { ...item, exercises: next };
+        return { ...item, exercises: [...item.exercises, clone] };
       })
     );
   }, []);
@@ -411,57 +409,63 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
                 transition={{ duration: 0.2 }}
               >
                 <Card className="p-4 space-y-4 border-red-900/40 bg-red-950/10">
-                  <div className="flex items-center gap-2">
-                    <RotateCcw className="w-4 h-4 text-red-400 flex-shrink-0" />
-                    <input
-                      type="text"
-                      value={item.name}
-                      onChange={e => updateCircuit(item.id, { name: e.target.value })}
-                      className="flex-1 bg-transparent text-sm font-bold text-red-300 outline-none border-b border-red-800/40 focus:border-red-500 pb-0.5"
-                      placeholder="Nom du circuit"
-                    />
-                    <div className="flex items-center gap-1">
-                      <label className="text-xs text-[#6b6b6b]">×</label>
+                  <div className="flex flex-col gap-2">
+                    {/* Ligne 1 : icône + nom + actions */}
+                    <div className="flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4 text-red-400 flex-shrink-0" />
                       <input
-                        type="number"
-                        min={1}
-                        max={20}
-                        value={item.rounds}
-                        onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value) || 1 })}
-                        className="w-10 bg-[#1c1c1c] border border-white/8 rounded text-xs text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 py-1"
-                        title="Nombre de rounds"
+                        type="text"
+                        value={item.name}
+                        onChange={e => updateCircuit(item.id, { name: e.target.value })}
+                        className="flex-1 min-w-0 bg-transparent text-sm font-bold text-red-300 outline-none border-b border-red-800/40 focus:border-red-500 pb-0.5"
+                        placeholder="Nom du circuit"
                       />
-                      <label className="text-xs text-[#6b6b6b]">rounds</label>
+                      <button
+                        type="button"
+                        onClick={() => duplicateItem(item.id)}
+                        className="p-1.5 rounded text-[#6b6b6b] hover:text-red-300 transition-colors flex-shrink-0"
+                        title="Dupliquer le circuit"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                        className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 transition-colors flex-shrink-0"
+                        title="Supprimer le circuit"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        min={0}
-                        max={600}
-                        step={15}
-                        value={item.restBetweenRounds}
-                        onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value) || 0 })}
-                        className="w-14 bg-[#1c1c1c] border border-white/8 rounded text-xs text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 py-1"
-                        title="Repos entre rounds (s)"
-                      />
-                      <label className="text-xs text-[#6b6b6b]">s repos</label>
+                    {/* Ligne 2 : rounds + repos */}
+                    <div className="flex items-center gap-3 pl-6">
+                      <div className="flex items-center gap-1">
+                        <label className="text-xs text-[#6b6b6b]">×</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={item.rounds}
+                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value) || 1 })}
+                          className="w-10 bg-[#1c1c1c] border border-white/8 rounded text-xs text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 py-1"
+                          title="Nombre de rounds"
+                        />
+                        <label className="text-xs text-[#6b6b6b]">rounds</label>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={0}
+                          max={600}
+                          step={15}
+                          value={item.restBetweenRounds}
+                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value) || 0 })}
+                          className="w-14 bg-[#1c1c1c] border border-white/8 rounded text-xs text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 py-1"
+                          title="Repos entre rounds (s)"
+                        />
+                        <label className="text-xs text-[#6b6b6b]">s repos</label>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => duplicateItem(item.id)}
-                      className="p-1.5 rounded text-[#6b6b6b] hover:text-red-300 transition-colors"
-                      title="Dupliquer le circuit"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="p-1.5 rounded text-[#6b6b6b] hover:text-red-400 transition-colors"
-                      title="Supprimer le circuit"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
 
                   <div className="space-y-3 pl-2 border-l-2 border-red-900/40">
@@ -642,7 +646,7 @@ export function ExerciseBlockCard({
               onClick={onOpenPicker}
               className="w-full text-left px-3 py-2.5 bg-[#1c1c1c] border border-dashed border-white/15 rounded text-sm text-[#6b6b6b] hover:border-red-500/50 hover:text-[#a3a3a3] transition-all"
             >
-              Sélectionner un exercice...
+              Exercice...
             </button>
           )}
         </div>
