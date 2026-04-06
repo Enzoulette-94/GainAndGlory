@@ -12,7 +12,7 @@ import {
   RUN_TYPE_LABELS,
   WEATHER_LABELS,
 } from '../../utils/constants';
-import type { RunType, WeatherCondition } from '../../types/enums';
+import type { RunType, RunLocation, WeatherCondition } from '../../types/enums';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,7 @@ export interface RunBlockFormData {
   distance: number;
   durationSeconds: number;
   runType: RunType | '';
+  runLocation: RunLocation | '';
   pace: number;
   speed: number;
   elevationGain?: number;
@@ -42,6 +43,7 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
   const [runType, setRunType] = useState<RunType | ''>('');
+  const [runLocation, setRunLocation] = useState<RunLocation | ''>('');
   const [showOptional, setShowOptional] = useState(false);
   const [elevationGain, setElevationGain] = useState('');
   const [elevationLoss, setElevationLoss] = useState('');
@@ -77,6 +79,7 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
       distance: distanceNum,
       durationSeconds,
       runType,
+      runLocation,
       pace,
       speed,
       elevationGain: elevationGain ? parseInt(elevationGain) : undefined,
@@ -86,7 +89,7 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
       weatherTemp: weatherTemp ? parseInt(weatherTemp) : undefined,
       weatherCondition: weatherCondition || undefined,
     });
-  }, [distanceNum, durationSeconds, runType, pace, speed, elevationGain, elevationLoss, avgHeartRate, maxHeartRate, weatherTemp, weatherCondition]);
+  }, [distanceNum, durationSeconds, runType, runLocation, pace, speed, elevationGain, elevationLoss, avgHeartRate, maxHeartRate, weatherTemp, weatherCondition]);
 
   const runTypeOptions = Object.entries(RUN_TYPE_LABELS).map(([value, label]) => ({ value, label }));
   const weatherOptions = Object.entries(WEATHER_LABELS).map(([value, label]) => ({ value, label }));
@@ -151,10 +154,39 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
         )}
       </Card>
 
-      {/* Type de course */}
-      <Card className="p-4">
+      {/* Localisation */}
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-sm font-medium text-[#d4d4d4] mb-2 block">Où as-tu couru ?</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setRunLocation(runLocation === 'exterieur' ? '' : 'exterieur')}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-medium transition-all ${
+                runLocation === 'exterieur'
+                  ? 'bg-blue-600/20 border-blue-500/60 text-blue-300'
+                  : 'bg-[#1c1c1c] border-white/8 text-[#6b6b6b] hover:border-white/15 hover:text-[#d4d4d4]'
+              }`}
+            >
+              <span>🌳</span> Extérieur
+            </button>
+            <button
+              type="button"
+              onClick={() => setRunLocation(runLocation === 'salle' ? '' : 'salle')}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-medium transition-all ${
+                runLocation === 'salle'
+                  ? 'bg-blue-600/20 border-blue-500/60 text-blue-300'
+                  : 'bg-[#1c1c1c] border-white/8 text-[#6b6b6b] hover:border-white/15 hover:text-[#d4d4d4]'
+              }`}
+            >
+              <span>🏃</span> En salle
+            </button>
+          </div>
+        </div>
+
+        {/* Type de course */}
         <Select
-          label="Type de course"
+          label="Type de séance"
           value={runType}
           onChange={e => setRunType(e.target.value as RunType | '')}
           options={runTypeOptions}

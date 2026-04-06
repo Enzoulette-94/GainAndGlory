@@ -94,6 +94,7 @@ CREATE TABLE running_sessions (
   pace_min_per_km DECIMAL,
   pace_km_per_h DECIMAL,
   run_type TEXT,
+  run_location TEXT CHECK (run_location IN ('exterieur', 'salle')),
   elevation_gain INTEGER,
   elevation_loss INTEGER,
   avg_heart_rate INTEGER,

@@ -9,6 +9,7 @@ interface CreateRunningSessionInput {
   distance: number;
   duration: number;
   run_type?: string;
+  run_location?: string;
   elevation_gain?: number;
   elevation_loss?: number;
   avg_heart_rate?: number;
@@ -31,6 +32,7 @@ export const runningService = {
       duration: input.duration,
       pace_min_per_km,
       run_type: input.run_type ?? null,
+      run_location: input.run_location ?? null,
       elevation_gain: input.elevation_gain ?? null,
       elevation_loss: input.elevation_loss ?? null,
       avg_heart_rate: input.avg_heart_rate ?? null,

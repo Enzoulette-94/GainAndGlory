@@ -1,11 +1,11 @@
 import type {
-  MuscleGroup, Feedback, RunType, WeatherCondition,
+  MuscleGroup, Feedback, RunType, RunLocation, WeatherCondition,
   GoalType, GoalStatus, ChallengeType, ChallengeStatus,
   EventType, BadgeCategory, BadgeRarity, ActivityType, NotificationType, CrossfitWodType,
 } from './enums';
 
 export type {
-  MuscleGroup, Feedback, RunType, WeatherCondition,
+  MuscleGroup, Feedback, RunType, RunLocation, WeatherCondition,
   GoalType, GoalStatus, ChallengeType, ChallengeStatus,
   EventType, BadgeCategory, BadgeRarity, ActivityType, NotificationType, CrossfitWodType,
 };
@@ -101,6 +101,7 @@ export interface RunningSession {
   pace_min_per_km: number | null;
   pace_km_per_h: number | null;
   run_type: RunType | null;
+  run_location: RunLocation | null;
   elevation_gain: number | null;
   elevation_loss: number | null;
   avg_heart_rate: number | null;

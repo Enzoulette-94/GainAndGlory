@@ -60,7 +60,7 @@ function defaultBlockData(type: BlockTypeId): UIBlock {
   const id = Math.random().toString(36).slice(2);
   switch (type) {
     case 'running':
-      return { uiType: 'running', id, data: { distance: 0, durationSeconds: 0, runType: '', pace: 0, speed: 0 } };
+      return { uiType: 'running', id, data: { distance: 0, durationSeconds: 0, runType: '', runLocation: '', pace: 0, speed: 0 } };
     case 'musculation':
       return { uiType: 'musculation', id, data: { items: [], totalTonnage: 0 } };
     case 'calisthenics':

@@ -9,7 +9,10 @@ export type MuscleGroup =
   | 'epaules'
   | 'biceps'
   | 'triceps'
-  | 'abdos';
+  | 'abdos'
+  | 'cardio';
+
+export type RunLocation = 'exterieur' | 'salle';
 
 export type Feedback = 'facile' | 'difficile' | 'mort';
 

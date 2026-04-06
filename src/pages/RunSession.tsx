@@ -61,7 +61,7 @@ export function RunSessionPage() {
     const formData = formDataRef.current;
     if (!formData) { setError('Remplis les champs de course.'); return; }
 
-    const { distance, durationSeconds, runType, pace, elevationGain, elevationLoss, avgHeartRate, maxHeartRate, weatherTemp, weatherCondition } = formData;
+    const { distance, durationSeconds, runType, runLocation, pace, elevationGain, elevationLoss, avgHeartRate, maxHeartRate, weatherTemp, weatherCondition } = formData;
 
     if (distance <= 0) {
       setError('La distance doit être supérieure à 0.');
@@ -83,6 +83,7 @@ export function RunSessionPage() {
         distance,
         duration: durationSeconds,
         run_type: runType || undefined,
+        run_location: runLocation || undefined,
         elevation_gain: elevationGain,
         elevation_loss: elevationLoss,
         avg_heart_rate: avgHeartRate,

@@ -69,6 +69,12 @@ export const DEFAULT_EXERCISES: DefaultExercise[] = [
   { name: 'Russian twist', muscle_group: 'abdos', is_default: true },
   { name: 'Mountain climbers', muscle_group: 'abdos', is_default: true },
   { name: 'Bicycle crunch', muscle_group: 'abdos', is_default: true },
+
+  // Cardio
+  { name: 'Rameur', muscle_group: 'cardio', is_default: true },
+  { name: 'Escalier', muscle_group: 'cardio', is_default: true },
+  { name: 'Vélo', muscle_group: 'cardio', is_default: true },
+  { name: 'Skier', muscle_group: 'cardio', is_default: true },
 ];
 
 export const EXERCISE_TAGS = [
@@ -85,6 +91,7 @@ export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
   biceps: 'Biceps',
   triceps: 'Triceps',
   abdos: 'Abdos',
+  cardio: 'Cardio',
 };
 
 export const MUSCLE_GROUP_DISPLAY = [
@@ -95,6 +102,7 @@ export const MUSCLE_GROUP_DISPLAY = [
   { id: 'triceps',   label: 'Triceps'      },
   { id: 'jambes',    label: 'Jambes'       },
   { id: 'abdos',     label: 'Abdos / Core' },
+  { id: 'cardio',    label: 'Cardio'       },
 ] as const;
 
 // ============================================================
