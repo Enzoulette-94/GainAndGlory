@@ -13,6 +13,8 @@ import {
   ChevronDown,
   TrendingUp,
   TrendingDown,
+  Crosshair,
+  XCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -77,9 +79,9 @@ const GOAL_TYPE_BAR_COLORS: Record<GoalType, string> = {
 };
 
 const STATUS_TAB_LABELS: Record<TabType, string> = {
-  active: 'Actifs',
+  active: 'En cours',
   completed: 'Complétés',
-  cancelled: 'Annulés',
+  cancelled: 'Terminés',
 };
 
 function calcProgress(goal: PersonalGoal): number {
@@ -562,7 +564,7 @@ export function GoalsPage() {
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-black text-[#6b6b6b]">{cancelledGoals.length}</p>
-          <p className="text-xs text-[#a3a3a3] mt-1"><em>Annulés</em></p>
+          <p className="text-xs text-[#a3a3a3] mt-1"><em>Terminés</em></p>
         </Card>
       </motion.div>
 
@@ -583,70 +585,154 @@ export function GoalsPage() {
           ))}
         </div>
       ) : (
-        <div className="space-y-2">
-          {(['active', 'completed', 'cancelled'] as TabType[]).map((tab) => {
-            const open = visibleSections.has(tab);
-            return (
-              <div key={tab}>
-                {/* En-tête toggle */}
-                <button
-                  onClick={() => toggleSection(tab)}
-                  className={`
-                    w-full flex items-center justify-between px-4 py-3 border transition-all duration-200
-                    ${open
-                      ? 'bg-red-700/20 border-red-700/50 text-white'
-                      : 'bg-[#111] border-white/5 text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/10'
-                    }
-                  `}
-                >
-                  <span className="font-rajdhani font-bold text-sm uppercase tracking-widest">
-                    {STATUS_TAB_LABELS[tab]}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 font-bold ${open ? 'bg-red-700 text-white' : 'bg-slate-800 text-[#5a5a5a]'}`}>
-                      {tabGoals[tab].length}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
+        <div className="space-y-0">
 
-                {/* Contenu */}
+          {/* ── Section EN COURS ── */}
+          {(() => {
+            const open = visibleSections.has('active');
+            return (
+              <div>
+                <button
+                  onClick={() => toggleSection('active')}
+                  className="w-full flex items-start justify-between px-4 py-3 border transition-all duration-200 border-[#c9a870]/20 bg-[#0d0d0d]"
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2.5">
+                      <Crosshair className="w-4 h-4 text-[#c9a870] shrink-0" />
+                      <span className="font-rajdhani font-black uppercase tracking-[0.2em] text-sm text-[#c9a870]">EN COURS</span>
+                      <span className="text-xs px-2 py-0.5 bg-[#c9a870]/10 text-[#c9a870] font-rajdhani font-bold">{tabGoals.active.length}</span>
+                    </div>
+                    <p className="text-[11px] text-[#5a4a30] pl-[22px]">Tes objectifs personnels actifs</p>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-[#8b6f47] transition-transform duration-200 shrink-0 mt-1 ${open ? 'rotate-180' : ''}`} />
+                </button>
                 <AnimatePresence initial={false}>
                   {open && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
                       <div className="pt-2 space-y-3">
-                        {tabGoals[tab].length === 0 ? (
-                          <Card className="p-8 text-center">
+                        {tabGoals.active.length === 0 ? (
+                          <div className="px-4 py-8 text-center border border-white/5 bg-[#0d0d0d]">
                             <Target className="w-10 h-10 mx-auto mb-3 text-[#4a4a4a]" />
-                            <p className="text-[#a3a3a3] text-sm">
-                              {tab === 'active' && 'Aucun objectif actif. Crée-en un !'}
-                              {tab === 'completed' && "Aucun objectif complété pour l'instant."}
-                              {tab === 'cancelled' && 'Aucun objectif annulé.'}
-                            </p>
-                            {tab === 'active' && (
-                              <Button variant="outline" size="sm" icon={<Plus className="w-4 h-4" />} onClick={openCreateModal} className="mt-3">
-                                Nouvel objectif
-                              </Button>
-                            )}
-                          </Card>
-                        ) : (
-                          tabGoals[tab].map((goal) => (
-                            <GoalCard key={goal.id} goal={goal} onUpdate={openUpdateModal} onComplete={handleComplete} onCancel={handleCancel} />
-                          ))
-                        )}
+                            <p className="text-[#a3a3a3] text-sm">Aucun objectif actif. Crée-en un !</p>
+                            <Button variant="outline" size="sm" icon={<Plus className="w-4 h-4" />} onClick={openCreateModal} className="mt-3">
+                              Nouvel objectif
+                            </Button>
+                          </div>
+                        ) : tabGoals.active.map(goal => (
+                          <GoalCard key={goal.id} goal={goal} onUpdate={openUpdateModal} onComplete={handleComplete} onCancel={handleCancel} />
+                        ))}
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             );
-          })}
+          })()}
+
+          {/* ── Séparateur ── */}
+          <div className="flex items-center gap-3 py-3 px-2">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#c9a870]/20" />
+            <Target className="w-3 h-3 text-[#3a3a3a]" />
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#c9a870]/20" />
+          </div>
+
+          {/* ── Section COMPLÉTÉS ── */}
+          {(() => {
+            const open = visibleSections.has('completed');
+            return (
+              <div>
+                <button
+                  onClick={() => toggleSection('completed')}
+                  className="w-full flex items-start justify-between px-4 py-3 border transition-all duration-200 border-white/5 bg-[#0a0a0a]"
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="font-rajdhani font-black uppercase tracking-[0.2em] text-sm text-emerald-700">COMPLÉTÉS</span>
+                      <span className="text-xs px-2 py-0.5 bg-emerald-900/20 text-emerald-700 font-rajdhani font-bold">{tabGoals.completed.length}</span>
+                    </div>
+                    <p className="text-[11px] text-[#2d4a35] pl-[22px]">Objectifs que tu as accomplis</p>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-emerald-900 transition-transform duration-200 shrink-0 mt-1 ${open ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-2 space-y-3">
+                        {tabGoals.completed.length === 0 ? (
+                          <div className="px-4 py-8 text-center border border-white/5 bg-[#0a0a0a]">
+                            <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-[#2d4a35]" />
+                            <p className="text-[#a3a3a3] text-sm">Aucun objectif complété pour l'instant.</p>
+                          </div>
+                        ) : tabGoals.completed.map(goal => (
+                          <GoalCard key={goal.id} goal={goal} onUpdate={openUpdateModal} onComplete={handleComplete} onCancel={handleCancel} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })()}
+
+          {/* ── Séparateur ── */}
+          <div className="flex items-center gap-3 py-3 px-2">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/5" />
+            <XCircle className="w-3 h-3 text-[#2a2a2a]" />
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/5" />
+          </div>
+
+          {/* ── Section TERMINÉS ── */}
+          {(() => {
+            const open = visibleSections.has('cancelled');
+            return (
+              <div>
+                <button
+                  onClick={() => toggleSection('cancelled')}
+                  className="w-full flex items-start justify-between px-4 py-3 border transition-all duration-200 border-white/5 bg-[#0a0a0a]"
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2.5">
+                      <XCircle className="w-4 h-4 text-[#4a4a4a] shrink-0" />
+                      <span className="font-rajdhani font-black uppercase tracking-[0.2em] text-sm text-[#3a3a3a]">TERMINÉS</span>
+                      <span className="text-xs px-2 py-0.5 bg-[#1a1a1a] text-[#4a4a4a] font-rajdhani font-bold">{tabGoals.cancelled.length}</span>
+                    </div>
+                    <p className="text-[11px] text-[#3a3a3a] pl-[22px]">Objectifs clôturés</p>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-[#3a3a3a] transition-transform duration-200 shrink-0 mt-1 ${open ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-2 space-y-3">
+                        {tabGoals.cancelled.length === 0 ? (
+                          <div className="px-4 py-8 text-center border border-white/5 bg-[#0a0a0a]">
+                            <XCircle className="w-10 h-10 mx-auto mb-3 text-[#2a2a2a]" />
+                            <p className="text-[#a3a3a3] text-sm">Aucun objectif terminé.</p>
+                          </div>
+                        ) : tabGoals.cancelled.map(goal => (
+                          <GoalCard key={goal.id} goal={goal} onUpdate={openUpdateModal} onComplete={handleComplete} onCancel={handleCancel} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })()}
+
         </div>
       )}
 

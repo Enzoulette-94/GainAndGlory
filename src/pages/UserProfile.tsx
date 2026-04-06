@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Dumbbell, Timer, Route, Flame, Trophy, ArrowLeft, PersonStanding } from 'lucide-react';
+import { Dumbbell, Timer, Route, Flame, Trophy, ArrowLeft, PersonStanding, Zap, Crosshair } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
+import { calisthenicsService } from '../services/calisthenics.service';
+import { crossfitService } from '../services/crossfit.service';
 import { badgesService } from '../services/badges.service';
 import { profileService } from '../services/profile.service';
 import { profileRecordsService } from '../services/profile-records.service';
@@ -46,7 +48,7 @@ export function UserProfilePage() {
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [stats, setStats] = useState<{ muscuCount: number; runCount: number; totalDistance: number } | null>(null);
+  const [stats, setStats] = useState<{ muscuCount: number; runCount: number; caliCount: number; crossfitCount: number; totalDistance: number } | null>(null);
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [records, setRecords] = useState<ProfileRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,14 +59,16 @@ export function UserProfilePage() {
       const p = await profileService.getProfile(uid);
       if (!p) { setNotFound(true); return; }
       setProfile(p);
-      const [muscuCount, runCount, totalDistance, userBadges, userRecords] = await Promise.all([
+      const [muscuCount, runCount, caliCount, crossfitCount, totalDistance, userBadges, userRecords] = await Promise.all([
         workoutService.getSessionsCount(uid),
         runningService.getSessionsCount(uid),
+        calisthenicsService.getSessionsCount(uid),
+        crossfitService.getSessionsCount(uid),
         runningService.getTotalDistance(uid),
         badgesService.getUserBadges(uid),
         profileRecordsService.getRecords(uid),
       ]);
-      setStats({ muscuCount, runCount, totalDistance });
+      setStats({ muscuCount, runCount, caliCount, crossfitCount, totalDistance });
       setBadges(userBadges);
       setRecords(userRecords);
     } catch {
@@ -198,6 +202,16 @@ export function UserProfilePage() {
             <Timer className="w-4 h-4 text-blue-500" />
             <p className="text-xl sm:text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
             <p className="text-xs text-[#a3a3a3]">Séances course</p>
+          </Card>
+          <Card className="p-4 flex flex-col gap-2">
+            <Zap className="w-4 h-4 text-violet-400" />
+            <p className="text-xl sm:text-2xl font-black text-white">{stats?.caliCount ?? 0}</p>
+            <p className="text-xs text-[#a3a3a3]">Séances calisthénie</p>
+          </Card>
+          <Card className="p-4 flex flex-col gap-2">
+            <Crosshair className="w-4 h-4 text-orange-400" />
+            <p className="text-xl sm:text-2xl font-black text-white">{stats?.crossfitCount ?? 0}</p>
+            <p className="text-xs text-[#a3a3a3]">Séances crossfit</p>
           </Card>
           <Card className="p-4 flex flex-col gap-2">
             <Route className="w-4 h-4 text-blue-500" />

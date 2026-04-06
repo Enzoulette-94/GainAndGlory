@@ -413,21 +413,24 @@ export function DashboardPage() {
                 const pct = goal.target_value && goal.target_value > 0
                   ? Math.min(100, Math.round(((goal.current_value ?? 0) / goal.target_value) * 100))
                   : 0;
-                const typeColor = goal.type === 'musculation' ? 'border-red-800/50' : goal.type === 'running' ? 'border-blue-800/50' : 'border-orange-800/50';
-                const barColor = goal.type === 'musculation' ? 'bg-red-800' : goal.type === 'running' ? 'bg-blue-800' : 'bg-orange-800';
+                const accent =
+                  goal.type === 'musculation'  ? { border: 'border-red-500/30',    hoverBorder: 'hover:border-red-500/70',    icon: 'text-red-400',    pct: 'text-red-400',    bar: 'bg-red-500' }
+                  : goal.type === 'running'    ? { border: 'border-blue-500/30',   hoverBorder: 'hover:border-blue-500/70',   icon: 'text-blue-400',   pct: 'text-blue-400',   bar: 'bg-blue-500' }
+                  : goal.type === 'calisthenics' ? { border: 'border-violet-500/30', hoverBorder: 'hover:border-violet-500/70', icon: 'text-violet-400', pct: 'text-violet-400', bar: 'bg-violet-500' }
+                  : { border: 'border-[#c9a870]/30', hoverBorder: 'hover:border-[#c9a870]/70', icon: 'text-[#c9a870]', pct: 'text-[#c9a870]', bar: 'bg-[#8b6f47]' };
                 return (
                   <Link
                     key={goal.id}
                     to="/goals"
-                    className={`block p-3 bg-[#111111] border-l-2 ${typeColor} hover:bg-[#1c1c1c] transition-all`}
+                    className={`block p-3 bg-[#111111] border-l-2 ${accent.border} ${accent.hoverBorder} hover:bg-[#1c1c1c] transition-all`}
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <Target className="w-4 h-4 text-[#a3a3a3] flex-shrink-0" />
+                      <Target className={`w-4 h-4 ${accent.icon} flex-shrink-0`} />
                       <p className="text-sm font-medium text-[#d4d4d4] truncate flex-1">{goal.title}</p>
-                      <span className="text-xs font-rajdhani font-bold text-[#a3a3a3]">{pct}%</span>
+                      <span className={`text-xs font-rajdhani font-bold ${accent.pct}`}>{pct}%</span>
                     </div>
                     <div className="w-full h-1 bg-white/5">
-                      <div className={`h-1 ${barColor} transition-all`} style={{ width: `${pct}%` }} />
+                      <div className={`h-1 ${accent.bar} transition-all`} style={{ width: `${pct}%` }} />
                     </div>
                     {goal.target_value && (
                       <p className="text-xs text-[#6b6b6b] mt-1">{goal.current_value ?? 0} / {goal.target_value} {goal.unit ?? ''}</p>

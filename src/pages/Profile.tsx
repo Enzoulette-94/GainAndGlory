@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Edit2, Dumbbell, Timer, Route, Flame, Camera, Trophy, Plus, Trash2, Pencil, PersonStanding, Zap } from 'lucide-react';
+import { Edit2, Dumbbell, Timer, Route, Flame, Camera, Trophy, Plus, Trash2, Pencil, PersonStanding, Zap, Crosshair } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { workoutService } from '../services/workout.service';
 import { runningService } from '../services/running.service';
+import { calisthenicsService } from '../services/calisthenics.service';
+import { crossfitService } from '../services/crossfit.service';
 import { badgesService } from '../services/badges.service';
 import { profileService } from '../services/profile.service';
 import { profileRecordsService } from '../services/profile-records.service';
@@ -30,6 +32,8 @@ function getInitials(username: string): string {
 interface StatsData {
   muscuCount: number;
   runCount: number;
+  caliCount: number;
+  crossfitCount: number;
   totalDistance: number;
 }
 
@@ -120,18 +124,20 @@ export function ProfilePage() {
       // Nettoyage silencieux des records muscu orphelins (exercices hors liste)
       await profileRecordsService.deleteOrphanedMuscuRecords?.(userId).catch(() => {});
 
-      const [muscuCount, runCount, totalDistance, userBadges, userRecords] = await Promise.all([
+      const [muscuCount, runCount, caliCount, crossfitCount, totalDistance, userBadges, userRecords] = await Promise.all([
         workoutService.getSessionsCount(userId),
         runningService.getSessionsCount(userId),
+        calisthenicsService.getSessionsCount(userId),
+        crossfitService.getSessionsCount(userId),
         runningService.getTotalDistance(userId),
         badgesService.getUserBadges(userId),
         profileRecordsService.getRecords(userId),
       ]);
-      setStats({ muscuCount, runCount, totalDistance });
+      setStats({ muscuCount, runCount, caliCount, crossfitCount, totalDistance });
       setBadges(userBadges);
       setRecords(userRecords);
     } catch {
-      setStats({ muscuCount: 0, runCount: 0, totalDistance: 0 });
+      setStats({ muscuCount: 0, runCount: 0, caliCount: 0, crossfitCount: 0, totalDistance: 0 });
       setBadges([]);
       setRecords([]);
     } finally {
@@ -584,6 +590,22 @@ export function ProfilePage() {
               </div>
               <p className="text-2xl font-black text-white">{stats?.runCount ?? 0}</p>
               <p className="text-xs text-[#a3a3a3]"><strong>Séances</strong> course</p>
+            </Card>
+
+            <Card className="p-4 flex flex-col gap-2">
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Zap className="w-4 h-4 text-violet-400" />
+              </div>
+              <p className="text-2xl font-black text-white">{stats?.caliCount ?? 0}</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Séances</strong> calisthénie</p>
+            </Card>
+
+            <Card className="p-4 flex flex-col gap-2">
+              <div className="p-2 rounded bg-transparent w-fit">
+                <Crosshair className="w-4 h-4 text-orange-400" />
+              </div>
+              <p className="text-2xl font-black text-white">{stats?.crossfitCount ?? 0}</p>
+              <p className="text-xs text-[#a3a3a3]"><strong>Séances</strong> crossfit</p>
             </Card>
 
             <Card className="p-4 flex flex-col gap-2">
