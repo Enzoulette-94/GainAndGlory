@@ -138,7 +138,7 @@ export const CALISTHENICS_GROUPS = [
   { id: 'core',      label: 'Core / Gainage',     emoji: '🔥',
     exercises: ['L-sit', 'Planche', 'Dragon flag', 'Hollow body', 'V-sit', 'Tuck planche', 'Ab wheel'] },
   { id: 'jambes',    label: 'Jambes',              emoji: '🦵',
-    exercises: ['Pistol squat', 'Shrimp squat', 'Nordic curl', 'Jump squat', 'Corde à sauter', 'Montée de talons (mollets)'] },
+    exercises: ['Squat', 'Pistol squat', 'Shrimp squat', 'Nordic curl', 'Jump squat', 'Corde à sauter', 'Montée de talons (mollets)'] },
   { id: 'isometrie', label: 'Isométrie / Tenu',   emoji: '⏱',
     exercises: ['Front lever hold', 'Back lever hold', 'Human flag', 'Ring support hold'] },
 ] as const;
