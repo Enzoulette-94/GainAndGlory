@@ -141,11 +141,31 @@ describe('CalisthenicsSessionPage', () => {
         expect(addBtns.length).toBeGreaterThan(0);
         addBtns[0].click();
       }, { timeout: 3000 });
+      // Cliquer sur "Circuit" ouvre le wizard
       await waitFor(() => {
-        const circuitBtns = screen.queryAllByText(/circuit/i);
+        const circuitBtns = screen.queryAllByText(/^circuit$/i);
         expect(circuitBtns.length).toBeGreaterThan(0);
         circuitBtns[0].click();
       }, { timeout: 3000 });
+      // Compléter le wizard : étape 1 (exercices)
+      await waitFor(() => {
+        const opt3 = document.querySelector('[data-testid="wizard-option-3"]');
+        expect(opt3).toBeTruthy();
+        (opt3 as HTMLElement).click();
+      }, { timeout: 3000 });
+      // Étape 2 (rounds)
+      await waitFor(() => {
+        const opt3 = document.querySelector('[data-testid="wizard-option-3"]');
+        expect(opt3).toBeTruthy();
+        (opt3 as HTMLElement).click();
+      }, { timeout: 3000 });
+      // Étape 3 (repos)
+      await waitFor(() => {
+        const opt60 = document.querySelector('[data-testid="wizard-option-60"]');
+        expect(opt60).toBeTruthy();
+        (opt60 as HTMLElement).click();
+      }, { timeout: 3000 });
+      // Le circuit doit être créé avec "rounds" dans le header
       await waitFor(() => {
         expect(screen.queryAllByText(/rounds/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });

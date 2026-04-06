@@ -1,13 +1,33 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Plus, Trash2, X, Pencil, Copy, RotateCcw, ChevronLeft } from 'lucide-react';
+import { Plus, Trash2, X, Pencil, Copy, RotateCcw, ChevronLeft, GripVertical, CheckCircle2, History, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { workoutService } from '../../services/workout.service';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { calcTonnage } from '../../utils/calculations';
 import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_DISPLAY } from '../../utils/constants';
-import type { Exercise } from '../../types/models';
+import { CircuitWizard } from './CircuitWizard';
+import { CircuitTemplates } from './CircuitTemplates';
+import type { CircuitWizardConfig } from './CircuitWizard';
+import type { CircuitTemplate } from './CircuitTemplates';
+import type { Exercise, WorkoutSession } from '../../types/models';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -98,17 +118,64 @@ function defaultExerciseBlock(): ExerciseBlock {
   };
 }
 
-function defaultCircuitBlock(): CircuitBlock {
+function createCircuitBlock(config: CircuitWizardConfig): CircuitBlock {
   return {
     itemType: 'circuit',
     id: Math.random().toString(36).slice(2),
     name: 'Circuit',
-    rounds: 3,
-    restBetweenRounds: 60,
-    exercises: [
-      { id: Math.random().toString(36).slice(2), exercise: null, sets: [defaultSet()] },
-    ],
+    rounds: config.rounds,
+    restBetweenRounds: config.restBetweenRounds,
+    exercises: Array.from({ length: config.exerciseCount }, () => ({
+      id: Math.random().toString(36).slice(2),
+      exercise: null,
+      sets: [defaultSet()],
+    })),
   };
+}
+
+// ─── SortableExerciseItem ─────────────────────────────────────────────────────
+
+function SortableExerciseItem({ id, children }: { id: string; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-start gap-1.5">
+      <button
+        type="button"
+        className="mt-3.5 p-1 text-[#3a3a3a] hover:text-[#6b6b6b] cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
+        aria-label="Réordonner"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-3.5 h-3.5" />
+      </button>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  );
+}
+
+// ─── CircuitProgressBadge ─────────────────────────────────────────────────────
+
+function CircuitProgressBadge({ filled, total, rounds }: { filled: number; total: number; rounds: number }) {
+  const isComplete = filled === total && total > 0;
+  const estMinutes = Math.max(1, Math.round((rounds * total * 30) / 60));
+
+  return (
+    <div className="flex items-center gap-2 flex-shrink-0">
+      <span className={`text-xs font-medium ${isComplete ? 'text-green-400' : 'text-[#6b6b6b]'}`}>
+        {filled}/{total} ex.
+      </span>
+      <span className="flex items-center gap-1 text-xs text-[#4a4a4a]">
+        <Clock className="w-3 h-3" />
+        ~{estMinutes} min
+      </span>
+    </div>
+  );
 }
 
 // ─── MuscuBlockForm ───────────────────────────────────────────────────────────
@@ -116,9 +183,10 @@ function defaultCircuitBlock(): CircuitBlock {
 interface MuscuBlockFormProps {
   onChange: (data: MuscuBlockFormData) => void;
   initialItems?: SessionItem[];
+  userId?: string;
 }
 
-export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) {
+export function MuscuBlockForm({ onChange, initialItems, userId }: MuscuBlockFormProps) {
   const [items, setItems] = useState<SessionItem[]>(initialItems ?? [defaultExerciseBlock()]);
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(true);
@@ -126,8 +194,16 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
   const [pickerTarget, setPickerTarget] = useState<{ itemId: string; circuitExId?: string } | null>(null);
   const [pickerStep, setPickerStep] = useState<'group' | 'exercises'>('group');
   const [pickerGroup, setPickerGroup] = useState<string | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historySessions, setHistorySessions] = useState<WorkoutSession[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Use a ref for onChange to avoid infinite loops when parent re-renders pass new function refs
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; });
 
@@ -157,7 +233,7 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
     onChangeRef.current({ items, totalTonnage });
   }, [items, totalTonnage]);
 
-  // ── Item management ──────────────────────────────────────────────────────────
+  // ── Picker ───────────────────────────────────────────────────────────────────
 
   const openPicker = useCallback((itemId: string, circuitExId?: string) => {
     setPickerTarget({ itemId, circuitExId });
@@ -171,14 +247,21 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
     setPickerTarget(null);
   }, []);
 
+  // ── Item management ──────────────────────────────────────────────────────────
+
   function addExercise() {
     const block = defaultExerciseBlock();
     setItems(prev => [...prev, block]);
     openPicker(block.id);
   }
 
-  function addCircuit() {
-    setItems(prev => [...prev, defaultCircuitBlock()]);
+  function addCircuitFromConfig(config: CircuitWizardConfig) {
+    setShowWizard(false);
+    setItems(prev => [...prev, createCircuitBlock(config)]);
+  }
+
+  function addCircuitFromTemplate(tpl: CircuitTemplate) {
+    setItems(prev => [...prev, createCircuitBlock(tpl)]);
   }
 
   const removeItem = useCallback((id: string) => {
@@ -254,6 +337,8 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
     );
   }, []);
 
+  // ── Circuit management ────────────────────────────────────────────────────────
+
   const updateCircuit = useCallback((id: string, patch: Partial<Omit<CircuitBlock, 'itemType' | 'id' | 'exercises'>>) => {
     setItems(prev =>
       prev.map(item =>
@@ -291,6 +376,15 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
         if (idx === -1) return item;
         const clone = { ...JSON.parse(JSON.stringify(item.exercises[idx])), id: Math.random().toString(36).slice(2) };
         return { ...item, exercises: [...item.exercises, clone] };
+      })
+    );
+  }, []);
+
+  const reorderCircuitExercises = useCallback((circuitId: string, fromIdx: number, toIdx: number) => {
+    setItems(prev =>
+      prev.map(item => {
+        if (item.id !== circuitId || item.itemType !== 'circuit') return item;
+        return { ...item, exercises: arrayMove(item.exercises, fromIdx, toIdx) };
       })
     );
   }, []);
@@ -353,6 +447,47 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
     );
   }, []);
 
+  // ── Copy from history ─────────────────────────────────────────────────────────
+
+  async function openHistoryModal() {
+    setShowHistoryModal(true);
+    if (historySessions.length > 0 || !userId) return;
+    setLoadingHistory(true);
+    try {
+      const sessions = await workoutService.getSessions(userId, 5);
+      setHistorySessions(sessions.filter(s => s.sets && s.sets.length > 0));
+    } catch { /* ignore */ }
+    finally { setLoadingHistory(false); }
+  }
+
+  function loadSessionAsCircuit(session: WorkoutSession) {
+    if (!session.sets) return;
+    const seen = new Set<string>();
+    const uniqueExercises: Exercise[] = [];
+    for (const set of session.sets) {
+      if (set.exercise && !seen.has(set.exercise.id)) {
+        seen.add(set.exercise.id);
+        uniqueExercises.push(set.exercise);
+        if (uniqueExercises.length >= 6) break;
+      }
+    }
+    if (uniqueExercises.length === 0) return;
+    const circuit: CircuitBlock = {
+      itemType: 'circuit',
+      id: Math.random().toString(36).slice(2),
+      name: session.name ?? 'Circuit',
+      rounds: 3,
+      restBetweenRounds: 60,
+      exercises: uniqueExercises.map(ex => ({
+        id: Math.random().toString(36).slice(2),
+        exercise: ex,
+        sets: [defaultSet()],
+      })),
+    };
+    setItems(prev => [...prev, circuit]);
+    setShowHistoryModal(false);
+  }
+
   function selectExercise(exercise: Exercise) {
     if (!pickerTarget) return;
     if (pickerTarget.circuitExId) {
@@ -400,6 +535,10 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
               );
             }
 
+            // ── Circuit ──
+            const filledCount = item.exercises.filter(ex => ex.exercise !== null).length;
+            const isComplete = filledCount === item.exercises.length && item.exercises.length > 0;
+
             return (
               <motion.div
                 key={item.id}
@@ -408,17 +547,35 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card className="p-4 space-y-4 border-red-900/40 bg-red-950/10">
+                <Card
+                  className={`p-4 space-y-4 transition-colors duration-300 ${
+                    isComplete
+                      ? 'border-green-500/40 bg-green-950/10'
+                      : 'border-red-900/40 bg-red-950/10'
+                  }`}
+                >
+                  {/* Header ligne 1 */}
                   <div className="flex flex-col gap-2">
-                    {/* Ligne 1 : icône + nom + actions */}
                     <div className="flex items-center gap-2">
-                      <RotateCcw className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      {isComplete
+                        ? <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                        : <RotateCcw className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      }
                       <input
                         type="text"
                         value={item.name}
                         onChange={e => updateCircuit(item.id, { name: e.target.value })}
-                        className="flex-1 min-w-0 bg-transparent text-sm font-bold text-red-300 outline-none border-b border-red-800/40 focus:border-red-500 pb-0.5"
+                        className={`flex-1 min-w-0 bg-transparent text-sm font-bold outline-none border-b pb-0.5 transition-colors ${
+                          isComplete
+                            ? 'text-green-300 border-green-800/40 focus:border-green-500'
+                            : 'text-red-300 border-red-800/40 focus:border-red-500'
+                        }`}
                         placeholder="Nom du circuit"
+                      />
+                      <CircuitProgressBadge
+                        filled={filledCount}
+                        total={item.exercises.length}
+                        rounds={item.rounds}
                       />
                       <button
                         type="button"
@@ -437,7 +594,8 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    {/* Ligne 2 : rounds + repos */}
+
+                    {/* Header ligne 2 : rounds + repos */}
                     <div className="flex items-center gap-3 pl-6">
                       <div className="flex items-center gap-1">
                         <label className="text-xs text-[#6b6b6b]">×</label>
@@ -468,22 +626,44 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
                     </div>
                   </div>
 
-                  <div className="space-y-3 pl-2 border-l-2 border-red-900/40">
-                    {item.exercises.map((ex, exIdx) => (
-                      <ExerciseBlockCard
-                        key={ex.id}
-                        block={{ ...ex, itemType: 'exercise' }}
-                        indexOverride={exIdx}
-                        onOpenPicker={() => openPicker(item.id, ex.id)}
-                        onRemove={() => removeExerciseFromCircuit(item.id, ex.id)}
-                        onDuplicate={() => duplicateExerciseInCircuit(item.id, ex.id)}
-                        onUpdateSet={(si, patch) => updateCircuitSet(item.id, ex.id, si, patch)}
-                        onAddSet={() => addCircuitSet(item.id, ex.id)}
-                        onRemoveSet={(si) => removeCircuitSet(item.id, ex.id, si)}
-                        onDuplicateSet={() => {/* not needed inside circuit */}}
-                        compact
-                      />
-                    ))}
+                  {/* Exercises list with DnD */}
+                  <div className={`space-y-3 pl-2 border-l-2 transition-colors ${isComplete ? 'border-green-900/40' : 'border-red-900/40'}`}>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(event: DragEndEvent) => {
+                        const { active, over } = event;
+                        if (!over || active.id === over.id) return;
+                        const fromIdx = item.exercises.findIndex(e => e.id === active.id);
+                        const toIdx = item.exercises.findIndex(e => e.id === over.id);
+                        if (fromIdx !== -1 && toIdx !== -1) {
+                          reorderCircuitExercises(item.id, fromIdx, toIdx);
+                        }
+                      }}
+                    >
+                      <SortableContext
+                        items={item.exercises.map(e => e.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {item.exercises.map((ex, exIdx) => (
+                          <SortableExerciseItem key={ex.id} id={ex.id}>
+                            <ExerciseBlockCard
+                              block={{ ...ex, itemType: 'exercise' }}
+                              indexOverride={exIdx}
+                              onOpenPicker={() => openPicker(item.id, ex.id)}
+                              onRemove={() => removeExerciseFromCircuit(item.id, ex.id)}
+                              onDuplicate={() => duplicateExerciseInCircuit(item.id, ex.id)}
+                              onUpdateSet={(si, patch) => updateCircuitSet(item.id, ex.id, si, patch)}
+                              onAddSet={() => addCircuitSet(item.id, ex.id)}
+                              onRemoveSet={(si) => removeCircuitSet(item.id, ex.id, si)}
+                              onDuplicateSet={() => {/* not needed inside circuit */}}
+                              compact
+                            />
+                          </SortableExerciseItem>
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+
                     <button
                       type="button"
                       onClick={() => addExerciseToCircuit(item.id)}
@@ -499,25 +679,43 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
           })}
         </AnimatePresence>
 
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            icon={<Plus className="w-4 h-4" />}
-            onClick={addExercise}
-            className="flex-1"
-          >
-            Ajouter exercice
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            icon={<RotateCcw className="w-4 h-4" />}
-            onClick={addCircuit}
-            className="flex-1 border-red-900/50 text-red-400 hover:border-red-700/60"
-          >
-            Créer un circuit
-          </Button>
+        {/* Actions */}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              icon={<Plus className="w-4 h-4" />}
+              onClick={addExercise}
+              className="flex-1"
+            >
+              Ajouter exercice
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              icon={<RotateCcw className="w-4 h-4" />}
+              onClick={() => setShowWizard(true)}
+              className="flex-1 border-red-900/50 text-red-400 hover:border-red-700/60"
+            >
+              Créer un circuit
+            </Button>
+          </div>
+
+          {/* Circuit helpers */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <CircuitTemplates theme="red" onSelect={addCircuitFromTemplate} />
+            {userId && (
+              <button
+                type="button"
+                onClick={openHistoryModal}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/10 text-xs text-[#6b6b6b] hover:text-[#d4d4d4] hover:border-white/20 transition-all"
+              >
+                <History className="w-3.5 h-3.5" />
+                Reprendre un circuit
+              </button>
+            )}
+          </div>
         </div>
 
         {totalTonnage > 0 && (
@@ -532,6 +730,63 @@ export function MuscuBlockForm({ onChange, initialItems }: MuscuBlockFormProps) 
         )}
       </div>
 
+      {/* Wizard */}
+      {showWizard && (
+        <CircuitWizard
+          theme="red"
+          onConfirm={addCircuitFromConfig}
+          onCancel={() => setShowWizard(false)}
+        />
+      )}
+
+      {/* History modal */}
+      <Modal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        title="Reprendre un circuit"
+        size="md"
+      >
+        <div className="p-4 space-y-2">
+          {loadingHistory && <p className="text-sm text-[#6b6b6b] text-center py-4">Chargement...</p>}
+          {!loadingHistory && historySessions.length === 0 && (
+            <p className="text-sm text-[#6b6b6b] text-center py-4">Aucune séance précédente trouvée</p>
+          )}
+          {historySessions.map(session => {
+            const uniqueExercises = [...new Map(
+              (session.sets ?? [])
+                .filter(s => s.exercise)
+                .map(s => [s.exercise!.id, s.exercise!])
+            ).values()].slice(0, 6);
+            return (
+              <button
+                key={session.id}
+                type="button"
+                onClick={() => loadSessionAsCircuit(session)}
+                className="w-full text-left p-3 bg-[#1c1c1c] border border-white/8 rounded-lg hover:border-red-500/40 hover:bg-[#242424] transition-all"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-[#d4d4d4]">
+                    {session.name ?? new Date(session.date).toLocaleDateString('fr-FR')}
+                  </span>
+                  <span className="text-xs text-[#6b6b6b]">{uniqueExercises.length} exercices</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {uniqueExercises.slice(0, 4).map(ex => (
+                    <span key={ex.id} className="text-xs px-1.5 py-0.5 bg-white/5 rounded text-[#6b6b6b]">
+                      {ex.name}
+                    </span>
+                  ))}
+                  {uniqueExercises.length > 4 && (
+                    <span className="text-xs text-[#4a4a4a]">+{uniqueExercises.length - 4}</span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </Modal>
+
+      {/* Exercise picker */}
       <Modal
         isOpen={pickerOpen}
         onClose={closePicker}

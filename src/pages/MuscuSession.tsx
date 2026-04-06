@@ -228,6 +228,7 @@ export function MuscuSessionPage() {
           <MuscuBlockForm
             onChange={data => { formDataRef.current = data; }}
             initialItems={initialItems}
+            userId={profile?.id}
           />
         </motion.div>
 

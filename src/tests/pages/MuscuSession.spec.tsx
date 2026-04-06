@@ -107,7 +107,7 @@ describe('MuscuSessionPage', () => {
     it('affiche un placeholder de sélection d\'exercice', async () => {
       renderMuscuSession();
       await waitFor(() => {
-        const placeholders = screen.queryAllByText(/sélectionner un exercice/i);
+        const placeholders = screen.queryAllByText(/exercice\.\.\./i);
         expect(placeholders.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
@@ -163,15 +163,32 @@ describe('MuscuSessionPage', () => {
 
     it('ajoute un circuit au clic sur "Créer un circuit"', async () => {
       renderMuscuSession();
+      // Ouvrir le wizard
       await waitFor(() => {
         const circuitBtns = screen.queryAllByText(/créer un circuit/i);
         expect(circuitBtns.length).toBeGreaterThan(0);
         circuitBtns[0].click();
       }, { timeout: 3000 });
+      // Compléter le wizard : étape 1 (exercices), 2 (rounds), 3 (repos)
       await waitFor(() => {
-        // Le circuit header devrait montrer "rounds" ou "Circuit"
-        const roundsText = document.querySelectorAll('input[title="Nombre de rounds"]');
-        expect(roundsText.length).toBeGreaterThan(0);
+        const opt3 = document.querySelector('[data-testid="wizard-option-3"]');
+        expect(opt3).toBeTruthy();
+        (opt3 as HTMLElement).click();
+      }, { timeout: 3000 });
+      await waitFor(() => {
+        const opt3 = document.querySelector('[data-testid="wizard-option-3"]');
+        expect(opt3).toBeTruthy();
+        (opt3 as HTMLElement).click();
+      }, { timeout: 3000 });
+      await waitFor(() => {
+        const opt60 = document.querySelector('[data-testid="wizard-option-60"]');
+        expect(opt60).toBeTruthy();
+        (opt60 as HTMLElement).click();
+      }, { timeout: 3000 });
+      // Le circuit doit être créé
+      await waitFor(() => {
+        const roundsInputs = document.querySelectorAll('input[title="Nombre de rounds"]');
+        expect(roundsInputs.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });
