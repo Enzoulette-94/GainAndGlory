@@ -49,57 +49,49 @@ describe('CircuitWizard', () => {
     vi.clearAllMocks();
   });
 
-  it('affiche l\'étape 1 avec les options d\'exercices', () => {
+  it('affiche le formulaire avec les 3 champs', () => {
     render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    expect(screen.getByText("Combien d'exercices ?")).toBeInTheDocument();
-    expect(screen.getByTestId('wizard-option-2')).toBeInTheDocument();
-    expect(screen.getByTestId('wizard-option-3')).toBeInTheDocument();
-    expect(screen.getByTestId('wizard-option-6')).toBeInTheDocument();
+    expect(screen.getByText('Créer un circuit')).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-input-exercises')).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-input-rounds')).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-input-rest')).toBeInTheDocument();
   });
 
-  it('affiche l\'indicateur de progression 1/3', () => {
-    render(<CircuitWizard theme="violet" onConfirm={onConfirm} onCancel={onCancel} />);
-    expect(screen.getByText('1/3')).toBeInTheDocument();
+  it('affiche les valeurs par défaut (3, 3, 60)', () => {
+    render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
+    expect((screen.getByTestId('wizard-input-exercises') as HTMLInputElement).value).toBe('3');
+    expect((screen.getByTestId('wizard-input-rounds') as HTMLInputElement).value).toBe('3');
+    expect((screen.getByTestId('wizard-input-rest') as HTMLInputElement).value).toBe('60');
   });
 
-  it('avance à l\'étape 2 après sélection d\'exercices', () => {
+  it('appelle onConfirm avec les valeurs saisies', () => {
     render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    fireEvent.click(screen.getByTestId('wizard-option-3'));
-    expect(screen.getByText('Combien de rounds ?')).toBeInTheDocument();
-    expect(screen.getByText('2/3')).toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('wizard-input-exercises'), { target: { value: '5' } });
+    fireEvent.change(screen.getByTestId('wizard-input-rounds'), { target: { value: '4' } });
+    fireEvent.change(screen.getByTestId('wizard-input-rest'), { target: { value: '45' } });
+    fireEvent.click(screen.getByTestId('wizard-confirm'));
+    expect(onConfirm).toHaveBeenCalledWith({ exerciseCount: 5, rounds: 4, restBetweenRounds: 45 });
   });
 
-  it('avance à l\'étape 3 après sélection des rounds', () => {
+  it('appelle onConfirm avec les valeurs par défaut', () => {
     render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    fireEvent.click(screen.getByTestId('wizard-option-3')); // étape 1
-    fireEvent.click(screen.getByTestId('wizard-option-3')); // étape 2
-    expect(screen.getByText('Repos entre les rounds ?')).toBeInTheDocument();
-    expect(screen.getByText('3/3')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('wizard-confirm'));
+    expect(onConfirm).toHaveBeenCalledWith({ exerciseCount: 3, rounds: 3, restBetweenRounds: 60 });
   });
 
-  it('appelle onConfirm avec la config correcte à la fin', () => {
+  it('force minimum 1 pour exercices et rounds', () => {
     render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    fireEvent.click(screen.getByTestId('wizard-option-4')); // 4 exercices
-    fireEvent.click(screen.getByTestId('wizard-option-3')); // 3 rounds
-    fireEvent.click(screen.getByTestId('wizard-option-60')); // 60s repos
-    expect(onConfirm).toHaveBeenCalledWith({
-      exerciseCount: 4,
-      rounds: 3,
-      restBetweenRounds: 60,
-    });
+    fireEvent.change(screen.getByTestId('wizard-input-exercises'), { target: { value: '0' } });
+    fireEvent.change(screen.getByTestId('wizard-input-rounds'), { target: { value: '-1' } });
+    fireEvent.click(screen.getByTestId('wizard-confirm'));
+    expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ exerciseCount: 1, rounds: 1 }));
   });
 
-  it('appelle onConfirm avec les valeurs par défaut si on clique directement', () => {
+  it('accepte repos = 0', () => {
     render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    // Clique sur option déjà sélectionnée (3 exos = défaut)
-    fireEvent.click(screen.getByTestId('wizard-option-3'));
-    fireEvent.click(screen.getByTestId('wizard-option-3'));
-    fireEvent.click(screen.getByTestId('wizard-option-60'));
-    expect(onConfirm).toHaveBeenCalledWith({
-      exerciseCount: 3,
-      rounds: 3,
-      restBetweenRounds: 60,
-    });
+    fireEvent.change(screen.getByTestId('wizard-input-rest'), { target: { value: '0' } });
+    fireEvent.click(screen.getByTestId('wizard-confirm'));
+    expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ restBetweenRounds: 0 }));
   });
 
   it('appelle onCancel quand Annuler est cliqué', () => {
@@ -108,32 +100,18 @@ describe('CircuitWizard', () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
-  it('permet de revenir à l\'étape précédente', () => {
-    render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    fireEvent.click(screen.getByTestId('wizard-option-3')); // avance à étape 2
-    expect(screen.getByText('Combien de rounds ?')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('← Retour'));
-    expect(screen.getByText("Combien d'exercices ?")).toBeInTheDocument();
-  });
-
-  it('ne montre pas le bouton Retour à l\'étape 1', () => {
-    render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    expect(screen.queryByText('← Retour')).not.toBeInTheDocument();
-  });
-
   it('fonctionne avec les thèmes violet et orange', () => {
     const { rerender } = render(<CircuitWizard theme="violet" onConfirm={onConfirm} onCancel={onCancel} />);
-    expect(screen.getByText("Combien d'exercices ?")).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-confirm')).toBeInTheDocument();
     rerender(<CircuitWizard theme="orange" onConfirm={onConfirm} onCancel={onCancel} />);
-    expect(screen.getByText("Combien d'exercices ?")).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-confirm')).toBeInTheDocument();
   });
 
-  it('affiche les suffixes "s" à l\'étape 3 (repos)', () => {
+  it('affiche les labels corrects', () => {
     render(<CircuitWizard theme="red" onConfirm={onConfirm} onCancel={onCancel} />);
-    fireEvent.click(screen.getByTestId('wizard-option-3'));
-    fireEvent.click(screen.getByTestId('wizard-option-3'));
-    expect(screen.getByTestId('wizard-option-30')).toHaveTextContent('30s');
-    expect(screen.getByTestId('wizard-option-90')).toHaveTextContent('90s');
+    expect(screen.getByText('Exercices')).toBeInTheDocument();
+    expect(screen.getByText('Rounds')).toBeInTheDocument();
+    expect(screen.getByText('Repos entre les rounds (secondes)')).toBeInTheDocument();
   });
 });
 

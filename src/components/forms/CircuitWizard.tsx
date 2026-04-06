@@ -12,70 +12,22 @@ interface CircuitWizardProps {
   onCancel: () => void;
 }
 
-const THEME_STEP: Record<string, string> = {
-  red: 'bg-red-500',
-  violet: 'bg-violet-500',
-  orange: 'bg-orange-500',
+const THEME_BTN: Record<string, string> = {
+  red: 'bg-red-600 hover:bg-red-500 text-white',
+  violet: 'bg-violet-600 hover:bg-violet-500 text-white',
+  orange: 'bg-orange-600 hover:bg-orange-500 text-white',
 };
-
-const THEME_ACTIVE: Record<string, string> = {
-  red: 'bg-red-600/30 border-red-500/60 text-red-300',
-  violet: 'bg-violet-600/30 border-violet-500/60 text-violet-300',
-  orange: 'bg-orange-600/30 border-orange-500/60 text-orange-300',
-};
-
-interface StepDef {
-  title: string;
-  subtitle: string;
-  options: number[];
-  key: keyof CircuitWizardConfig;
-  suffix: string;
-}
-
-const STEPS: StepDef[] = [
-  {
-    title: "Combien d'exercices ?",
-    subtitle: 'Exercices différents dans le circuit',
-    options: [2, 3, 4, 5, 6],
-    key: 'exerciseCount',
-    suffix: '',
-  },
-  {
-    title: 'Combien de rounds ?',
-    subtitle: 'Le circuit sera répété X fois',
-    options: [2, 3, 4, 5],
-    key: 'rounds',
-    suffix: '',
-  },
-  {
-    title: 'Repos entre les rounds ?',
-    subtitle: 'Récupération entre chaque round',
-    options: [30, 45, 60, 90],
-    key: 'restBetweenRounds',
-    suffix: 's',
-  },
-];
 
 export function CircuitWizard({ theme = 'red', onConfirm, onCancel }: CircuitWizardProps) {
-  const [step, setStep] = useState(1);
-  const [config, setConfig] = useState<CircuitWizardConfig>({
-    exerciseCount: 3,
-    rounds: 3,
-    restBetweenRounds: 60,
-  });
+  const [exerciseCount, setExerciseCount] = useState('3');
+  const [rounds, setRounds] = useState('3');
+  const [rest, setRest] = useState('60');
 
-  const current = STEPS[step - 1];
-  const stepBg = THEME_STEP[theme];
-  const activeCls = THEME_ACTIVE[theme];
-
-  function handleSelect(val: number) {
-    const newConfig = { ...config, [current.key]: val };
-    setConfig(newConfig);
-    if (step === 3) {
-      onConfirm(newConfig);
-    } else {
-      setStep(s => s + 1);
-    }
+  function handleConfirm() {
+    const ex = Math.max(1, parseInt(exerciseCount) || 1);
+    const r = Math.max(1, parseInt(rounds) || 1);
+    const s = Math.max(0, parseInt(rest) || 0);
+    onConfirm({ exerciseCount: ex, rounds: r, restBetweenRounds: s });
   }
 
   return (
@@ -84,59 +36,64 @@ export function CircuitWizard({ theme = 'red', onConfirm, onCancel }: CircuitWiz
       onClick={e => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <div className="w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl p-5 space-y-5 shadow-2xl">
-        {/* Progress bar */}
-        <div className="flex items-center gap-2">
-          {[1, 2, 3].map(s => (
-            <div
-              key={s}
-              className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? stepBg : 'bg-white/10'}`}
+        <h3 className="text-base font-bold text-[#f5f5f5]">Créer un circuit</h3>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-[#6b6b6b] mb-1.5 block">Exercices</label>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={exerciseCount}
+              onChange={e => setExerciseCount(e.target.value)}
+              data-testid="wizard-input-exercises"
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#f5f5f5] text-center outline-none focus:border-white/20 transition-colors"
             />
-          ))}
-          <span className="text-xs text-[#6b6b6b] pl-1 flex-shrink-0">{step}/3</span>
+          </div>
+
+          <div>
+            <label className="text-xs text-[#6b6b6b] mb-1.5 block">Rounds</label>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={rounds}
+              onChange={e => setRounds(e.target.value)}
+              data-testid="wizard-input-rounds"
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#f5f5f5] text-center outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-[#6b6b6b] mb-1.5 block">Repos entre les rounds (secondes)</label>
+            <input
+              type="number"
+              min={0}
+              max={600}
+              value={rest}
+              onChange={e => setRest(e.target.value)}
+              data-testid="wizard-input-rest"
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#f5f5f5] text-center outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
         </div>
 
-        {/* Title */}
-        <div>
-          <h3 className="text-base font-bold text-[#f5f5f5]">{current.title}</h3>
-          <p className="text-xs text-[#6b6b6b] mt-0.5">{current.subtitle}</p>
-        </div>
-
-        {/* Options */}
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-          {current.options.map(opt => (
-            <button
-              key={opt}
-              type="button"
-              data-testid={`wizard-option-${opt}`}
-              onClick={() => handleSelect(opt)}
-              className={`py-3.5 rounded-xl border text-sm font-bold transition-all active:scale-95 ${
-                config[current.key] === opt
-                  ? activeCls
-                  : 'bg-[#1a1a1a] border-white/10 text-[#a3a3a3] hover:border-white/20 hover:text-[#d4d4d4]'
-              }`}
-            >
-              {opt}{current.suffix}
-            </button>
-          ))}
-        </div>
-
-        {/* Navigation */}
         <div className="flex gap-2">
-          {step > 1 && (
-            <button
-              type="button"
-              onClick={() => setStep(s => s - 1)}
-              className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors"
-            >
-              ← Retour
-            </button>
-          )}
           <button
             type="button"
             onClick={onCancel}
             className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm text-[#6b6b6b] hover:text-[#d4d4d4] transition-colors"
           >
             Annuler
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            data-testid="wizard-confirm"
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${THEME_BTN[theme]}`}
+          >
+            Créer
           </button>
         </div>
       </div>

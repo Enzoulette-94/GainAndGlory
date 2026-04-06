@@ -169,21 +169,11 @@ describe('MuscuSessionPage', () => {
         expect(circuitBtns.length).toBeGreaterThan(0);
         circuitBtns[0].click();
       }, { timeout: 3000 });
-      // Compléter le wizard : étape 1 (exercices), 2 (rounds), 3 (repos)
+      // Confirmer le wizard (valeurs par défaut)
       await waitFor(() => {
-        const opt3 = document.querySelector('[data-testid="wizard-option-3"]');
-        expect(opt3).toBeTruthy();
-        (opt3 as HTMLElement).click();
-      }, { timeout: 3000 });
-      await waitFor(() => {
-        const opt3 = document.querySelector('[data-testid="wizard-option-3"]');
-        expect(opt3).toBeTruthy();
-        (opt3 as HTMLElement).click();
-      }, { timeout: 3000 });
-      await waitFor(() => {
-        const opt60 = document.querySelector('[data-testid="wizard-option-60"]');
-        expect(opt60).toBeTruthy();
-        (opt60 as HTMLElement).click();
+        const confirmBtn = document.querySelector('[data-testid="wizard-confirm"]');
+        expect(confirmBtn).toBeTruthy();
+        (confirmBtn as HTMLElement).click();
       }, { timeout: 3000 });
       // Le circuit doit être créé
       await waitFor(() => {
