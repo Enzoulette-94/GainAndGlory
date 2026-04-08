@@ -237,13 +237,13 @@ export function CrossfitBlockForm({ onChange, initialWodType = '', initialItems 
             <CardHeader title={`Paramètres ${selectedWod?.label}`} />
             <div className="grid grid-cols-2 gap-3">
               {(wodType === 'emom' || wodType === 'amrap' || wodType === 'for_rounds') && (
-                <Input label="Durée totale (min)" type="number" value={totalDuration} onChange={e => setTotalDuration(e.target.value)} placeholder="Ex: 20" />
+                <Input label="Durée totale (min)" type="text" inputMode="numeric" value={totalDuration} onChange={e => setTotalDuration(e.target.value.replace(/\D/g, ''))} placeholder="Ex: 20" />
               )}
-              {wodType === 'emom' && <Input label="Durée par round (sec)" type="number" value={roundDuration} onChange={e => setRoundDuration(e.target.value)} placeholder="Ex: 60" />}
-              {wodType === 'amrap' && <Input label="Résultat (reps)" type="number" value={resultReps} onChange={e => setResultReps(e.target.value)} placeholder="Total reps" />}
+              {wodType === 'emom' && <Input label="Durée par round (sec)" type="text" inputMode="numeric" value={roundDuration} onChange={e => setRoundDuration(e.target.value.replace(/\D/g, ''))} placeholder="Ex: 60" />}
+              {wodType === 'amrap' && <Input label="Résultat (reps)" type="text" inputMode="numeric" value={resultReps} onChange={e => setResultReps(e.target.value.replace(/\D/g, ''))} placeholder="Total reps" />}
               {wodType === 'for_rounds' && <>
-                <Input label="Rounds cibles" type="number" value={targetRounds} onChange={e => setTargetRounds(e.target.value)} placeholder="Ex: 5" />
-                <Input label="Rounds réalisés" type="number" value={resultRounds} onChange={e => setResultRounds(e.target.value)} placeholder="Ex: 4" />
+                <Input label="Rounds cibles" type="text" inputMode="numeric" value={targetRounds} onChange={e => setTargetRounds(e.target.value.replace(/\D/g, ''))} placeholder="Ex: 5" />
+                <Input label="Rounds réalisés" type="text" inputMode="numeric" value={resultRounds} onChange={e => setResultRounds(e.target.value.replace(/\D/g, ''))} placeholder="Ex: 4" />
               </>}
               {wodType === 'for_time' && <Input label="Temps réalisé (mm:ss)" value={resultTime} onChange={e => setResultTime(e.target.value)} placeholder="Ex: 12:34" />}
               {wodType === 'benchmark' && <div className="col-span-2"><Input label="Nom du benchmark" value={benchmarkName} onChange={e => setBenchmarkName(e.target.value)} placeholder="Ex: Fran, Murph, Cindy..." /></div>}
@@ -282,8 +282,8 @@ export function CrossfitBlockForm({ onChange, initialWodType = '', initialItems 
                   return (
                     <div key={item.id} className="flex items-center gap-3 px-3 py-2 bg-[#0d0d0d] border border-white/5 rounded-xl">
                       <span className="text-xs text-[#6b6b6b]">Repos</span>
-                      <input type="number" min={5} max={600} step={5} value={item.duration}
-                        onChange={e => updateItem(item.id, { duration: parseInt(e.target.value) || 30 })}
+                      <input type="text" inputMode="numeric" value={item.duration || ''}
+                        onChange={e => updateItem(item.id, { duration: parseInt(e.target.value.replace(/\D/g, '')) || 30 })}
                         className="w-16 bg-[#1a1a1a] border border-white/10 rounded px-2 py-1 text-sm text-orange-300 text-center outline-none focus:border-orange-500/50"
                       />
                       <span className="text-xs text-[#6b6b6b]">s</span>
@@ -304,15 +304,15 @@ export function CrossfitBlockForm({ onChange, initialWodType = '', initialItems 
                       />
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-[#6b6b6b]">×</span>
-                        <input type="number" min={1} max={20} value={item.rounds}
-                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value) || 1 })}
+                        <input type="text" inputMode="numeric" value={item.rounds || ''}
+                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value.replace(/\D/g, '')) || 1 })}
                           className="w-10 bg-[#1a1a1a] border border-white/10 rounded text-xs text-[#f5f5f5] text-center outline-none py-1"
                         />
                         <span className="text-xs text-[#6b6b6b]">rounds</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <input type="number" min={0} max={600} step={15} value={item.restBetweenRounds}
-                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value) || 0 })}
+                        <input type="text" inputMode="numeric" value={item.restBetweenRounds || ''}
+                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value.replace(/\D/g, '')) || 0 })}
                           className="w-14 bg-[#1a1a1a] border border-white/10 rounded text-xs text-[#f5f5f5] text-center outline-none py-1"
                         />
                         <span className="text-xs text-[#6b6b6b]">s repos</span>
@@ -327,8 +327,8 @@ export function CrossfitBlockForm({ onChange, initialWodType = '', initialItems 
                           return (
                             <div key={ex.id} className="flex items-center gap-3 px-2 py-1">
                               <span className="text-xs text-[#6b6b6b]">Repos</span>
-                              <input type="number" min={5} max={300} step={5} value={(ex as any).duration}
-                                onChange={e => updateCircuitItem(item.id, ex.id, { duration: parseInt(e.target.value) || 30 })}
+                              <input type="text" inputMode="numeric" value={(ex as any).duration || ''}
+                                onChange={e => updateCircuitItem(item.id, ex.id, { duration: parseInt(e.target.value.replace(/\D/g, '')) || 30 })}
                                 className="w-14 bg-[#1a1a1a] border border-white/10 rounded px-2 py-1 text-xs text-orange-300 text-center outline-none"
                               />
                               <span className="text-xs text-[#6b6b6b]">s</span>
@@ -451,17 +451,17 @@ export function CrossfitExerciseBlock({ exercise, index, compact, onUpdate, onRe
 
       <div className="flex gap-2 pl-7 flex-wrap">
         {exercise.inputType === 'reps' ? (
-          <input type="number" min="1" value={exercise.reps} onChange={e => onUpdate('reps', e.target.value)} placeholder="Reps"
+          <input type="text" inputMode="numeric" value={exercise.reps} onChange={e => onUpdate('reps', e.target.value.replace(/\D/g, ''))} placeholder="Reps"
             className="w-20 bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-orange-500/50 text-center" />
         ) : (
           <div className="flex items-center gap-1">
-            <input type="number" min="1" value={exercise.duration} onChange={e => onUpdate('duration', e.target.value)} placeholder="Sec"
+            <input type="text" inputMode="numeric" value={exercise.duration} onChange={e => onUpdate('duration', e.target.value.replace(/\D/g, ''))} placeholder="Sec"
               className="w-20 bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-orange-500/50 text-center" />
             <span className="text-xs text-[#4a4a4a]">s</span>
           </div>
         )}
         <div className="flex items-center gap-1">
-          <input type="number" min="0" step="0.5" value={exercise.weight} onChange={e => onUpdate('weight', e.target.value)} placeholder="kg"
+          <input type="text" inputMode="decimal" value={exercise.weight} onChange={e => onUpdate('weight', e.target.value.replace(',', '.'))} placeholder="kg"
             className="w-20 bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-orange-500/50 text-center" />
           <span className="text-xs text-[#4a4a4a]">kg</span>
         </div>

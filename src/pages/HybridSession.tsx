@@ -234,10 +234,6 @@ export function HybridSessionPage() {
 
   const updateBlockData = useCallback((id: string, data: UIBlock['data']) => {
     blockDataRefs.current.set(id, data);
-    setBlocks(prev => prev.map(b => {
-      if (b.id !== id) return b;
-      return { ...b, data } as UIBlock;
-    }));
   }, []);
 
   // ── Soumission ───────────────────────────────────────────────────────────────
@@ -247,8 +243,12 @@ export function HybridSessionPage() {
     if (!profile) return;
     if (blocks.length < 2) { setError('Ajoute au moins 2 blocs d\'activité.'); return; }
 
-    // Build hybrid blocks from current state
-    const hybridBlocks = blocks.map(uiBlockToHybridBlock);
+    // Build hybrid blocks from current state (use refs for latest form data)
+    const currentBlocks = blocks.map(b => ({
+      ...b,
+      data: blockDataRefs.current.get(b.id) ?? b.data,
+    } as UIBlock));
+    const hybridBlocks = currentBlocks.map(uiBlockToHybridBlock);
     setSaving(true);
     setError(null);
 

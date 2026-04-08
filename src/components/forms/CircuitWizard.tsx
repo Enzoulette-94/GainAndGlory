@@ -42,11 +42,10 @@ export function CircuitWizard({ theme = 'red', onConfirm, onCancel }: CircuitWiz
           <div>
             <label className="text-xs text-[#6b6b6b] mb-1.5 block">Exercices</label>
             <input
-              type="number"
-              min={1}
-              max={20}
+              type="text"
+              inputMode="numeric"
               value={exerciseCount}
-              onChange={e => setExerciseCount(e.target.value)}
+              onChange={e => setExerciseCount(e.target.value.replace(/\D/g, ''))}
               data-testid="wizard-input-exercises"
               className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#f5f5f5] text-center outline-none focus:border-white/20 transition-colors"
             />
@@ -55,11 +54,10 @@ export function CircuitWizard({ theme = 'red', onConfirm, onCancel }: CircuitWiz
           <div>
             <label className="text-xs text-[#6b6b6b] mb-1.5 block">Rounds</label>
             <input
-              type="number"
-              min={1}
-              max={20}
+              type="text"
+              inputMode="numeric"
               value={rounds}
-              onChange={e => setRounds(e.target.value)}
+              onChange={e => setRounds(e.target.value.replace(/\D/g, ''))}
               data-testid="wizard-input-rounds"
               className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#f5f5f5] text-center outline-none focus:border-white/20 transition-colors"
             />
@@ -68,11 +66,10 @@ export function CircuitWizard({ theme = 'red', onConfirm, onCancel }: CircuitWiz
           <div>
             <label className="text-xs text-[#6b6b6b] mb-1.5 block">Repos entre les rounds (secondes)</label>
             <input
-              type="number"
-              min={0}
-              max={600}
+              type="text"
+              inputMode="numeric"
               value={rest}
-              onChange={e => setRest(e.target.value)}
+              onChange={e => setRest(e.target.value.replace(/\D/g, ''))}
               data-testid="wizard-input-rest"
               className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-sm text-[#f5f5f5] text-center outline-none focus:border-white/20 transition-colors"
             />

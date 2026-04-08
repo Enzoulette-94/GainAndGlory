@@ -600,11 +600,10 @@ export function MuscuBlockForm({ onChange, initialItems, userId }: MuscuBlockFor
                       <div className="flex items-center gap-1">
                         <label className="text-xs text-[#6b6b6b]">×</label>
                         <input
-                          type="number"
-                          min={1}
-                          max={20}
-                          value={item.rounds}
-                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value) || 1 })}
+                          type="text"
+                          inputMode="numeric"
+                          value={item.rounds || ''}
+                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value.replace(/\D/g, '')) || 1 })}
                           className="w-10 bg-[#1c1c1c] border border-white/8 rounded text-xs text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 py-1"
                           title="Nombre de rounds"
                         />
@@ -612,12 +611,10 @@ export function MuscuBlockForm({ onChange, initialItems, userId }: MuscuBlockFor
                       </div>
                       <div className="flex items-center gap-1">
                         <input
-                          type="number"
-                          min={0}
-                          max={600}
-                          step={15}
-                          value={item.restBetweenRounds}
-                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value) || 0 })}
+                          type="text"
+                          inputMode="numeric"
+                          value={item.restBetweenRounds || ''}
+                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value.replace(/\D/g, '')) || 0 })}
                           className="w-14 bg-[#1c1c1c] border border-white/8 rounded text-xs text-[#f5f5f5] text-center outline-none focus:ring-1 focus:ring-red-500 py-1"
                           title="Repos entre rounds (s)"
                         />
@@ -718,16 +715,12 @@ export function MuscuBlockForm({ onChange, initialItems, userId }: MuscuBlockFor
           </div>
         </div>
 
-        {totalTonnage > 0 && (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <Card className="p-4 bg-transparent border-red-900/40">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-red-300">Tonnage total</span>
-                <span className="text-xl font-black text-red-400">{totalTonnage.toLocaleString('fr-FR')} kg</span>
-              </div>
-            </Card>
-          </motion.div>
-        )}
+        <Card className={`p-4 bg-transparent border-red-900/40 transition-opacity duration-200 ${totalTonnage > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-red-300">Tonnage total</span>
+            <span className="text-xl font-black text-red-400">{totalTonnage.toLocaleString('fr-FR')} kg</span>
+          </div>
+        </Card>
       </div>
 
       {/* Wizard */}
@@ -842,6 +835,79 @@ export function MuscuBlockForm({ onChange, initialItems, userId }: MuscuBlockFor
   );
 }
 
+// ─── SetInputRow ─────────────────────────────────────────────────────────────
+// Local state per row → no parent re-render while typing → no focus loss
+
+function SetInputRow({ set, setIdx, onUpdateSet, onRemoveSet, onDuplicateSet, setsLength }: {
+  set: SetRow;
+  setIdx: number;
+  onUpdateSet: (idx: number, patch: Partial<SetRow>) => void;
+  onRemoveSet: (idx: number) => void;
+  onDuplicateSet: (idx: number) => void;
+  setsLength: number;
+}) {
+  const [reps, setReps] = React.useState(set.reps > 0 ? String(set.reps) : '');
+  const [weight, setWeight] = React.useState(set.weightRaw);
+  const [rest, setRest] = React.useState(set.rest_time != null ? String(set.rest_time) : '');
+
+  // Sync only when parent changes the value (duplicate, reset…)
+  React.useEffect(() => { setReps(set.reps > 0 ? String(set.reps) : ''); }, [set.reps]);
+  React.useEffect(() => { setWeight(set.weightRaw); }, [set.weightRaw]);
+  React.useEffect(() => { setRest(set.rest_time != null ? String(set.rest_time) : ''); }, [set.rest_time]);
+
+  return (
+    <div className="grid grid-cols-[24px_1fr_1fr_1fr_24px_24px] sm:grid-cols-[32px_1fr_1fr_1fr_32px_32px] gap-1 sm:gap-2 items-center">
+      <span className="text-xs text-[#6b6b6b] text-center font-mono">{setIdx + 1}</span>
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="10"
+        value={reps}
+        onChange={e => setReps(e.target.value.replace(/\D/g, ''))}
+        onBlur={() => onUpdateSet(setIdx, { reps: parseInt(reps) || 0 })}
+        className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder-slate-600"
+      />
+      <input
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        value={weight}
+        onChange={e => setWeight(e.target.value.replace(',', '.'))}
+        onBlur={() => {
+          const parsed = parseFloat(weight);
+          onUpdateSet(setIdx, { weightRaw: weight, weight: isNaN(parsed) ? 0 : parsed });
+        }}
+        className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder-slate-600"
+      />
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="—"
+        value={rest}
+        onChange={e => setRest(e.target.value.replace(/\D/g, ''))}
+        onBlur={() => onUpdateSet(setIdx, { rest_time: rest ? parseInt(rest) : null })}
+        className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder-slate-600"
+      />
+      <button
+        type="button"
+        onClick={() => onDuplicateSet(setIdx)}
+        className="p-1 rounded-lg text-[#4a4a4a] hover:text-red-300 transition-all"
+        title="Dupliquer la série"
+      >
+        <Copy className="w-3.5 h-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onRemoveSet(setIdx)}
+        disabled={setsLength <= 1}
+        className="p-1 rounded-lg text-[#4a4a4a] hover:text-red-400 hover:bg-transparent transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
 // ─── ExerciseBlockCard ────────────────────────────────────────────────────────
 
 export interface ExerciseBlockCardProps {
@@ -934,57 +1000,15 @@ export function ExerciseBlockCard({
         </div>
 
         {block.sets.map((set, setIdx) => (
-          <div
+          <SetInputRow
             key={setIdx}
-            className="grid grid-cols-[24px_1fr_1fr_1fr_24px_24px] sm:grid-cols-[32px_1fr_1fr_1fr_32px_32px] gap-1 sm:gap-2 items-center"
-          >
-            <span className="text-xs text-[#6b6b6b] text-center font-mono">{setIdx + 1}</span>
-            <input
-              type="number"
-              min={1}
-              max={999}
-              value={set.reps}
-              onChange={e => onUpdateSet(setIdx, { reps: parseInt(e.target.value) || 0 })}
-              className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
-            />
-            <input
-              type="text"
-              inputMode="decimal"
-              value={set.weightRaw}
-              onChange={e => {
-                const raw = e.target.value.replace(',', '.');
-                const parsed = parseFloat(raw);
-                onUpdateSet(setIdx, { weightRaw: e.target.value, weight: isNaN(parsed) ? 0 : parsed });
-              }}
-              className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
-            />
-            <input
-              type="number"
-              min={0}
-              max={600}
-              step={5}
-              placeholder="—"
-              value={set.rest_time ?? ''}
-              onChange={e => onUpdateSet(setIdx, { rest_time: e.target.value ? parseInt(e.target.value) : null })}
-              className="w-full bg-[#1c1c1c] border border-white/8 rounded-lg px-2 py-2 text-sm text-[#f5f5f5] text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder-slate-600"
-            />
-            <button
-              type="button"
-              onClick={() => onDuplicateSet(setIdx)}
-              className="p-1 rounded-lg text-[#4a4a4a] hover:text-red-300 transition-all"
-              title="Dupliquer la série"
-            >
-              <Copy className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onRemoveSet(setIdx)}
-              disabled={block.sets.length <= 1}
-              className="p-1 rounded-lg text-[#4a4a4a] hover:text-red-400 hover:bg-transparent transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
+            set={set}
+            setIdx={setIdx}
+            onUpdateSet={onUpdateSet}
+            onRemoveSet={onRemoveSet}
+            onDuplicateSet={onDuplicateSet}
+            setsLength={block.sets.length}
+          />
         ))}
 
         <Button

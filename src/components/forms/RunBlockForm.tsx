@@ -100,13 +100,11 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
       <Card className="p-4 space-y-4">
         <Input
           label="Distance (km)"
-          type="number"
-          min="0.1"
-          max="999"
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           placeholder="Ex: 10.5"
           value={distance}
-          onChange={e => setDistance(e.target.value)}
+          onChange={e => setDistance(e.target.value.replace(',', '.'))}
         />
 
         <div>
@@ -114,24 +112,24 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
           <div className="grid grid-cols-3 gap-2">
             <div className="flex flex-col gap-1">
               <input
-                type="number" min={0} max={23} placeholder="0" value={hours}
-                onChange={e => setHours(e.target.value)}
+                type="text" inputMode="numeric" placeholder="0" value={hours}
+                onChange={e => setHours(e.target.value.replace(/\D/g, ''))}
                 className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-2 sm:px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
               />
               <span className="text-xs text-[#6b6b6b] text-center">heures</span>
             </div>
             <div className="flex flex-col gap-1">
               <input
-                type="number" min={0} max={59} placeholder="0" value={minutes}
-                onChange={e => setMinutes(e.target.value)}
+                type="text" inputMode="numeric" placeholder="0" value={minutes}
+                onChange={e => setMinutes(e.target.value.replace(/\D/g, ''))}
                 className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-2 sm:px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
               />
               <span className="text-xs text-[#6b6b6b] text-center">minutes</span>
             </div>
             <div className="flex flex-col gap-1">
               <input
-                type="number" min={0} max={59} placeholder="0" value={seconds}
-                onChange={e => setSeconds(e.target.value)}
+                type="text" inputMode="numeric" placeholder="0" value={seconds}
+                onChange={e => setSeconds(e.target.value.replace(/\D/g, ''))}
                 className="w-full bg-[#1c1c1c] border border-white/8 hover:border-white/10 rounded px-2 sm:px-4 py-2.5 text-sm text-[#f5f5f5] text-center placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
               />
               <span className="text-xs text-[#6b6b6b] text-center">secondes</span>
@@ -215,17 +213,17 @@ export function RunBlockForm({ onChange }: RunBlockFormProps) {
           >
             <Card className="p-4 mt-2 space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Input label="D+ (m)" type="number" min={0} placeholder="0" value={elevationGain} onChange={e => setElevationGain(e.target.value)} />
-                <Input label="D- (m)" type="number" min={0} placeholder="0" value={elevationLoss} onChange={e => setElevationLoss(e.target.value)} />
+                <Input label="D+ (m)" type="text" inputMode="numeric" placeholder="0" value={elevationGain} onChange={e => setElevationGain(e.target.value.replace(/\D/g, ''))} />
+                <Input label="D- (m)" type="text" inputMode="numeric" placeholder="0" value={elevationLoss} onChange={e => setElevationLoss(e.target.value.replace(/\D/g, ''))} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Input label="FC moyenne (bpm)" type="number" min={40} max={250} placeholder="150" value={avgHeartRate} onChange={e => setAvgHeartRate(e.target.value)} />
-                <Input label="FC max (bpm)" type="number" min={40} max={250} placeholder="180" value={maxHeartRate} onChange={e => setMaxHeartRate(e.target.value)} />
+                <Input label="FC moyenne (bpm)" type="text" inputMode="numeric" placeholder="150" value={avgHeartRate} onChange={e => setAvgHeartRate(e.target.value.replace(/\D/g, ''))} />
+                <Input label="FC max (bpm)" type="text" inputMode="numeric" placeholder="180" value={maxHeartRate} onChange={e => setMaxHeartRate(e.target.value.replace(/\D/g, ''))} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Température (°C)" type="number" min={-30} max={50} step={0.5} placeholder="18" value={weatherTemp} onChange={e => setWeatherTemp(e.target.value)} />
+                <Input label="Température (°C)" type="text" inputMode="decimal" placeholder="18" value={weatherTemp} onChange={e => setWeatherTemp(e.target.value.replace(',', '.'))} />
                 <Select
                   label="Météo"
                   value={weatherCondition}

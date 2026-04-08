@@ -366,9 +366,9 @@ export function CaliBlockForm({ onChange, initialItems }: CaliBlockFormProps) {
                   <div key={item.id} className="flex items-center gap-3 px-3 py-2 bg-[#0d0d0d] border border-white/5 rounded-xl">
                     <span className="text-xs text-[#6b6b6b]">Repos</span>
                     <input
-                      type="number" min={5} max={600} step={5}
-                      value={item.duration}
-                      onChange={e => updateRestItem(item.id, parseInt(e.target.value) || 30)}
+                      type="text" inputMode="numeric"
+                      value={item.duration || ''}
+                      onChange={e => updateRestItem(item.id, parseInt(e.target.value.replace(/\D/g, '')) || 30)}
                       className="w-16 bg-[#1a1a1a] border border-white/10 rounded px-2 py-1 text-sm text-violet-300 text-center outline-none focus:border-violet-500/50"
                     />
                     <span className="text-xs text-[#6b6b6b]">s</span>
@@ -432,16 +432,16 @@ export function CaliBlockForm({ onChange, initialItems }: CaliBlockFormProps) {
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-[#6b6b6b]">×</span>
                         <input
-                          type="number" min={1} max={20} value={item.rounds}
-                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value) || 1 })}
+                          type="text" inputMode="numeric" value={item.rounds || ''}
+                          onChange={e => updateCircuit(item.id, { rounds: parseInt(e.target.value.replace(/\D/g, '')) || 1 })}
                           className="w-10 bg-[#1a1a1a] border border-white/10 rounded text-xs text-[#f5f5f5] text-center outline-none py-1"
                         />
                         <span className="text-xs text-[#6b6b6b]">rounds</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <input
-                          type="number" min={0} max={600} step={15} value={item.restBetweenRounds}
-                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value) || 0 })}
+                          type="text" inputMode="numeric" value={item.restBetweenRounds || ''}
+                          onChange={e => updateCircuit(item.id, { restBetweenRounds: parseInt(e.target.value.replace(/\D/g, '')) || 0 })}
                           className="w-14 bg-[#1a1a1a] border border-white/10 rounded text-xs text-[#f5f5f5] text-center outline-none py-1"
                         />
                         <span className="text-xs text-[#6b6b6b]">s repos</span>
@@ -475,9 +475,9 @@ export function CaliBlockForm({ onChange, initialItems }: CaliBlockFormProps) {
                                 <div className="flex items-center gap-3 px-2 py-1">
                                   <span className="text-xs text-[#6b6b6b]">Repos</span>
                                   <input
-                                    type="number" min={5} max={300} step={5}
-                                    value={(ex as any).duration}
-                                    onChange={e => updateCircuitRest(item.id, ex.id, parseInt(e.target.value) || 30)}
+                                    type="text" inputMode="numeric"
+                                    value={(ex as any).duration || ''}
+                                    onChange={e => updateCircuitRest(item.id, ex.id, parseInt(e.target.value.replace(/\D/g, '')) || 30)}
                                     className="w-14 bg-[#1a1a1a] border border-white/10 rounded px-2 py-1 text-xs text-violet-300 text-center outline-none"
                                   />
                                   <span className="text-xs text-[#6b6b6b]">s</span>
@@ -649,18 +649,18 @@ export function CaliExerciseBlock({ exercise, index, compact, onUpdate, onRemove
           <div key={si} className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-[#4a4a4a] w-12">Série {si + 1}</span>
             {exercise.set_type === 'reps' ? (
-              <input type="number" min="1" value={set.reps} onChange={e => onUpdateSet(si, 'reps', e.target.value)} placeholder="Reps"
+              <input type="text" inputMode="numeric" value={set.reps} onChange={e => onUpdateSet(si, 'reps', e.target.value.replace(/\D/g, ''))} placeholder="Reps"
                 className="w-20 bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-violet-500/50 text-center" />
             ) : (
               <div className="flex items-center gap-1">
-                <input type="number" min="1" value={set.hold_seconds} onChange={e => onUpdateSet(si, 'hold_seconds', e.target.value)} placeholder="Sec"
+                <input type="text" inputMode="numeric" value={set.hold_seconds} onChange={e => onUpdateSet(si, 'hold_seconds', e.target.value.replace(/\D/g, ''))} placeholder="Sec"
                   className="w-20 bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-sm text-[#f5f5f5] placeholder-[#4a4a4a] focus:outline-none focus:border-violet-500/50 text-center" />
                 <span className="text-xs text-[#4a4a4a]">s</span>
               </div>
             )}
             {exercise.has_weight && (
               <div className="flex items-center gap-1">
-                <input type="number" min="0" step="0.5" value={set.weight_kg} onChange={e => onUpdateSet(si, 'weight_kg', e.target.value)} placeholder="kg"
+                <input type="text" inputMode="decimal" value={set.weight_kg} onChange={e => onUpdateSet(si, 'weight_kg', e.target.value.replace(',', '.'))} placeholder="kg"
                   className="w-16 bg-[#1a1a1a] border border-violet-500/30 rounded-lg px-2 py-1 text-sm text-violet-300 placeholder-[#4a4a4a] focus:outline-none focus:border-violet-400/60 text-center" />
                 <span className="text-xs text-violet-400/60">kg</span>
               </div>
