@@ -26,7 +26,7 @@ export function Input({ label, error, hint, icon, className = '', id, ...props }
         <input
           id={inputId}
           className={`
-            w-full bg-[#1c1c1c] border rounded px-4 py-2.5 text-sm text-[#f5f5f5]
+            w-full min-w-0 bg-[#1c1c1c] border rounded px-4 py-2.5 text-sm text-[#f5f5f5]
             placeholder-[#4a4a4a] outline-none transition-all duration-200
             focus:ring-1 focus:ring-[#c9a870]/30 focus:border-[#c9a870]/50
             ${error ? 'border-red-500' : 'border-white/8 hover:border-white/10'}
