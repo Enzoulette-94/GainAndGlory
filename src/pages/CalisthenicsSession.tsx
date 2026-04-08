@@ -8,7 +8,7 @@ import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
 import { CaliBlockForm, flattenToCaliExercises } from '../components/forms/CaliBlockForm';
-import type { CaliBlockFormData, SessionItem } from '../components/forms/CaliBlockForm';
+import type { CaliBlockFormData, SessionItem, CircuitItem } from '../components/forms/CaliBlockForm';
 import { CALISTHENICS_SKILLS, FEEDBACK_LABELS } from '../utils/constants';
 import { profileRecordsService } from '../services/profile-records.service';
 import { feedService } from '../services/feed.service';
@@ -103,9 +103,18 @@ export function CalisthenicsSessionPage() {
         hold_seconds: ex.set_type === 'timed' ? ex.sets.reduce((s, r) => s + (r.hold_seconds ?? 0), 0) : undefined,
         set_type: ex.set_type,
       }));
+      const circuitsSummary = formData.items
+        .filter((item): item is CircuitItem => item.itemType === 'circuit')
+        .map(c => ({
+          name: c.name,
+          rounds: c.rounds,
+          exercises: c.exercises.filter(e => 'name' in e && (e as any).name?.trim()).map(e => (e as any).name.trim() as string),
+        }));
+
       await feedService.publishCalisthenics(
         profile.id, caliExercises.length, totalReps, feedback || undefined, undefined,
         name.trim() || undefined, selectedSkills, feedExercises,
+        circuitsSummary.length > 0 ? circuitsSummary : undefined,
       );
 
       notificationService.broadcastToAll(profile.id, 'new_session', {

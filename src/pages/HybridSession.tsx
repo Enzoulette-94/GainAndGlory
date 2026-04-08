@@ -86,6 +86,7 @@ function uiBlockToHybridBlock(block: UIBlock): HybridBlock {
       const sets = buildMuscuSets(block.data.items);
       const exercises: HybridMusculationExercise[] = [];
       const seen = new Map<string, HybridMusculationExercise>();
+      const circuits: HybridMusculationBlock['circuits'] = [];
       for (const item of block.data.items) {
         if (item.itemType === 'exercise' && item.exercise) {
           const key = item.exercise.id;
@@ -96,6 +97,11 @@ function uiBlockToHybridBlock(block: UIBlock): HybridBlock {
           }
           seen.get(key)!.sets.push(...item.sets.map(s => ({ reps: s.reps, weight: s.weight })));
         } else if (item.itemType === 'circuit') {
+          circuits!.push({
+            name: item.name,
+            rounds: item.rounds,
+            exercises: item.exercises.filter(e => e.exercise).map(e => e.exercise!.name),
+          });
           for (const ex of item.exercises) {
             if (!ex.exercise) continue;
             const key = ex.exercise.id;
@@ -111,11 +117,19 @@ function uiBlockToHybridBlock(block: UIBlock): HybridBlock {
       return {
         blockType: 'musculation', id: block.id,
         exercises,
+        circuits: circuits!.length > 0 ? circuits : undefined,
         notes: '',
       } satisfies HybridMusculationBlock;
     }
     case 'calisthenics': {
       const caliExercises = flattenToCaliExercises(block.data.items);
+      const caliCircuits: HybridCalisthenicsBlock['circuits'] = block.data.items
+        .filter((item) => (item as any).itemType === 'circuit')
+        .map((c: any) => ({
+          name: c.name,
+          rounds: c.rounds,
+          exercises: c.exercises.filter((e: any) => 'name' in e && e.name?.trim()).map((e: any) => e.name.trim()),
+        }));
       return {
         blockType: 'calisthenics', id: block.id,
         exercises: caliExercises.map(ex => ({
@@ -124,6 +138,7 @@ function uiBlockToHybridBlock(block: UIBlock): HybridBlock {
           sets: ex.sets.length,
           reps: ex.set_type === 'reps' ? (ex.sets.reduce((s, r) => s + (r.reps ?? 0), 0) / Math.max(ex.sets.length, 1)) | 0 : 0,
         })) satisfies HybridCaliExercise[],
+        circuits: caliCircuits.length > 0 ? caliCircuits : undefined,
         notes: '',
       } satisfies HybridCalisthenicsBlock;
     }

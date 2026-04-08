@@ -111,12 +111,17 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
   const isWorkout = item.type === 'workout';
   const isCalisthenics = item.type === 'calisthenics';
   const isCrossfit = item.type === 'crossfit';
+  const isHybrid = item.type === 'hybrid';
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        if (isWorkout) {
+        if (isHybrid) {
+          // Données déjà dans le JSONB du feed — pas de fetch DB
+          setLoading(false);
+          return;
+        } else if (isWorkout) {
           let query = supabase
             .from('workout_sessions')
             .select('*, sets:workout_sets(*, exercise:exercises(*))')
@@ -181,7 +186,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
       } catch { setData(null); }
       finally { setLoading(false); }
     })();
-  }, [item, isWorkout, isCalisthenics, isCrossfit, c.session_id]);
+  }, [item, isWorkout, isCalisthenics, isCrossfit, isHybrid, c.session_id]);
 
   const feedbackLabel = (fb: string | null) => {
     if (fb === 'facile') return { label: 'Facile', color: 'text-green-500 border-green-900/50' };
@@ -218,7 +223,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
     return Object.values(map).map(g => ({ ...g, sets: g.sets.sort((a: any, b: any) => a.set_number - b.set_number) }));
   }, [data]);
 
-  const title = isWorkout ? 'Détails — Séance muscu' : isCalisthenics ? 'Détails — Calisthénie' : isCrossfit ? 'Détails — Crossfit' : 'Détails — Course';
+  const title = isWorkout ? 'Détails — Séance muscu' : isCalisthenics ? 'Détails — Calisthénie' : isCrossfit ? 'Détails — Crossfit' : isHybrid ? 'Détails — Session hybride' : 'Détails — Course';
 
   const username = item.user?.username ?? 'Utilisateur';
   const sessionName = data?.name ?? c.name ?? title;
@@ -354,46 +359,50 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
 
   return (
     <Modal isOpen onClose={onClose} title={title} size="md">
-      <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+      <div className="px-6 py-5 space-y-6 max-h-[75vh] overflow-y-auto">
         {loading && <Loader text="Chargement de la séance..." />}
 
         {/* ── MUSCU — données complètes depuis la DB ── */}
         {!loading && data && isWorkout && (
           <>
-            {data.name && (
-              <h3 className="font-rajdhani font-bold text-lg text-[#f5f5f5] tracking-wide uppercase border-b border-white/5 pb-2">
-                {data.name}
-              </h3>
-            )}
-            <div className="flex flex-wrap gap-3 text-sm">
-              <span className="text-[#a3a3a3]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              {data.total_tonnage != null && (
-                <span className="font-rajdhani font-bold text-[#c9a870]">
-                  {data.total_tonnage.toLocaleString('fr-FR')} kg soulevés
-                </span>
+            {/* En-tête */}
+            <div className="space-y-3">
+              {data.name && (
+                <h3 className="font-rajdhani font-black text-2xl text-white uppercase tracking-wide leading-tight">
+                  {data.name}
+                </h3>
               )}
-              {(() => { const fb = feedbackLabel(data.feedback); return fb ? (
-                <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
-              ) : null; })()}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-[#6b6b6b]">{formatDate(data.date, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                {data.total_tonnage != null && (
+                  <>
+                    <span className="text-[#3a3a3a]">·</span>
+                    <span className="font-rajdhani font-bold text-sm text-[#c9a870]">{data.total_tonnage.toLocaleString('fr-FR')} kg soulevés</span>
+                  </>
+                )}
+                {(() => { const fb = feedbackLabel(data.feedback); return fb ? (
+                  <span className={`text-xs border px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide ${fb.color}`}>{fb.label}</span>
+                ) : null; })()}
+              </div>
+              {data.notes && <p className="text-sm text-[#6b6b6b] italic border-l-2 border-[#c9a870]/30 pl-3 leading-relaxed">{data.notes}</p>}
             </div>
-            {data.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-[#c9a870]/30 pl-3">{data.notes}</p>}
 
             {groupedSets.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
-            <div className="space-y-4">
+            <div className="space-y-5">
               {groupedSets.map((group, gi) => (
-                <div key={gi} className="border border-white/5">
-                  <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-white/2">
-                    <Dumbbell className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                    <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{group.name}</span>
-                    <span className="text-xs text-[#6b6b6b] ml-auto">{group.muscleGroup}</span>
+                <div key={gi} className="border border-white/8">
+                  <div className="flex items-center gap-3 px-4 py-3 border-b border-white/8 bg-white/[0.03]">
+                    <Dumbbell className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">{group.name}</span>
+                    {group.muscleGroup && <span className="text-xs text-[#4a4a4a] ml-auto font-rajdhani uppercase tracking-wide">{group.muscleGroup}</span>}
                   </div>
                   <div className="divide-y divide-white/5">
                     {group.sets.map((s: any, si: number) => (
-                      <div key={si} className="flex items-center justify-between px-3 py-2 text-sm">
-                        <span className="text-[#6b6b6b] w-14">Série {s.set_number}</span>
-                        <span className="text-[#d4d4d4]">{s.reps} reps</span>
-                        <span className="font-rajdhani font-bold text-[#c9a870]">{s.weight} kg</span>
-                        <span className="text-[#4a4a4a] text-xs">{(s.reps * s.weight).toLocaleString('fr-FR')} kg</span>
+                      <div key={si} className="flex items-center justify-between px-4 py-3">
+                        <span className="text-xs text-[#4a4a4a] font-rajdhani uppercase tracking-wide w-16">Série {s.set_number}</span>
+                        <span className="text-sm text-[#c4c4c4] font-rajdhani">{s.reps} reps</span>
+                        <span className="font-rajdhani font-black text-base text-[#c9a870]">{s.weight} kg</span>
+                        <span className="text-xs text-[#3a3a3a] font-rajdhani">{(s.reps * s.weight).toLocaleString('fr-FR')} kg</span>
                       </div>
                     ))}
                   </div>
@@ -409,29 +418,29 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           const repsPerSet = (ex: { sets: number; reps: number }) => ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
           return (
             <>
-              {c.name && (
-                <h3 className="font-rajdhani font-bold text-lg text-[#f5f5f5] tracking-wide uppercase border-b border-white/5 pb-2">
-                  {c.name}
-                </h3>
-              )}
-              <div className="flex flex-wrap gap-3 text-sm">
-                <span className="text-[#a3a3a3]">{formatDate(item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                {(() => { const fb = feedbackLabel(c.feedback); return fb ? (
-                  <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
-                ) : null; })()}
+              <div className="space-y-3">
+                {c.name && (
+                  <h3 className="font-rajdhani font-black text-2xl text-white uppercase tracking-wide leading-tight">{c.name}</h3>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-[#6b6b6b]">{formatDate(item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  {(() => { const fb = feedbackLabel(c.feedback); return fb ? (
+                    <span className={`text-xs border px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide ${fb.color}`}>{fb.label}</span>
+                  ) : null; })()}
+                </div>
               </div>
               {exList.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {exList.map((ex, i) => (
-                  <div key={i} className="border border-white/5">
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-white/2">
-                      <Dumbbell className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                      <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{ex.name}</span>
+                  <div key={i} className="border border-white/8">
+                    <div className="flex items-center gap-3 px-4 py-3 border-b border-white/8 bg-white/[0.03]">
+                      <Dumbbell className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">{ex.name}</span>
                     </div>
-                    <div className="flex items-center justify-between px-3 py-2 text-sm">
-                      <span className="text-[#d4d4d4]">{ex.sets} séries × {repsPerSet(ex)} reps</span>
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <span className="text-sm text-[#c4c4c4] font-rajdhani">{ex.sets} séries × {repsPerSet(ex)} reps</span>
                       {ex.maxWeight != null && ex.maxWeight > 0 && (
-                        <span className="font-rajdhani font-bold text-[#c9a870]">{ex.maxWeight} kg</span>
+                        <span className="font-rajdhani font-black text-base text-[#c9a870]">{ex.maxWeight} kg</span>
                       )}
                     </div>
                   </div>
@@ -442,7 +451,7 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
         })()}
 
         {/* ── COURSE ── */}
-        {!loading && !isWorkout && !isCalisthenics && !isCrossfit && (() => {
+        {!loading && !isWorkout && !isCalisthenics && !isCrossfit && !isHybrid && (() => {
           const run = data ?? null;
           const distance = run?.distance ?? (c as any).distance ?? null;
           const duration = run?.duration ?? (c as any).duration ?? null;
@@ -451,21 +460,21 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           if (!distance && !duration) return null;
           return (
           <>
-            {run?.name && (
-              <h3 className="font-rajdhani font-bold text-lg text-blue-400 tracking-wide uppercase border-b border-white/5 pb-2">
-                {run.name}
-              </h3>
-            )}
-            <div className="flex flex-wrap gap-3 text-sm">
-              <span className="text-[#a3a3a3]">{formatDate(run?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              {runType && (
-                <span className="text-xs border border-blue-800/50 text-blue-400 px-2 py-0.5 font-rajdhani font-semibold uppercase">
-                  {runTypeLabel(runType)}
-                </span>
+            <div className="space-y-3">
+              {run?.name && (
+                <h3 className="font-rajdhani font-black text-2xl text-blue-400 uppercase tracking-wide leading-tight">{run.name}</h3>
               )}
-              {(() => { const fb = feedbackLabel(run?.feedback ?? (c as any).feedback ?? null); return fb ? (
-                <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
-              ) : null; })()}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-[#6b6b6b]">{formatDate(run?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                {runType && (
+                  <span className="text-xs border border-blue-800/50 text-blue-400 px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide">
+                    {runTypeLabel(runType)}
+                  </span>
+                )}
+                {(() => { const fb = feedbackLabel(run?.feedback ?? (c as any).feedback ?? null); return fb ? (
+                  <span className={`text-xs border px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide ${fb.color}`}>{fb.label}</span>
+                ) : null; })()}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -479,23 +488,23 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
                 { icon: <Wind className="w-4 h-4 text-[#6b6b6b]" />, label: 'Dénivelé −', value: run?.elevation_loss != null ? `${run.elevation_loss} m` : '—' },
                 { icon: <Thermometer className="w-4 h-4 text-orange-400" />, label: 'Météo', value: run?.weather_temp != null ? `${run.weather_temp}°C${run.weather_condition ? ` · ${weatherLabel(run.weather_condition)}` : ''}` : weatherLabel(run?.weather_condition ?? null) ?? '—' },
               ].filter(s => s.value !== '—').map((stat, i) => (
-                <div key={i} className="flex items-center gap-2 border border-white/5 px-3 py-2">
+                <div key={i} className="flex items-center gap-3 border border-white/8 px-4 py-3">
                   {stat.icon}
                   <div>
-                    <p className="text-xs text-[#6b6b6b] uppercase tracking-wide">{stat.label}</p>
-                    <p className="text-sm font-rajdhani font-semibold text-[#e5e5e5]">{stat.value}</p>
+                    <p className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani">{stat.label}</p>
+                    <p className="text-sm font-rajdhani font-bold text-[#e5e5e5] mt-0.5">{stat.value}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {run?.shoe && (
-              <div className="flex items-center gap-2 text-sm text-[#a3a3a3] border border-white/5 px-3 py-2">
-                <PersonStanding className="w-4 h-4 text-[#c9a870]" />
-                <span>Chaussure : <span className="text-[#e5e5e5] font-medium">{[run.shoe.brand, run.shoe.model].filter(Boolean).join(' ')}</span></span>
+              <div className="flex items-center gap-3 border border-white/8 px-4 py-3 text-sm">
+                <PersonStanding className="w-4 h-4 text-[#c9a870] flex-shrink-0" />
+                <span className="text-[#6b6b6b]">Chaussure — <span className="text-[#e5e5e5] font-medium">{[run.shoe.brand, run.shoe.model].filter(Boolean).join(' ')}</span></span>
               </div>
             )}
-            {run?.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-blue-800/50 pl-3">{run.notes}</p>}
+            {run?.notes && <p className="text-sm text-[#6b6b6b] italic border-l-2 border-blue-800/50 pl-3 leading-relaxed">{run.notes}</p>}
           </>
           );
         })()}
@@ -505,30 +514,32 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           const exList = ((data?.exercises ?? c.exercises ?? []) as { name: string; sets: number; reps?: number; hold_seconds?: number; set_type?: string }[]);
           return (
             <>
-              {(data?.name ?? c.name) && (
-                <h3 className="font-rajdhani font-bold text-lg text-violet-300 tracking-wide uppercase border-b border-white/5 pb-2">
-                  {data?.name ?? c.name}
-                </h3>
-              )}
-              <div className="flex flex-wrap gap-3 text-sm">
-                <span className="text-[#a3a3a3]">{formatDate(data?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                {(() => { const fb = feedbackLabel(data?.feedback ?? c.feedback); return fb ? (
-                  <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>
-                ) : null; })()}
+              <div className="space-y-3">
+                {(data?.name ?? c.name) && (
+                  <h3 className="font-rajdhani font-black text-2xl text-violet-300 uppercase tracking-wide leading-tight">
+                    {data?.name ?? c.name}
+                  </h3>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-[#6b6b6b]">{formatDate(data?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  {(() => { const fb = feedbackLabel(data?.feedback ?? c.feedback); return fb ? (
+                    <span className={`text-xs border px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide ${fb.color}`}>{fb.label}</span>
+                  ) : null; })()}
+                </div>
               </div>
 
               {exList.length === 0 && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {exList.map((ex, i) => {
                   const isTimed = ex.set_type === 'timed' || (ex.hold_seconds != null && ex.reps == null);
                   return (
                     <div key={i} className="border border-violet-900/30">
-                      <div className="flex items-center gap-2 px-3 py-2 border-b border-violet-900/30 bg-violet-900/10">
-                        <Zap className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
-                        <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{ex.name}</span>
+                      <div className="flex items-center gap-3 px-4 py-3 border-b border-violet-900/30 bg-violet-900/10">
+                        <Zap className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                        <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">{ex.name}</span>
                       </div>
-                      <div className="flex items-center justify-between px-3 py-2 text-sm">
-                        <span className="text-[#d4d4d4]">
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <span className="text-sm text-[#c4c4c4] font-rajdhani">
                           {ex.sets} {ex.sets === 1 ? 'série' : 'séries'}
                           {isTimed && ex.hold_seconds != null && ex.hold_seconds > 0
                             ? ` · ${ex.hold_seconds}s`
@@ -536,10 +547,9 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
                               ? ` × ${ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps} reps`
                               : ''}
                         </span>
-                        {isTimed
-                          ? <span className="text-xs text-violet-400 font-rajdhani font-semibold uppercase">Maintien</span>
-                          : <span className="text-xs text-violet-400 font-rajdhani font-semibold uppercase">Répétitions</span>
-                        }
+                        <span className="text-xs text-violet-400 font-rajdhani font-bold uppercase tracking-wide">
+                          {isTimed ? 'Maintien' : 'Répétitions'}
+                        </span>
                       </div>
                     </div>
                   );
@@ -547,12 +557,11 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
               </div>
 
               {(data?.notes ?? c.notes) && (
-                <p className="text-sm text-[#a3a3a3] italic border-l-2 border-violet-800/50 pl-3">{data?.notes ?? c.notes}</p>
+                <p className="text-sm text-[#6b6b6b] italic border-l-2 border-violet-800/50 pl-3 leading-relaxed">{data?.notes ?? c.notes}</p>
               )}
             </>
           );
         })()}
-      </div>
 
         {/* ── CROSSFIT ── */}
         {!loading && isCrossfit && (() => {
@@ -562,62 +571,232 @@ function SessionDetailModal({ item, onClose }: { item: ActivityFeedItem; onClose
           const fb = feedbackLabel(session?.feedback ?? c.feedback ?? null);
           return (
             <>
-              {(session?.name ?? c.name) && (
-                <h3 className="font-rajdhani font-bold text-lg text-orange-400 tracking-wide uppercase border-b border-white/5 pb-2">
-                  {session?.name ?? c.name}
-                </h3>
-              )}
-              <div className="flex flex-wrap gap-3 text-sm">
-                <span className="text-[#a3a3a3]">{formatDate(session?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                {wodType && (
-                  <span className="text-xs border border-orange-800/50 text-orange-400 px-2 py-0.5 font-rajdhani font-semibold uppercase">
-                    {wodType}
-                  </span>
+              <div className="space-y-3">
+                {(session?.name ?? c.name) && (
+                  <h3 className="font-rajdhani font-black text-2xl text-orange-400 uppercase tracking-wide leading-tight">
+                    {session?.name ?? c.name}
+                  </h3>
                 )}
-                {fb && <span className={`text-xs border px-2 py-0.5 font-rajdhani font-semibold uppercase ${fb.color}`}>{fb.label}</span>}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-[#6b6b6b]">{formatDate(session?.date ?? item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  {wodType && (
+                    <span className="text-xs border border-orange-800/50 text-orange-400 px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide">{wodType}</span>
+                  )}
+                  {fb && <span className={`text-xs border px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide ${fb.color}`}>{fb.label}</span>}
+                </div>
               </div>
 
               {/* Résultat WOD */}
               {(session?.result_reps != null || session?.result_time || session?.result_rounds != null) && (
-                <div className="border border-orange-900/40 bg-orange-900/10 px-4 py-3 flex flex-wrap gap-4">
+                <div className="border border-orange-900/40 bg-orange-900/10 px-5 py-4 flex flex-wrap gap-6">
                   {session.result_rounds != null && (
-                    <div><p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">Rounds</p>
-                      <p className="text-lg font-rajdhani font-bold text-orange-400">{session.result_rounds}</p></div>
+                    <div>
+                      <p className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani">Rounds</p>
+                      <p className="text-2xl font-rajdhani font-black text-orange-400 mt-1">{session.result_rounds}</p>
+                    </div>
                   )}
                   {session.result_reps != null && (
-                    <div><p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">Reps totales</p>
-                      <p className="text-lg font-rajdhani font-bold text-orange-400">{session.result_reps}</p></div>
+                    <div>
+                      <p className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani">Reps totales</p>
+                      <p className="text-2xl font-rajdhani font-black text-orange-400 mt-1">{session.result_reps}</p>
+                    </div>
                   )}
                   {session.result_time && (
-                    <div><p className="text-[10px] text-[#6b6b6b] uppercase tracking-wide">Temps</p>
-                      <p className="text-lg font-rajdhani font-bold text-orange-400">{session.result_time}</p></div>
+                    <div>
+                      <p className="text-[10px] text-[#4a4a4a] uppercase tracking-widest font-rajdhani">Temps</p>
+                      <p className="text-2xl font-rajdhani font-black text-orange-400 mt-1">{session.result_time}</p>
+                    </div>
                   )}
                 </div>
               )}
 
               {/* Exercices */}
               {exList.length === 0 && !session && <p className="text-sm text-[#6b6b6b]">Aucun exercice enregistré.</p>}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {exList.map((ex, i) => (
                   <div key={i} className="border border-orange-900/30">
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-orange-900/30 bg-orange-900/10">
-                      <Flame className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
-                      <span className="font-rajdhani font-semibold text-[#f5f5f5] text-sm tracking-wide uppercase">{ex.name}</span>
+                    <div className="flex items-center gap-3 px-4 py-3 border-b border-orange-900/30 bg-orange-900/10">
+                      <Flame className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                      <span className="font-rajdhani font-black text-base text-white uppercase tracking-wide">{ex.name}</span>
                     </div>
-                    <div className="flex items-center gap-4 px-3 py-2 text-sm flex-wrap">
-                      {ex.reps != null && ex.reps > 0 && <span className="text-[#d4d4d4]">{ex.reps} reps</span>}
-                      {ex.weight != null && ex.weight > 0 && <span className="font-rajdhani font-bold text-orange-400">{ex.weight} kg</span>}
-                      {ex.duration != null && ex.duration > 0 && <span className="text-[#a3a3a3]">{ex.duration}s</span>}
-                      {ex.notes && <span className="text-[#6b6b6b] italic text-xs">{ex.notes}</span>}
+                    <div className="flex items-center gap-5 px-4 py-3 flex-wrap">
+                      {ex.reps != null && ex.reps > 0 && <span className="font-rajdhani text-sm text-[#c4c4c4]">{ex.reps} reps</span>}
+                      {ex.weight != null && ex.weight > 0 && <span className="font-rajdhani font-black text-base text-orange-400">{ex.weight} kg</span>}
+                      {ex.duration != null && ex.duration > 0 && <span className="font-rajdhani text-sm text-[#6b6b6b]">{ex.duration}s</span>}
+                      {ex.notes && <span className="text-xs text-[#4a4a4a] italic">{ex.notes}</span>}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {session?.notes && <p className="text-sm text-[#a3a3a3] italic border-l-2 border-orange-800/50 pl-3">{session.notes}</p>}
+              {session?.notes && <p className="text-sm text-[#6b6b6b] italic border-l-2 border-orange-800/50 pl-3 leading-relaxed">{session.notes}</p>}
             </>
           );
         })()}
+
+        {/* ── HYBRIDE ── */}
+        {!loading && isHybrid && (() => {
+          const blocks: any[] = c.blocks ?? [];
+          const disciplineStyle: Record<string, { accent: string; border: string; bg: string; icon: string; label: string }> = {
+            running:      { accent: '#60a5fa', border: 'border-blue-600',   bg: 'bg-blue-950/20',   icon: '🏃', label: 'Course' },
+            musculation:  { accent: '#f87171', border: 'border-red-600',    bg: 'bg-red-950/20',    icon: '🏋️', label: 'Musculation' },
+            calisthenics: { accent: '#a78bfa', border: 'border-violet-600', bg: 'bg-violet-950/20', icon: '⚡', label: 'Calisthénie' },
+            crossfit:     { accent: '#fb923c', border: 'border-orange-600', bg: 'bg-orange-950/20', icon: '🔥', label: 'Crossfit' },
+          };
+          return (
+            <>
+              <div className="space-y-3">
+                {c.name && (
+                  <h3 className="font-rajdhani font-black text-2xl text-[#c9a870] uppercase tracking-wide leading-tight">{c.name}</h3>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-[#6b6b6b]">{formatDate(item.created_at, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  {(() => { const fb = feedbackLabel(c.feedback); return fb ? (
+                    <span className={`text-xs border px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide ${fb.color}`}>{fb.label}</span>
+                  ) : null; })()}
+                </div>
+              </div>
+
+              <div className="space-y-5">
+                {blocks.map((block: any, bi: number) => {
+                  const type = block.blockType ?? '';
+                  const style = disciplineStyle[type] ?? { accent: '#c9a870', border: 'border-[#c9a870]', bg: 'bg-[#c9a870]/10', icon: '🏆', label: type };
+
+                  return (
+                    <div key={bi} className={`border border-white/8 border-l-2 ${style.border}`}>
+                      {/* En-tête bloc */}
+                      <div className={`flex items-center gap-3 px-4 py-3 ${style.bg} border-b border-white/5`}>
+                        <span className="text-lg">{style.icon}</span>
+                        <span className="font-rajdhani font-black text-base uppercase tracking-widest" style={{ color: style.accent }}>
+                          {style.label}
+                        </span>
+                      </div>
+
+                      {/* Course */}
+                      {type === 'running' && (
+                        <div className="grid grid-cols-3 divide-x divide-white/5">
+                          <div className="flex flex-col items-center py-4 px-3">
+                            <span className="font-rajdhani font-black text-2xl text-blue-400 leading-none">{block.distance ?? '—'}</span>
+                            <span className="text-[10px] text-[#4a4a4a] uppercase font-rajdhani tracking-widest mt-1">km</span>
+                          </div>
+                          <div className="flex flex-col items-center py-4 px-3">
+                            <span className="font-rajdhani font-black text-2xl text-[#d4d4d4] leading-none">{block.duration ?? '—'}</span>
+                            <span className="text-[10px] text-[#4a4a4a] uppercase font-rajdhani tracking-widest mt-1">min</span>
+                          </div>
+                          <div className="flex flex-col items-center py-4 px-3">
+                            <span className="font-rajdhani font-black text-2xl text-[#d4d4d4] leading-none">{block.pace ? formatPace(block.pace) : '—'}</span>
+                            <span className="text-[10px] text-[#4a4a4a] uppercase font-rajdhani tracking-widest mt-1">allure</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Muscu */}
+                      {type === 'musculation' && (() => {
+                        const circuits: { name: string; rounds: number; exercises: string[] }[] = block.circuits ?? [];
+                        const exList: any[] = block.exercises ?? [];
+                        if (circuits.length > 0) {
+                          return (
+                            <div className="divide-y divide-white/5">
+                              {circuits.map((circuit: any, ci: number) => (
+                                <div key={ci} className="flex items-start gap-4 bg-red-950/20 px-4 py-3.5">
+                                  <span className="text-lg flex-shrink-0 mt-0.5">🔄</span>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="font-rajdhani font-black text-white uppercase tracking-wide text-sm block">{circuit.name || `Circuit ${ci + 1}`}</span>
+                                    <span className="font-rajdhani text-xs text-red-400 mt-0.5 block">{circuit.rounds} rounds · {circuit.exercises.length} exercice{circuit.exercises.length > 1 ? 's' : ''}</span>
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {circuit.exercises.map((name: string, ni: number) => (
+                                        <span key={ni} className="text-[10px] text-[#6b6b6b] font-rajdhani uppercase border border-white/8 px-2 py-0.5">{name}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="divide-y divide-white/5">
+                            {exList.map((ex: any, ei: number) => (
+                              <div key={ei} className="flex items-center gap-4 px-4 py-3">
+                                <span className="font-rajdhani font-black text-red-800 w-6 flex-shrink-0 text-sm">{String(ei+1).padStart(2,'0')}</span>
+                                <span className="font-rajdhani font-bold text-white uppercase tracking-wide text-sm flex-1 min-w-0 truncate">{ex.name}</span>
+                                <span className="font-rajdhani text-[#6b6b6b] text-sm flex-shrink-0">
+                                  {ex.sets?.length > 1 ? `${ex.sets.length}×${Math.round((ex.sets.reduce((s: number, s2: any) => s + (s2.reps ?? 0), 0)) / ex.sets.length)}` : `${ex.sets?.[0]?.reps ?? 0} reps`}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Calisthénie */}
+                      {type === 'calisthenics' && (() => {
+                        const circuits: { name: string; rounds: number; exercises: string[] }[] = block.circuits ?? [];
+                        const exList: any[] = block.exercises ?? [];
+                        if (circuits.length > 0) {
+                          return (
+                            <div className="divide-y divide-white/5">
+                              {circuits.map((circuit: any, ci: number) => (
+                                <div key={ci} className="flex items-start gap-4 bg-violet-950/20 px-4 py-3.5">
+                                  <span className="text-lg flex-shrink-0 mt-0.5">🔄</span>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="font-rajdhani font-black text-white uppercase tracking-wide text-sm block">{circuit.name || `Circuit ${ci + 1}`}</span>
+                                    <span className="font-rajdhani text-xs text-violet-400 mt-0.5 block">{circuit.rounds} rounds · {circuit.exercises.length} exercice{circuit.exercises.length > 1 ? 's' : ''}</span>
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {circuit.exercises.map((name: string, ni: number) => (
+                                        <span key={ni} className="text-[10px] text-[#6b6b6b] font-rajdhani uppercase border border-white/8 px-2 py-0.5">{name}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="divide-y divide-white/5">
+                            {exList.map((ex: any, ei: number) => (
+                              <div key={ei} className="flex items-center gap-4 px-4 py-3">
+                                <span className="font-rajdhani font-black text-violet-800 w-6 flex-shrink-0 text-sm">{String(ei+1).padStart(2,'0')}</span>
+                                <span className="font-rajdhani font-bold text-white uppercase tracking-wide text-sm flex-1 min-w-0 truncate">{ex.name}</span>
+                                <span className="font-rajdhani text-[#6b6b6b] text-sm flex-shrink-0">{ex.sets} sér.</span>
+                                <span className="font-rajdhani font-black text-violet-400 text-sm flex-shrink-0">{ex.reps} reps</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Crossfit */}
+                      {type === 'crossfit' && (
+                        <div className="divide-y divide-white/5">
+                          {block.wodType && (
+                            <div className="px-4 py-3 flex items-center gap-3">
+                              <span className="text-xs border border-orange-800/50 text-orange-400 px-2.5 py-1 font-rajdhani font-bold uppercase tracking-wide">{block.wodType}</span>
+                              {block.duration && <span className="text-xs text-[#6b6b6b] font-rajdhani">{block.duration} min</span>}
+                            </div>
+                          )}
+                          {(block.exercises ?? []).map((ex: any, ei: number) => (
+                            <div key={ei} className="flex items-center gap-4 px-4 py-3">
+                              <span className="font-rajdhani font-black text-orange-800 w-6 flex-shrink-0 text-sm">{String(ei+1).padStart(2,'0')}</span>
+                              <span className="font-rajdhani font-bold text-white uppercase tracking-wide text-sm flex-1 min-w-0 truncate">{ex.name}</span>
+                              {ex.reps != null && <span className="font-rajdhani text-[#6b6b6b] text-sm flex-shrink-0">{ex.reps} reps</span>}
+                              {ex.weight > 0 && <span className="font-rajdhani font-black text-orange-400 text-sm flex-shrink-0">{ex.weight} kg</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {c.notes && <p className="text-sm text-[#6b6b6b] italic border-l-2 border-[#c9a870]/30 pl-3 leading-relaxed">{c.notes}</p>}
+            </>
+          );
+        })()}
+
+      </div>{/* fin scroll container */}
 
       {/* Bouton PDF — affiché uniquement pour muscu (DB ou fallback) */}
       {!loading && isWorkout && (
@@ -699,7 +878,7 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
   const [commentText, setCommentText] = useState('');
   const [showDetail, setShowDetail] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
-  const canShowDetail = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics' || item.type === 'crossfit';
+  const canShowDetail = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics' || item.type === 'crossfit' || item.type === 'hybrid';
   const canCopy = item.type === 'workout' || item.type === 'calisthenics' || item.type === 'crossfit';
   const canSave = item.type === 'workout' || item.type === 'run' || item.type === 'calisthenics';
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -1192,12 +1371,42 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
 
       {/* ── Exercise lists ── */}
       {item.type === 'workout' && (() => {
+        const circuits = (c_content.circuits ?? []) as { name: string; rounds: number; exercises: string[] }[];
         const exList = (c_content.exercises ?? []) as { name: string; sets: number; reps: number; maxWeight?: number }[];
+
+        if (circuits.length > 0) {
+          return (
+            <div className="px-4 py-3 space-y-2">
+              {circuits.map((circuit, i) => (
+                <div key={i} className="flex items-center gap-3 border border-red-800/30 bg-red-950/20 px-3 py-2.5">
+                  <span className="text-base flex-shrink-0">🔄</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-rajdhani font-black text-[#e5e5e5] uppercase tracking-wide text-sm block truncate">
+                      {circuit.name || `Circuit ${i + 1}`}
+                    </span>
+                    <span className="font-rajdhani text-xs text-red-400">
+                      {circuit.rounds} rounds · {circuit.exercises.length} exercice{circuit.exercises.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <button
+                onClick={() => setShowDetail(true)}
+                className="w-full text-center text-xs font-rajdhani font-bold uppercase tracking-widest text-red-400 hover:text-red-300 py-1.5 border border-red-800/30 hover:border-red-700/50 transition-colors"
+              >
+                Voir les détails du circuit →
+              </button>
+            </div>
+          );
+        }
+
         if (exList.length === 0) return null;
         const repsPerSet = (ex: { sets: number; reps: number }) => ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+        const visible = exList.slice(0, 5);
+        const hidden = exList.length - visible.length;
         return (
           <div className="px-4 py-3 space-y-2.5">
-            {exList.map((ex, i) => (
+            {visible.map((ex, i) => (
               <div key={i} className="flex items-center gap-3 min-w-0">
                 <span className="font-rajdhani font-black text-red-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
                 <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
@@ -1207,19 +1416,57 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                 )}
               </div>
             ))}
+            {hidden > 0 && (
+              <button
+                onClick={() => setShowDetail(true)}
+                className="w-full text-center text-xs font-rajdhani font-bold uppercase tracking-widest text-red-400 hover:text-red-300 py-1.5 border border-red-800/30 hover:border-red-700/50 transition-colors"
+              >
+                + {hidden} exercice{hidden > 1 ? 's' : ''} · Voir toute la séance →
+              </button>
+            )}
           </div>
         );
       })()}
 
       {item.type === 'calisthenics' && (() => {
         const c = c_content;
+        const circuits = (c.circuits ?? []) as { name: string; rounds: number; exercises: string[] }[];
         const exList: { name: string; sets: number; reps: number; hold_seconds?: number; set_type?: string }[] =
           Array.isArray(c.exercises) && c.exercises.length > 0 ? c.exercises : [];
+
+        if (circuits.length > 0) {
+          return (
+            <div className="px-4 py-3 space-y-2">
+              {circuits.map((circuit, i) => (
+                <div key={i} className="flex items-center gap-3 border border-violet-800/30 bg-violet-950/20 px-3 py-2.5">
+                  <span className="text-base flex-shrink-0">🔄</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-rajdhani font-black text-[#e5e5e5] uppercase tracking-wide text-sm block truncate">
+                      {circuit.name || `Circuit ${i + 1}`}
+                    </span>
+                    <span className="font-rajdhani text-xs text-violet-400">
+                      {circuit.rounds} rounds · {circuit.exercises.length} exercice{circuit.exercises.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <button
+                onClick={() => setShowDetail(true)}
+                className="w-full text-center text-xs font-rajdhani font-bold uppercase tracking-widest text-violet-400 hover:text-violet-300 py-1.5 border border-violet-800/30 hover:border-violet-700/50 transition-colors"
+              >
+                Voir les détails du circuit →
+              </button>
+            </div>
+          );
+        }
+
         if (exList.length === 0) return null;
         const repsPerSet = (ex: { sets: number; reps: number }) => ex.sets > 0 ? Math.round(ex.reps / ex.sets) : ex.reps;
+        const visible = exList.slice(0, 5);
+        const hidden = exList.length - visible.length;
         return (
           <div className="px-4 py-3 space-y-2.5">
-            {exList.map((ex, i) => (
+            {visible.map((ex, i) => (
               <div key={i} className="flex items-center gap-3 min-w-0">
                 <span className="font-rajdhani font-black text-violet-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
                 <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
@@ -1229,6 +1476,14 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                 </span>
               </div>
             ))}
+            {hidden > 0 && (
+              <button
+                onClick={() => setShowDetail(true)}
+                className="w-full text-center text-xs font-rajdhani font-bold uppercase tracking-widest text-violet-400 hover:text-violet-300 py-1.5 border border-violet-800/30 hover:border-violet-700/50 transition-colors"
+              >
+                + {hidden} exercice{hidden > 1 ? 's' : ''} · Voir toute la séance →
+              </button>
+            )}
           </div>
         );
       })()}
@@ -1236,9 +1491,11 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
       {item.type === 'crossfit' && (() => {
         const exList = (c_content.exercises ?? []) as { name: string; reps?: number; duration?: number; weight?: number }[];
         if (exList.length === 0) return null;
+        const visible = exList.slice(0, 5);
+        const hidden = exList.length - visible.length;
         return (
           <div className="px-4 py-3 space-y-2.5">
-            {exList.map((ex, i) => (
+            {visible.map((ex, i) => (
               <div key={i} className="flex items-center gap-3 min-w-0">
                 <span className="font-rajdhani font-black text-orange-700 w-5 flex-shrink-0 text-sm">{String(i+1).padStart(2,'0')}</span>
                 <span className="font-rajdhani font-bold text-[#e5e5e5] uppercase tracking-wide text-sm min-w-0 truncate">{ex.name}</span>
@@ -1250,6 +1507,14 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
                 )}
               </div>
             ))}
+            {hidden > 0 && (
+              <button
+                onClick={() => setShowDetail(true)}
+                className="w-full text-center text-xs font-rajdhani font-bold uppercase tracking-widest text-orange-400 hover:text-orange-300 py-1.5 border border-orange-800/30 hover:border-orange-700/50 transition-colors"
+              >
+                + {hidden} exercice{hidden > 1 ? 's' : ''} · Voir toute la séance →
+              </button>
+            )}
           </div>
         );
       })()}
@@ -1345,35 +1610,56 @@ function FeedItemCard({ item, currentUserId, onLike, onCommentAdded, onCommentDe
         </div>
       )}
 
-      {/* Hybrid — stats bloc */}
+      {/* Hybrid — mini-cartes par discipline */}
       {item.type === 'hybrid' && (() => {
         const c = c_content as any;
         const blocks: any[] = c.blocks ?? [];
-        const iconMap: Record<string, string> = {
-          running: '🏃', musculation: '🏋️', calisthenics: '⚡', crossfit: '🔥',
-        };
-        const labelMap: Record<string, string> = {
-          running: 'Course', musculation: 'Muscu', calisthenics: 'Cali', crossfit: 'Crossfit',
+        const disciplineConfig: Record<string, { icon: string; label: string; accent: string; border: string; bg: string; statColor: string }> = {
+          running:      { icon: '🏃', label: 'Course',   accent: '#60a5fa', border: 'border-blue-600',   bg: 'bg-blue-950/25',   statColor: 'text-blue-400' },
+          musculation:  { icon: '🏋️', label: 'Muscu',    accent: '#f87171', border: 'border-red-600',    bg: 'bg-red-950/25',    statColor: 'text-red-400' },
+          calisthenics: { icon: '⚡', label: 'Cali',     accent: '#a78bfa', border: 'border-violet-600', bg: 'bg-violet-950/25', statColor: 'text-violet-400' },
+          crossfit:     { icon: '🔥', label: 'Crossfit', accent: '#fb923c', border: 'border-orange-600', bg: 'bg-orange-950/25', statColor: 'text-orange-400' },
         };
         return (
-          <div className="px-4 py-3 space-y-2 border-b border-white/5 bg-[#0d0d0d]">
-            {blocks.map((b: any, i: number) => {
-              const type = b.blockType ?? '';
-              const icon = iconMap[type] ?? '🏆';
-              const label = labelMap[type] ?? type;
-              let detail = '';
-              if (type === 'running') detail = b.distance ? `${b.distance} km · ${b.duration} min` : '';
-              else if (type === 'musculation') detail = b.exercises?.length ? `${b.exercises.length} exercice${b.exercises.length > 1 ? 's' : ''}` : '';
-              else if (type === 'calisthenics') detail = b.exercises?.length ? `${b.exercises.length} exercice${b.exercises.length > 1 ? 's' : ''}` : '';
-              else if (type === 'crossfit') detail = b.wodType ? b.wodType.toUpperCase() + (b.duration ? ` · ${b.duration} min` : '') : '';
-              return (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-base w-6">{icon}</span>
-                  <span className="text-sm font-rajdhani font-bold text-[#c9a870] uppercase tracking-wide">{label}</span>
-                  {detail && <span className="text-xs text-[#6b6b6b]">{detail}</span>}
-                </div>
-              );
-            })}
+          <div className="px-4 py-3 border-b border-white/5">
+            <div className="grid grid-cols-2 gap-2">
+              {blocks.map((b: any, i: number) => {
+                const type = b.blockType ?? '';
+                const cfg = disciplineConfig[type] ?? { icon: '🏆', label: type, accent: '#c9a870', border: 'border-[#c9a870]', bg: 'bg-[#c9a870]/10', statColor: 'text-[#c9a870]' };
+
+                let statValue = '';
+                let statLabel = '';
+                if (type === 'running') {
+                  statValue = b.distance ? `${b.distance}` : '—';
+                  statLabel = b.distance ? 'km' : '';
+                } else if (type === 'musculation' || type === 'calisthenics') {
+                  const count = b.exercises?.length ?? 0;
+                  statValue = String(count);
+                  statLabel = `exercice${count > 1 ? 's' : ''}`;
+                } else if (type === 'crossfit') {
+                  statValue = b.wodType?.toUpperCase() ?? 'WOD';
+                  statLabel = b.duration ? `${b.duration} min` : '';
+                }
+
+                return (
+                  <div key={i} className={`border-l-2 ${cfg.border} ${cfg.bg} px-3 py-2.5 flex flex-col gap-0.5`}>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm leading-none">{cfg.icon}</span>
+                      <span className="font-rajdhani font-black text-[10px] uppercase tracking-widest" style={{ color: cfg.accent }}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className={`font-rajdhani font-black text-xl leading-none ${cfg.statColor}`}>{statValue}</span>
+                      {statLabel && <span className="text-[10px] text-[#5a5a5a] font-rajdhani uppercase tracking-wide">{statLabel}</span>}
+                    </div>
+                    {type === 'running' && b.duration && (
+                      <span className="text-[10px] text-[#5a5a5a] font-rajdhani">{b.duration} min</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       })()}

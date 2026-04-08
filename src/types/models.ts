@@ -210,6 +210,7 @@ export interface HybridMusculationBlock {
   blockType: 'musculation';
   id: string;
   exercises: HybridMusculationExercise[];
+  circuits?: { name: string; rounds: number; exercises: string[] }[];
   notes: string;
 }
 
@@ -224,6 +225,7 @@ export interface HybridCalisthenicsBlock {
   blockType: 'calisthenics';
   id: string;
   exercises: HybridCaliExercise[];
+  circuits?: { name: string; rounds: number; exercises: string[] }[];
   notes: string;
 }
 

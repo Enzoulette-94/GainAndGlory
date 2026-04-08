@@ -130,6 +130,14 @@ export function MuscuSessionPage() {
         maxWeight: Math.max(...exSets.map((s: any) => s.weight || 0)),
       }));
 
+      const circuitsSummary = items
+        .filter((item): item is import('../components/forms/MuscuBlockForm').CircuitBlock => item.itemType === 'circuit')
+        .map(c => ({
+          name: c.name,
+          rounds: c.rounds,
+          exercises: c.exercises.filter(e => e.exercise).map(e => e.exercise!.name),
+        }));
+
       await feedService.publishWorkout(
         profile.id,
         formData.totalTonnage,
@@ -138,6 +146,7 @@ export function MuscuSessionPage() {
         session.id,
         sessionName.trim() || undefined,
         exercisesSummary,
+        circuitsSummary.length > 0 ? circuitsSummary : undefined,
       );
 
       notificationService.broadcastToAll(profile.id, 'new_session', {
