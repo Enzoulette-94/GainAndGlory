@@ -89,6 +89,7 @@ CREATE TABLE running_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  name TEXT,
   distance DECIMAL NOT NULL,
   duration INTEGER NOT NULL,
   pace_min_per_km DECIMAL,
