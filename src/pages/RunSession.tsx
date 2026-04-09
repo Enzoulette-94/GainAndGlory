@@ -111,7 +111,7 @@ export function RunSessionPage() {
         }
       }
 
-      let xpResult = { leveledUp: false, newLevel: undefined as number | undefined };
+      let xpResult: { leveledUp: boolean; newLevel?: number } = { leveledUp: false };
       try {
         xpResult = await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
       } catch (e) { console.error('[RunSession] XP award failed:', e); }
