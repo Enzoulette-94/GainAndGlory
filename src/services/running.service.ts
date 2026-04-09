@@ -44,25 +44,29 @@ export const runningService = {
       notes: input.notes ?? null,
     };
 
-    // Essai avec name (colonne optionnelle — peut ne pas exister encore)
-    let result = await supabase
+    // INSERT sans .select() pour éviter PGRST116 si la RLS SELECT bloque le retour
+    const { error: err1 } = await supabase
       .from('running_sessions')
-      .insert({ ...basePayload, name: input.name ?? null })
-      .select()
-      .single();
+      .insert({ ...basePayload, name: input.name ?? null });
 
-    // Fallback sans name si la colonne n'existe pas encore
-    if (result.error) {
-      result = await supabase
+    if (err1) {
+      // Fallback sans name si la colonne n'existe pas encore (code 42703)
+      const { error: err2 } = await supabase
         .from('running_sessions')
-        .insert(basePayload)
-        .select()
-        .single();
+        .insert(basePayload);
+      if (err2) throw err2;
     }
 
-    if (result.error) throw result.error;
-    const data = result.data;
+    // Récupère la session fraîchement créée via un SELECT séparé
+    const { data, error: fetchError } = await supabase
+      .from('running_sessions')
+      .select()
+      .eq('user_id', input.user_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
 
+    if (fetchError || !data) throw fetchError ?? new Error('Session introuvable après création');
     return data as RunningSession;
   },
 

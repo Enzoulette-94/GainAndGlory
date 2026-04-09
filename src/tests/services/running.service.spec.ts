@@ -153,11 +153,22 @@ describe('runningService', () => {
   });
 
   describe('Migration #1 — pace_km_per_h supprimée', () => {
+    const sessionData = { id: 's-1', user_id: 'user-1', distance: 10000, duration: 3000, pace_min_per_km: 5, created_at: '2026-01-01T00:00:00Z' };
+    const makeSelectChain = () => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: sessionData, error: null }),
+    });
+
     it('createSession ne tente pas d\'écrire pace_km_per_h dans Supabase', async () => {
       const { supabase } = await import('../../lib/supabase-client');
       let capturedPayload: any = null;
-      const insertMock = vi.fn((payload: any) => { capturedPayload = payload; return { select: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 's-1', user_id: 'user-1', distance: 10000, duration: 3000, pace_min_per_km: 5, created_at: '2026-01-01T00:00:00Z' }, error: null }) }; });
-      (supabase.from as any).mockReturnValue({ insert: insertMock });
+      const insertMock = vi.fn((payload: any) => { capturedPayload = payload; return Promise.resolve({ data: null, error: null }); });
+      (supabase.from as any)
+        .mockReturnValueOnce({ insert: insertMock })
+        .mockReturnValueOnce(makeSelectChain());
 
       await runningService.createSession({ user_id: 'user-1', distance: 10000, duration: 3000 });
       expect(capturedPayload).not.toHaveProperty('pace_km_per_h');
@@ -166,8 +177,10 @@ describe('runningService', () => {
     it('le payload createSession contient pace_min_per_km', async () => {
       const { supabase } = await import('../../lib/supabase-client');
       let capturedPayload: any = null;
-      const insertMock = vi.fn((payload: any) => { capturedPayload = payload; return { select: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { id: 's-1', user_id: 'user-1', distance: 10000, duration: 3000, pace_min_per_km: 5, created_at: '2026-01-01T00:00:00Z' }, error: null }) }; });
-      (supabase.from as any).mockReturnValue({ insert: insertMock });
+      const insertMock = vi.fn((payload: any) => { capturedPayload = payload; return Promise.resolve({ data: null, error: null }); });
+      (supabase.from as any)
+        .mockReturnValueOnce({ insert: insertMock })
+        .mockReturnValueOnce(makeSelectChain());
 
       await runningService.createSession({ user_id: 'user-1', distance: 10000, duration: 3000 });
       expect(capturedPayload).toHaveProperty('pace_min_per_km');

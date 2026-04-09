@@ -86,22 +86,22 @@ describe('GoalsPage', () => {
   });
 
   describe('Onglets', () => {
-    it('affiche les onglets Actifs / Complétés / Annulés', async () => {
+    it('affiche les onglets Actifs / Complétés / Terminés', async () => {
       renderGoals();
       await waitFor(() => {
         expect(screen.queryAllByText(/actifs/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/complétés/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/annulés/i).length).toBeGreaterThan(0);
+        expect(screen.queryAllByText(/terminés/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
 
-    it('les onglets permettent de filtrer par statut (actifs / complétés / annulés)', async () => {
+    it('les onglets permettent de filtrer par statut (actifs / complétés / terminés)', async () => {
       renderGoals();
       // Vérifier que les 3 onglets existent
       await waitFor(() => {
         expect(screen.queryAllByText(/actifs/i).length).toBeGreaterThan(0);
         expect(screen.queryAllByText(/complétés/i).length).toBeGreaterThan(0);
-        expect(screen.queryAllByText(/annulés/i).length).toBeGreaterThan(0);
+        expect(screen.queryAllByText(/terminés/i).length).toBeGreaterThan(0);
       }, { timeout: 3000 });
       // L'objectif actif est visible par défaut
       expect(screen.queryAllByText(/courir 100 km/i).length).toBeGreaterThan(0);

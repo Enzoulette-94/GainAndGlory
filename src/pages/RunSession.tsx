@@ -111,25 +111,33 @@ export function RunSessionPage() {
         }
       }
 
-      const xpResult = await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
+      let xpResult = { leveledUp: false, newLevel: undefined as number | undefined };
+      try {
+        xpResult = await xpService.awardXP(profile.id, 'RUNNING_SESSION', 'running');
+      } catch (e) { console.error('[RunSession] XP award failed:', e); }
+
       await refreshProfile();
 
-      await feedService.publishRun(
-        profile.id,
-        distance,
-        durationSeconds,
-        pace,
-        runType || undefined,
-        session.id,
-        sessionName.trim() || undefined,
-        feedback || undefined,
-      );
+      try {
+        await feedService.publishRun(
+          profile.id,
+          distance,
+          durationSeconds,
+          pace,
+          runType || undefined,
+          session.id,
+          sessionName.trim() || undefined,
+          feedback || undefined,
+        );
+      } catch (e) { console.error('[RunSession] Feed publish failed:', e); }
 
-      notificationService.broadcastToAll(profile.id, 'new_session', {
-        message: `🏃 ${profile.username} vient de terminer une séance de course !`,
-        discipline: 'running',
-        session_id: session.id,
-      });
+      try {
+        notificationService.broadcastToAll(profile.id, 'new_session', {
+          message: `🏃 ${profile.username} vient de terminer une séance de course !`,
+          discipline: 'running',
+          session_id: session.id,
+        });
+      } catch { /* ignore */ }
 
       try {
         const [totalSessions, totalKm] = await Promise.all([
@@ -153,7 +161,8 @@ export function RunSessionPage() {
       }
       if (badgeQueue.length > 0) return;
       navigate('/running');
-    } catch {
+    } catch (e) {
+      console.error('[RunSession] Session creation failed:', e);
       setError('Erreur lors de l\'enregistrement. Réessaie.');
       setSaving(false);
     }
