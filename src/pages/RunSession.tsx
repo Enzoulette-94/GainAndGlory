@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PersonStanding } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase-client';
 import { runningService } from '../services/running.service';
 import { xpService } from '../services/xp.service';
 import { feedService } from '../services/feed.service';
@@ -76,6 +77,9 @@ export function RunSessionPage() {
     setError(null);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('[RunSession] user at insert time:', user);
+
       const session = await runningService.createSession({
         user_id: profile.id,
         date: new Date(date).toISOString(),
@@ -162,7 +166,7 @@ export function RunSessionPage() {
       if (badgeQueue.length > 0) return;
       navigate('/running');
     } catch (e) {
-      console.error('[RunSession] Session creation failed:', e);
+      console.error('[RunSession] Session creation failed:', JSON.stringify(e, null, 2));
       setError('Erreur lors de l\'enregistrement. Réessaie.');
       setSaving(false);
     }

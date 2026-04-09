@@ -44,17 +44,24 @@ export const runningService = {
       notes: input.notes ?? null,
     };
 
-    // INSERT sans .select() pour éviter PGRST116 si la RLS SELECT bloque le retour
+    // INSERT principal — inclut 'name' si la colonne existe
     const { error: err1 } = await supabase
       .from('running_sessions')
       .insert({ ...basePayload, name: input.name ?? null });
 
     if (err1) {
-      // Fallback sans name si la colonne n'existe pas encore (code 42703)
+      console.error('[runningService] Insert with name failed:', JSON.stringify(err1, null, 2));
+
+      // Fallback sans name uniquement si la colonne n'existe pas (code 42703)
+      if (err1.code !== '42703') throw err1;
+
       const { error: err2 } = await supabase
         .from('running_sessions')
         .insert(basePayload);
-      if (err2) throw err2;
+      if (err2) {
+        console.error('[runningService] Fallback insert failed:', JSON.stringify(err2, null, 2));
+        throw err2;
+      }
     }
 
     // Récupère la session fraîchement créée via un SELECT séparé
