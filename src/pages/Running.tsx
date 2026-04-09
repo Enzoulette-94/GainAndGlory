@@ -359,7 +359,7 @@ export function RunningPage() {
           </div>
 
           {/* ── Graphiques côte à côte ─────────────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Card className="p-3">
               <p className="text-xs font-semibold text-[#d4d4d4] mb-3">Distance / semaine (km)</p>
               {allSessions.length === 0 ? (

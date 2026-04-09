@@ -287,7 +287,7 @@ export function MusculationPage() {
           </div>
 
           {/* ── Graphiques côte à côte ─────────────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Card className="p-3">
               <p className="text-xs font-semibold text-[#e5e5e5] mb-3">Tonnage / semaine</p>
               {weeklyTonnageData.every((d) => d.tonnage === 0) ? (
