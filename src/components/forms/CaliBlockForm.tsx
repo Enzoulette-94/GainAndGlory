@@ -622,26 +622,32 @@ export function CaliExerciseBlock({ exercise, index, compact, onUpdate, onRemove
 
   return (
     <div className={cls}>
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-rajdhani font-bold text-violet-400 w-5">{index + 1}</span>
-        <div className="flex-1 min-w-0">
-          {exercise.name ? (
-            <button type="button" onClick={onOpenPicker} className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-violet-500/30 rounded-lg text-sm text-[#f5f5f5] hover:border-violet-400/50 transition-colors truncate">
-              {exercise.name}
-            </button>
-          ) : (
-            <button type="button" onClick={onOpenPicker} className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-sm text-[#4a4a4a] hover:border-violet-500/30 hover:text-[#a3a3a3] transition-colors">
-              Exercice...
-            </button>
-          )}
+      <div className="flex flex-col gap-1.5">
+        {/* Ligne 1 : numéro + nom + copie + suppression */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-rajdhani font-bold text-violet-400 w-5">{index + 1}</span>
+          <div className="flex-1 min-w-0">
+            {exercise.name ? (
+              <button type="button" onClick={onOpenPicker} className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-violet-500/30 rounded-lg text-sm text-[#f5f5f5] hover:border-violet-400/50 transition-colors truncate">
+                {exercise.name}
+              </button>
+            ) : (
+              <button type="button" onClick={onOpenPicker} className="w-full text-left px-3 py-1.5 bg-[#1a1a1a] border border-white/10 rounded-lg text-sm text-[#4a4a4a] hover:border-violet-500/30 hover:text-[#a3a3a3] transition-colors">
+                Exercice...
+              </button>
+            )}
+          </div>
+          <button onClick={onDuplicate} className="p-1.5 text-[#4a4a4a] hover:text-violet-300 transition-colors flex-shrink-0"><Copy className="w-3.5 h-3.5" /></button>
+          <button onClick={onRemove} className="p-1.5 text-[#4a4a4a] hover:text-red-400 transition-colors flex-shrink-0"><X className="w-4 h-4" /></button>
         </div>
-        <div className="flex rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
-          <button onClick={() => onUpdate('set_type', 'reps')} className={`px-2 py-1.5 text-xs font-medium transition-colors ${exercise.set_type === 'reps' ? 'bg-violet-600/30 text-violet-300' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>Reps</button>
-          <button onClick={() => onUpdate('set_type', 'timed')} className={`px-2 py-1.5 text-xs font-medium transition-colors ${exercise.set_type === 'timed' ? 'bg-violet-600/30 text-violet-300' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>Temps</button>
+        {/* Ligne 2 : mode (Reps/Temps) + lester */}
+        <div className="flex items-center gap-2 pl-7">
+          <div className="flex rounded-lg overflow-hidden border border-white/10">
+            <button onClick={() => onUpdate('set_type', 'reps')} className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${exercise.set_type === 'reps' ? 'bg-violet-600/30 text-violet-300' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>Reps</button>
+            <button onClick={() => onUpdate('set_type', 'timed')} className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${exercise.set_type === 'timed' ? 'bg-violet-600/30 text-violet-300' : 'text-[#6b6b6b] hover:text-[#d4d4d4]'}`}>Temps</button>
+          </div>
+          <button onClick={() => onUpdate('has_weight', !exercise.has_weight)} title="Lester" className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${exercise.has_weight ? 'border-violet-500/50 bg-violet-600/20 text-violet-300' : 'border-white/10 text-[#4a4a4a] hover:text-[#a3a3a3] hover:border-white/20'}`}>+kg</button>
         </div>
-        <button onClick={() => onUpdate('has_weight', !exercise.has_weight)} title="Lester" className={`px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors flex-shrink-0 ${exercise.has_weight ? 'border-violet-500/50 bg-violet-600/20 text-violet-300' : 'border-white/10 text-[#4a4a4a] hover:text-[#a3a3a3] hover:border-white/20'}`}>+kg</button>
-        <button onClick={onDuplicate} className="p-1.5 text-[#4a4a4a] hover:text-violet-300 transition-colors flex-shrink-0"><Copy className="w-3.5 h-3.5" /></button>
-        <button onClick={onRemove} className="p-1.5 text-[#4a4a4a] hover:text-red-400 transition-colors flex-shrink-0"><X className="w-4 h-4" /></button>
       </div>
 
       <div className="space-y-1.5 pl-7">
