@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   CalendarDays, ChevronLeft, ChevronRight,
-  Dumbbell, PersonStanding, Scale, Target, Swords, Flag, Zap, Flame,
+  Dumbbell, PersonStanding, Scale, Target, Swords, Flag, Zap, Flame, Layers,
 } from 'lucide-react';
 import { Input, Select, Textarea } from '../components/common/Input';
 import { Button } from '../components/common/Button';
@@ -14,6 +14,7 @@ import { weightService } from '../services/weight.service';
 import { goalsService } from '../services/goals.service';
 import { calisthenicsService } from '../services/calisthenics.service';
 import { crossfitService } from '../services/crossfit.service';
+import { hybridService } from '../services/hybrid.service';
 import { supabase } from '../lib/supabase-client';
 import { Modal } from '../components/common/Modal';
 import {
@@ -43,6 +44,7 @@ const ACTIVITY_CONFIG = {
   run:          { label: 'Course',      color: 'bg-blue-500',   dim: 'bg-blue-900/40',   text: 'text-blue-400',   border: 'border-blue-800/40',   accentBg: 'bg-gradient-to-r from-blue-950/60 to-[#0d0d0d]',   accentBorder: 'border-l-blue-700',   icon: PersonStanding,  iconColor: 'text-blue-400'   },
   calisthenics: { label: 'Calisthénie', color: 'bg-violet-500', dim: 'bg-violet-900/40', text: 'text-violet-400', border: 'border-violet-800/40', accentBg: 'bg-gradient-to-r from-violet-950/60 to-[#0d0d0d]', accentBorder: 'border-l-violet-700', icon: Zap,             iconColor: 'text-violet-400' },
   crossfit:     { label: 'Crossfit',    color: 'bg-orange-500', dim: 'bg-orange-900/40', text: 'text-orange-400', border: 'border-orange-800/40', accentBg: 'bg-gradient-to-r from-orange-950/60 to-[#0d0d0d]', accentBorder: 'border-l-orange-700', icon: Flame,           iconColor: 'text-orange-400' },
+  hybrid:       { label: 'Hybride',     color: 'bg-teal-500',   dim: 'bg-teal-900/40',   text: 'text-teal-400',   border: 'border-teal-800/40',   accentBg: 'bg-gradient-to-r from-teal-950/60 to-[#0d0d0d]',   accentBorder: 'border-l-teal-700',   icon: Layers,          iconColor: 'text-teal-400'   },
   weight:       { label: 'Pesée',       color: 'bg-emerald-500',dim: 'bg-emerald-900/40',text: 'text-emerald-400',border: 'border-emerald-800/40',accentBg: 'bg-gradient-to-r from-emerald-950/60 to-[#0d0d0d]',accentBorder: 'border-l-emerald-700',icon: Scale,           iconColor: 'text-emerald-400'},
   goal:         { label: 'Objectif',    color: 'bg-[#c9a870]',  dim: 'bg-[#c9a870]/20',  text: 'text-[#c9a870]',  border: 'border-[#c9a870]/30',  accentBg: 'bg-gradient-to-r from-[#2a1f0a]/80 to-[#0d0d0d]',  accentBorder: 'border-l-[#c9a870]',  icon: Target,          iconColor: 'text-[#c9a870]'  },
   challenge:    { label: 'Défi équipe', color: 'bg-pink-500',   dim: 'bg-pink-900/40',   text: 'text-pink-400',   border: 'border-pink-800/40',   accentBg: 'bg-gradient-to-r from-pink-950/60 to-[#0d0d0d]',   accentBorder: 'border-l-pink-700',   icon: Swords,          iconColor: 'text-pink-400'   },
@@ -50,7 +52,7 @@ const ACTIVITY_CONFIG = {
 } as const;
 
 type ActivityKey = keyof typeof ACTIVITY_CONFIG;
-const ACTIVITY_ORDER: ActivityKey[] = ['workout', 'run', 'calisthenics', 'crossfit', 'weight', 'goal', 'challenge', 'event'];
+const ACTIVITY_ORDER: ActivityKey[] = ['workout', 'run', 'calisthenics', 'crossfit', 'hybrid', 'weight', 'goal', 'challenge', 'event'];
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type DayActivity = {
@@ -62,6 +64,8 @@ type DayActivity = {
   calis: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   crossfits: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hybrids: any[];
   weights: WeightEntry[];
   goalDeadlines: PersonalGoal[];
   challengeEvents: { challenge: ChallengeItem; kind: 'start' | 'end' }[];
@@ -89,6 +93,8 @@ export function CalendarPage() {
   const [calis, setCalis] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [crossfits, setCrossfits] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [hybrids, setHybrids] = useState<any[]>([]);
   const [weights, setWeights] = useState<WeightEntry[]>([]);
   const [goals, setGoals] = useState<PersonalGoal[]>([]);
   const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
@@ -107,15 +113,17 @@ export function CalendarPage() {
       runningService.getSessions(profile.id, 300),
       calisthenicsService.getSessions(profile.id, 300),
       crossfitService.getSessions(profile.id, 300),
+      hybridService.getSessions(profile.id, 300),
       weightService.getEntries(profile.id, 300),
       goalsService.getGoals(profile.id),
       db.from('community_challenges').select('id,title,start_date,end_date,type,participations:challenge_participations(user_id)').in('status', ['active', 'pending']).then(({ data }: { data: (ChallengeItem & { participations?: { user_id: string }[] })[] | null }) => (data ?? []).filter(c => (c.participations ?? []).some((p: { user_id: string }) => p.user_id === profile.id))),
       db.from('events').select('id,title,event_date,type,description').order('event_date', { ascending: true }).then(({ data }: { data: EventItem[] | null }) => data ?? []),
-    ]).then(([w, r, c, cf, wt, g, ch, ev]) => {
+    ]).then(([w, r, c, cf, hy, wt, g, ch, ev]) => {
       setWorkouts(w as WorkoutSession[]);
       setRuns(r as RunningSession[]);
       setCalis(c as any[]);
       setCrossfits(cf as any[]);
+      setHybrids(hy as any[]);
       setWeights(wt as WeightEntry[]);
       setGoals((g as PersonalGoal[]).filter(g => g.status === 'active' && g.deadline));
       setChallenges(ch as ChallengeItem[]);
@@ -127,7 +135,7 @@ export function CalendarPage() {
   const activityMap = useMemo(() => {
     const map = new Map<string, DayActivity>();
     const ensure = (d: string): DayActivity => {
-      if (!map.has(d)) map.set(d, { date: d, types: new Set(), workouts: [], runs: [], calis: [], crossfits: [], weights: [], goalDeadlines: [], challengeEvents: [], events: [] });
+      if (!map.has(d)) map.set(d, { date: d, types: new Set(), workouts: [], runs: [], calis: [], crossfits: [], hybrids: [], weights: [], goalDeadlines: [], challengeEvents: [], events: [] });
       return map.get(d)!;
     };
 
@@ -135,6 +143,7 @@ export function CalendarPage() {
     for (const r of runs)       { const a = ensure(getDatePart(r.date));       a.types.add('run');          a.runs.push(r); }
     for (const c of calis)      { const a = ensure(getDatePart(c.date));       a.types.add('calisthenics'); a.calis.push(c); }
     for (const cf of crossfits) { const a = ensure(getDatePart(cf.date));      a.types.add('crossfit');     a.crossfits.push(cf); }
+    for (const hy of hybrids)  { const a = ensure(getDatePart(hy.date));      a.types.add('hybrid');       a.hybrids.push(hy); }
     for (const wt of weights)   { const a = ensure(getDatePart(wt.date));      a.types.add('weight');       a.weights.push(wt); }
     for (const g of goals) {
       if (!g.deadline) continue;
@@ -153,7 +162,7 @@ export function CalendarPage() {
       a.events.push(ev);
     }
     return map;
-  }, [workouts, runs, calis, crossfits, weights, goals, challenges, events]);
+  }, [workouts, runs, calis, crossfits, hybrids, weights, goals, challenges, events]);
 
   // ── Jours du mois ────────────────────────────────────────────────────────
   const calendarDays = useMemo(() => {
@@ -173,7 +182,7 @@ export function CalendarPage() {
   const monthStats = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    let workoutDays = 0, runDays = 0, caliDays = 0, crossfitDays = 0;
+    let workoutDays = 0, runDays = 0, caliDays = 0, crossfitDays = 0, hybridDays = 0;
     let totalDist = 0, totalTonnage = 0;
     for (const [dateStr, a] of activityMap) {
       const d = new Date(dateStr);
@@ -182,8 +191,9 @@ export function CalendarPage() {
       if (a.types.has('run'))          { runDays++;      totalDist    += a.runs.reduce((s, r) => s + r.distance, 0); }
       if (a.types.has('calisthenics')) caliDays++;
       if (a.types.has('crossfit'))     crossfitDays++;
+      if (a.types.has('hybrid'))       hybridDays++;
     }
-    return { workoutDays, runDays, caliDays, crossfitDays, totalDist, totalTonnage };
+    return { workoutDays, runDays, caliDays, crossfitDays, hybridDays, totalDist, totalTonnage };
   }, [activityMap, currentDate]);
 
   // ── Items ce mois (objectifs, défis, events) ─────────────────────────────
@@ -203,7 +213,7 @@ export function CalendarPage() {
   const nextMonth = () => setCurrentDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   const goToday   = () => setCurrentDate(new Date());
   const todayStr  = toDateStr(new Date());
-  const totalMonthActivities = monthStats.workoutDays + monthStats.runDays + monthStats.caliDays + monthStats.crossfitDays;
+  const totalMonthActivities = monthStats.workoutDays + monthStats.runDays + monthStats.caliDays + monthStats.crossfitDays + monthStats.hybridDays;
 
   async function reloadData() {
     if (!profile) return;
@@ -449,7 +459,7 @@ export function CalendarPage() {
               const isWeekend = day.getDay() === 0 || day.getDay() === 6;
               const activeTypes = activity ? ACTIVITY_ORDER.filter(k => activity.types.has(k)) : [];
               const isClickable = activeTypes.length > 0;
-              const sportTypes  = activeTypes.filter(k => ['workout','run','calisthenics','crossfit','weight'].includes(k));
+              const sportTypes  = activeTypes.filter(k => ['workout','run','calisthenics','crossfit','hybrid','weight'].includes(k));
               const markerTypes = activeTypes.filter(k => ['goal','challenge','event'].includes(k));
 
               return (
@@ -517,6 +527,7 @@ export function CalendarPage() {
           { value: monthStats.runDays,      label: 'Course',     color: 'text-blue-400',   cfg: ACTIVITY_CONFIG.run          },
           { value: monthStats.caliDays,     label: 'Calisthénie',color: 'text-violet-400', cfg: ACTIVITY_CONFIG.calisthenics },
           { value: monthStats.crossfitDays, label: 'Crossfit',   color: 'text-orange-400', cfg: ACTIVITY_CONFIG.crossfit     },
+          { value: monthStats.hybridDays,   label: 'Hybride',    color: 'text-teal-400',   cfg: ACTIVITY_CONFIG.hybrid       },
         ].map(({ value, label, color, cfg }) => {
           const Icon = cfg.icon;
           return (
@@ -680,6 +691,22 @@ export function CalendarPage() {
                       {cf.feedback && <span className={`text-xs ${FEEDBACK_COLORS[cf.feedback as Feedback]}`}>{FEEDBACK_LABELS[cf.feedback as Feedback]}</span>}
                     </div>
                     {cf.exercises?.length > 0 && <p className="text-xs text-[#5a5a5a] mt-0.5">{cf.exercises.length} exercice{cf.exercises.length > 1 ? 's' : ''}</p>}
+                  </div>
+                ))}
+              </Section>
+            )}
+
+            {/* Hybride */}
+            {selectedDay.hybrids.length > 0 && (
+              <Section icon={<Layers className="w-4 h-4 text-teal-400" />} title={`Hybride · ${selectedDay.hybrids.length}`}>
+                {selectedDay.hybrids.map((h: any) => (
+                  <div key={h.id} className="p-2.5 bg-[#111] border border-teal-900/30">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-bold text-[#e5e5e5]">{h.name ?? 'Séance hybride'}</span>
+                      {h.feedback && <span className={`text-xs ${FEEDBACK_COLORS[h.feedback as Feedback]}`}>{FEEDBACK_LABELS[h.feedback as Feedback]}</span>}
+                    </div>
+                    {h.blocks?.length > 0 && <p className="text-xs text-[#5a5a5a] mt-0.5">{h.blocks.map((b: any) => b.blockType).join(' + ')}</p>}
+                    {h.notes && <p className="text-xs text-[#5a5a5a] mt-1">{h.notes}</p>}
                   </div>
                 ))}
               </Section>

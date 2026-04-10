@@ -35,6 +35,10 @@ vi.mock('../../services/crossfit.service', () => ({
   crossfitService: { getSessions: vi.fn().mockResolvedValue([]) },
 }));
 
+vi.mock('../../services/hybrid.service', () => ({
+  hybridService: { getSessions: vi.fn().mockResolvedValue([]) },
+}));
+
 // Build an event date in the current month
 const now = new Date();
 const eventDate = new Date(now.getFullYear(), now.getMonth(), 15).toISOString();
