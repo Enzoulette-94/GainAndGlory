@@ -141,6 +141,23 @@ export const CALISTHENICS_GROUPS = [
     exercises: ['Squat', 'Pistol squat', 'Shrimp squat', 'Nordic curl', 'Jump squat', 'Corde à sauter', 'Montée de talons (mollets)'] },
   { id: 'isometrie', label: 'Isométrie / Tenu',   emoji: '⏱',
     exercises: ['Front lever hold', 'Back lever hold', 'Human flag', 'Ring support hold'] },
+  { id: 'kettle',    label: 'Kettlebell',          emoji: '🫙',
+    exercises: [
+      'Swing à deux mains', 'Swing à une main', 'Swing alterné',
+      'Clean', 'Snatch', 'High pull',
+      'Military press (1 bras)', 'Push press (1 bras)', 'Jerk (1 bras)',
+      'Double press', 'Floor press',
+      'Row (1 bras)', 'Double row', 'Renegade row',
+      'Halo', 'Goblet squat', 'Double front squat',
+      'Pistol squat assisté', 'Pistol squat',
+      'Sumo deadlift', 'Single-leg deadlift', 'Cossack squat',
+      'Split squat', 'Lunge', 'Step-up',
+      'Turkish get-up (TGU)', 'Windmill',
+      'Suitcase carry (farmer\'s walk)', 'Rack carry', 'Overhead carry',
+      'Side press', 'Arm bar',
+      'Clean & press', 'Clean & jerk', 'Swing + snatch',
+      'Long cycle (clean & jerk répété)',
+    ] },
 ] as const;
 
 export const RUNNING_RACE_DISTANCES = [
@@ -158,6 +175,21 @@ export const CALISTHENICS_EXERCISES = [
   'Archer Push-up', 'Pseudo Planche Push-up', 'Hollow Body Hold', 'Superman Hold',
   'Pompes inclinées', 'Pompes déclinées', 'Pompes spartiates', 'Skull Crusher',
   'Corde à sauter', 'Montée de talons (mollets)', 'Reverse DL',
+  // Kettlebell
+  'Swing à deux mains', 'Swing à une main', 'Swing alterné',
+  'Clean', 'Snatch', 'High pull',
+  'Military press (1 bras)', 'Push press (1 bras)', 'Jerk (1 bras)',
+  'Double press', 'Floor press',
+  'Row (1 bras)', 'Double row', 'Renegade row',
+  'Halo', 'Goblet squat', 'Double front squat',
+  'Pistol squat assisté',
+  'Sumo deadlift', 'Single-leg deadlift', 'Cossack squat',
+  'Split squat', 'Lunge', 'Step-up',
+  'Turkish get-up (TGU)', 'Windmill',
+  "Suitcase carry (farmer's walk)", 'Rack carry', 'Overhead carry',
+  'Side press', 'Arm bar',
+  'Clean & press', 'Clean & jerk', 'Swing + snatch',
+  'Long cycle (clean & jerk répété)',
 ];
 
 export const CALISTHENICS_SKILLS = [

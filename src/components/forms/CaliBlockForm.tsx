@@ -19,6 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { CalisthenicsPickerContent } from './ExercisePicker';
+import { CALISTHENICS_GROUPS } from '../../utils/constants';
 import { CircuitWizard } from './CircuitWizard';
 import { CircuitTemplates } from './CircuitTemplates';
 import type { CircuitWizardConfig } from './CircuitWizard';
@@ -101,6 +102,10 @@ export function flattenToCaliExercises(items: SessionItem[]): CaliExercise[] {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const KETTLE_EXERCISES = new Set<string>(
+  CALISTHENICS_GROUPS.find(g => g.id === 'kettle')?.exercises ?? []
+);
 
 function newExerciseSlot(): Omit<ExerciseItem, 'itemType'> {
   return {
@@ -585,10 +590,11 @@ export function CaliBlockForm({ onChange, initialItems }: CaliBlockFormProps) {
             })()}
             onSelect={n => {
               if (!pickerTarget) return;
+              const withWeight = KETTLE_EXERCISES.has(n);
               if (pickerTarget.circuitExId) {
-                updateCircuitExercise(pickerTarget.itemId, pickerTarget.circuitExId, { name: n });
+                updateCircuitExercise(pickerTarget.itemId, pickerTarget.circuitExId, { name: n, ...(withWeight ? { has_weight: true } : {}) });
               } else {
-                updateExerciseItem(pickerTarget.itemId, { name: n });
+                updateExerciseItem(pickerTarget.itemId, { name: n, ...(withWeight ? { has_weight: true } : {}) });
               }
               setPickerOpen(false);
             }}
