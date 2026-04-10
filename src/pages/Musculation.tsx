@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { workoutService } from '../services/workout.service';
+import { hybridService, hybridMusculationTonnage, hybridHasBlock } from '../services/hybrid.service';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
@@ -22,7 +23,7 @@ import {
   getLevelProgress,
 } from '../utils/calculations';
 import { FEEDBACK_LABELS, FEEDBACK_COLORS, MUSCLE_GROUP_LABELS } from '../utils/constants';
-import type { WorkoutSession, Exercise } from '../types/models';
+import type { WorkoutSession, Exercise, HybridSession } from '../types/models';
 import type { Feedback, MuscleGroup } from '../types/enums';
 
 // ─── Types locaux ────────────────────────────────────────────────────────────
@@ -64,6 +65,8 @@ export function MusculationPage() {
     Record<string, { weight: number; reps: number; date: string; sessionId: string }>
   >({});
 
+  const [hybridSessions, setHybridSessions] = useState<HybridSession[]>([]);
+
   // UI state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,13 +82,15 @@ export function MusculationPage() {
       workoutService.getTotalTonnage(userId),
       workoutService.getExercises(),
       workoutService.getPersonalRecords(userId),
+      hybridService.getSessions(userId, 200),
     ])
-      .then(([allSessions, count, tonnage, exList, prs]) => {
+      .then(([allSessions, count, tonnage, exList, prs, hybrids]) => {
         setChartSessions(allSessions);
-        setTotalSessions(count);
-        setTotalTonnage(tonnage);
+        setTotalSessions(count + hybrids.filter(h => hybridHasBlock(h.blocks, 'musculation')).length);
+        setTotalTonnage(tonnage + hybrids.reduce((sum, h) => sum + hybridMusculationTonnage(h.blocks), 0));
         setExercises(exList);
         setPersonalRecords(prs);
+        setHybridSessions(hybrids);
       })
       .catch(() => setError('Impossible de charger les données.'))
       .finally(() => setLoading(false));
@@ -98,7 +103,7 @@ export function MusculationPage() {
 
   // ── Données graphique tonnage par semaine ───────────────────────────────────
   const weeklyTonnageData = useMemo(() => {
-    if (chartSessions.length === 0) return [];
+    if (chartSessions.length === 0 && hybridSessions.length === 0) return [];
 
     const now = new Date();
     const weeks: { weekStart: Date; label: string; tonnage: number }[] = [];
@@ -112,12 +117,22 @@ export function MusculationPage() {
     }
 
     for (const session of chartSessions) {
-      const sessionDate = new Date(session.date);
-      const sessionWeekStart = getWeekStart(sessionDate).getTime();
-
+      const sessionWeekStart = getWeekStart(new Date(session.date)).getTime();
       for (const week of weeks) {
         if (week.weekStart.getTime() === sessionWeekStart) {
           week.tonnage += session.total_tonnage ?? 0;
+          break;
+        }
+      }
+    }
+
+    for (const h of hybridSessions) {
+      const t = hybridMusculationTonnage(h.blocks);
+      if (t <= 0) continue;
+      const sessionWeekStart = getWeekStart(new Date(h.date)).getTime();
+      for (const week of weeks) {
+        if (week.weekStart.getTime() === sessionWeekStart) {
+          week.tonnage += t;
           break;
         }
       }
@@ -127,7 +142,7 @@ export function MusculationPage() {
       name: i === 7 ? 'Cette sem.' : w.label,
       tonnage: Math.round(w.tonnage),
     }));
-  }, [chartSessions]);
+  }, [chartSessions, hybridSessions]);
 
   // ── Records groupés par groupe musculaire ──────────────────────────────────
   const recordsByMuscleGroup = useMemo(() => {
@@ -171,8 +186,14 @@ export function MusculationPage() {
       const key = ws.toISOString().slice(0, 10);
       if (weeks[key]) weeks[key].count += 1;
     });
+    hybridSessions.forEach((h) => {
+      if (!hybridHasBlock(h.blocks, 'musculation')) return;
+      const ws = getWeekStart(new Date(h.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
     return Object.entries(weeks).map(([, v]) => v);
-  }, [chartSessions]);
+  }, [chartSessions, hybridSessions]);
 
   const recentSessions = chartSessions.slice(0, 7);
 

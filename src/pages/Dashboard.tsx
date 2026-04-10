@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase-client';
 import { XPBar } from '../components/xp-system/XPBar';
 import { getLevelTitle, formatWeight, formatDistance, formatDuration, formatRelativeTime, formatDate } from '../utils/calculations';
 import { getDailyQuote } from '../data/motivationQuotes';
+import { hybridService, hybridMusculationTonnage, hybridRunningDistance, hybridHasBlock } from '../services/hybrid.service';
 import type { WorkoutSession, RunningSession, WeightEntry, PersonalGoal, CalisthenicsSession } from '../types/models';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,14 +100,18 @@ export function DashboardPage() {
     Promise.all([
       workoutService.getSessions(userId, 50),
       runningService.getSessions(userId, 50),
-    ]).then(([workouts, runs]) => {
+      hybridService.getSessions(userId, 50),
+    ]).then(([workouts, runs, hybrids]) => {
       const weekWorkouts = workouts.filter(w => new Date(w.date) >= weekStart);
       const weekRuns = runs.filter(r => new Date(r.date) >= weekStart);
+      const weekHybrids = hybrids.filter(h => new Date(h.date) >= weekStart);
       setWeekStats({
-        workouts: weekWorkouts.length,
-        runs: weekRuns.length,
-        distance: weekRuns.reduce((sum, r) => sum + r.distance, 0),
-        tonnage: weekWorkouts.reduce((sum, w) => sum + (w.total_tonnage ?? 0), 0),
+        workouts: weekWorkouts.length + weekHybrids.filter(h => hybridHasBlock(h.blocks, 'musculation')).length,
+        runs: weekRuns.length + weekHybrids.filter(h => hybridHasBlock(h.blocks, 'running')).length,
+        distance: weekRuns.reduce((sum, r) => sum + r.distance, 0)
+                + weekHybrids.reduce((sum, h) => sum + hybridRunningDistance(h.blocks), 0),
+        tonnage: weekWorkouts.reduce((sum, w) => sum + (w.total_tonnage ?? 0), 0)
+               + weekHybrids.reduce((sum, h) => sum + hybridMusculationTonnage(h.blocks), 0),
       });
     });
   }, [profile]);

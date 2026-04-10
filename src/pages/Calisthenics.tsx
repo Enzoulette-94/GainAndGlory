@@ -10,13 +10,14 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { calisthenicsService } from '../services/calisthenics.service';
+import { hybridService, hybridCalisthenicsReps, hybridHasBlock } from '../services/hybrid.service';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
 import { formatRelativeTime, formatDate, getLevelProgress, getWeekStart } from '../utils/calculations';
 import { FEEDBACK_LABELS, FEEDBACK_COLORS } from '../utils/constants';
-import type { CalisthenicsSession } from '../types/models';
+import type { CalisthenicsSession, HybridSession } from '../types/models';
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ export function CalisthenicsPage() {
   const { profile } = useAuth();
 
   const [allSessions, setAllSessions] = useState<CalisthenicsSession[]>([]);
+  const [hybridSessions, setHybridSessions] = useState<HybridSession[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
   const [totalReps, setTotalReps] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -55,14 +57,16 @@ export function CalisthenicsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [sess, count, reps] = await Promise.all([
+      const [sess, count, reps, hybrids] = await Promise.all([
         calisthenicsService.getSessions(profile.id, 200, 0),
         calisthenicsService.getSessionsCount(profile.id),
         calisthenicsService.getTotalReps(profile.id),
+        hybridService.getSessions(profile.id, 200),
       ]);
       setAllSessions(sess);
-      setTotalSessions(count);
-      setTotalReps(reps);
+      setHybridSessions(hybrids);
+      setTotalSessions(count + hybrids.filter(h => hybridHasBlock(h.blocks, 'calisthenics')).length);
+      setTotalReps(reps + hybrids.reduce((sum, h) => sum + hybridCalisthenicsReps(h.blocks), 0));
     } catch (e) {
       setError('Erreur lors du chargement des données');
       console.error(e);
@@ -123,8 +127,14 @@ export function CalisthenicsPage() {
       const key = ws.toISOString().slice(0, 10);
       if (weeks[key]) weeks[key].count += 1;
     });
+    hybridSessions.forEach((h) => {
+      if (!hybridHasBlock(h.blocks, 'calisthenics')) return;
+      const ws = getWeekStart(new Date(h.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
     return Object.entries(weeks).map(([, v]) => v);
-  }, [allSessions]);
+  }, [allSessions, hybridSessions]);
 
   const recentSessions = allSessions.slice(0, 7);
 

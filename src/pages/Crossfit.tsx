@@ -9,13 +9,14 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { crossfitService } from '../services/crossfit.service';
+import { hybridService, hybridHasBlock } from '../services/hybrid.service';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Loader } from '../components/common/Loader';
 import { formatRelativeTime, formatDate, getLevelProgress, getWeekStart } from '../utils/calculations';
 import { CROSSFIT_WOD_TYPES, FEEDBACK_LABELS, FEEDBACK_COLORS } from '../utils/constants';
-import type { CrossfitSession } from '../types/models';
+import type { CrossfitSession, HybridSession } from '../types/models';
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ export function CrossfitPage() {
   const { profile } = useAuth();
 
   const [allSessions, setAllSessions] = useState<CrossfitSession[]>([]);
+  const [hybridSessions, setHybridSessions] = useState<HybridSession[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
 
   const [loading, setLoading] = useState(true);
@@ -58,12 +60,14 @@ export function CrossfitPage() {
     setLoading(true);
     setError(null);
     try {
-      const [sess, count] = await Promise.all([
+      const [sess, count, hybrids] = await Promise.all([
         crossfitService.getSessions(profile.id, 200, 0),
         crossfitService.getSessionsCount(profile.id),
+        hybridService.getSessions(profile.id, 200),
       ]);
       setAllSessions(sess);
-      setTotalSessions(count);
+      setHybridSessions(hybrids);
+      setTotalSessions(count + hybrids.filter(h => hybridHasBlock(h.blocks, 'crossfit')).length);
     } catch (e) {
       setError('Erreur lors du chargement des données');
       console.error(e);
@@ -127,8 +131,14 @@ export function CrossfitPage() {
       const key = ws.toISOString().slice(0, 10);
       if (weeks[key]) weeks[key].count += 1;
     });
+    hybridSessions.forEach((h) => {
+      if (!hybridHasBlock(h.blocks, 'crossfit')) return;
+      const ws = getWeekStart(new Date(h.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
     return Object.entries(weeks).map(([, v]) => v);
-  }, [allSessions]);
+  }, [allSessions, hybridSessions]);
 
   const recentSessions = allSessions.slice(0, 7);
 

@@ -26,6 +26,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { runningService } from '../services/running.service';
+import { hybridService, hybridRunningDistance, hybridHasBlock } from '../services/hybrid.service';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input, Textarea } from '../components/common/Input';
@@ -46,7 +47,7 @@ import {
   FEEDBACK_COLORS,
   RUNNING_RECORD_DISTANCES,
 } from '../utils/constants';
-import type { RunningSession } from '../types/models';
+import type { RunningSession, HybridSession } from '../types/models';
 import type { Feedback, RunType } from '../types/enums';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -138,6 +139,7 @@ export function RunningPage() {
 
   // Données
   const [allSessions, setAllSessions] = useState<RunningSession[]>([]);
+  const [hybridSessions, setHybridSessions] = useState<HybridSession[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
   const [totalDistance, setTotalDistance] = useState(0);
   const [records, setRecords] = useState<Record<number, { duration: number; pace: number; date: string }>>({});
@@ -153,11 +155,13 @@ export function RunningPage() {
       runningService.getSessionsCount(userId),
       runningService.getTotalDistance(userId),
       runningService.getPersonalRecords(userId),
+      hybridService.getSessions(userId, 200),
     ])
-      .then(([recentSessions, count, distance, prs]) => {
+      .then(([recentSessions, count, distance, prs, hybrids]) => {
         setAllSessions(recentSessions);
-        setTotalSessions(count);
-        setTotalDistance(distance);
+        setHybridSessions(hybrids);
+        setTotalSessions(count + hybrids.filter(h => hybridHasBlock(h.blocks, 'running')).length);
+        setTotalDistance(distance + hybrids.reduce((sum, h) => sum + hybridRunningDistance(h.blocks), 0));
         setRecords(prs);
       })
       .catch(() => setError('Impossible de charger les données.'))
@@ -189,13 +193,18 @@ export function RunningPage() {
     allSessions.forEach((s) => {
       const ws = getWeekStart(new Date(s.date));
       const key = ws.toISOString().slice(0, 10);
-      if (weeks[key]) {
-        weeks[key].distance += s.distance;
-      }
+      if (weeks[key]) weeks[key].distance += s.distance;
+    });
+    hybridSessions.forEach((h) => {
+      const d = hybridRunningDistance(h.blocks);
+      if (d <= 0) return;
+      const ws = getWeekStart(new Date(h.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].distance += d;
     });
 
     return Object.entries(weeks).map(([, v]) => v);
-  }, [allSessions]);
+  }, [allSessions, hybridSessions]);
 
   const weeklySessionsData = useMemo(() => {
     const weeks: Record<string, { label: string; count: number }> = {};
@@ -212,8 +221,14 @@ export function RunningPage() {
       const key = ws.toISOString().slice(0, 10);
       if (weeks[key]) weeks[key].count += 1;
     });
+    hybridSessions.forEach((h) => {
+      if (!hybridHasBlock(h.blocks, 'running')) return;
+      const ws = getWeekStart(new Date(h.date));
+      const key = ws.toISOString().slice(0, 10);
+      if (weeks[key]) weeks[key].count += 1;
+    });
     return Object.entries(weeks).map(([, v]) => v);
-  }, [allSessions]);
+  }, [allSessions, hybridSessions]);
 
   const weeklyPaceData = useMemo(() => {
     const weeks: Record<string, { label: string; paceSum: number; count: number }> = {};
